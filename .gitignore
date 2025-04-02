@@ -1,0 +1,34 @@
+# 二进制文件
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.db
+
+# 测试文件
+*.test
+*.out
+
+# 输出目录
+/bin/
+/dist/
+
+# 依赖目录
+/vendor/
+
+# 环境变量
+.env
+
+# IDE文件
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 日志文件
+*.log
+
+# 操作系统文件
+.DS_Store
+Thumbs.db 
