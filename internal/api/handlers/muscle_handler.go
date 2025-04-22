@@ -24,14 +24,25 @@ func NewMuscleHandler(db *gorm.DB, logger *logger.Logger) *MuscleHandler {
 	}
 }
 
-// GetMuscles retrieves all muscles
-func (h *MuscleHandler) GetMuscles(c *gin.Context) {
+// FetchMuscleList retrieves all muscles
+func (h *MuscleHandler) FetchMuscleList(c *gin.Context) {
 	var muscles []models.Muscle
 
-	// Get query parameters for filtering
+	type RequestPayload struct {
+		Ids []int `json:"ids"`
+	}
+	var request RequestPayload
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
 
 	// Start with base query
 	query := h.db
+
+	if len(request.Ids) != 0 {
+		query = query.Where("id IN (?)", request.Ids)
+	}
 
 	result := query.Find(&muscles)
 	if result.Error != nil {
@@ -42,8 +53,8 @@ func (h *MuscleHandler) GetMuscles(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Success", "data": gin.H{"list": muscles, "total": len(muscles)}})
 }
 
-// GetMuscle retrieves a specific muscle by ID
-func (h *MuscleHandler) GetMuscle(c *gin.Context) {
+// GetMuscleProfile retrieves a specific muscle by ID
+func (h *MuscleHandler) GetMuscleProfile(c *gin.Context) {
 	id := c.Param("id")
 
 	var muscle models.Muscle
@@ -54,20 +65,6 @@ func (h *MuscleHandler) GetMuscle(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Success", "data": muscle})
-}
-
-// GetActionsByMuscle retrieves workout actions targeting a specific muscle
-func (h *MuscleHandler) GetActionsByMuscle(c *gin.Context) {
-	muscleID := c.Param("muscleId")
-
-	var muscles []models.Muscle
-	result := h.db.Where("target_muscle_ids LIKE ?", "%"+muscleID+"%").Find(&muscles)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout actions", "data": nil})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Success", "data": muscles})
 }
 
 // CreateAction creates a new workout action
@@ -90,45 +87,59 @@ func (h *MuscleHandler) CreateMuscle(c *gin.Context) {
 
 // UpdateAction updates an existing workout action
 func (h *MuscleHandler) UpdateMuscle(c *gin.Context) {
-	id := c.Param("id")
+	var body models.Muscle
 
-	var existingMuscle models.Muscle
-	result := h.db.First(&existingMuscle, id)
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+
+	var existing_muscle models.Muscle
+	result := h.db.First(&existing_muscle, body.Id)
 	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Muscle not found", "data": nil})
 		return
 	}
 
-	var updatedMuscle models.Muscle
-	if err := c.ShouldBindJSON(&updatedMuscle); err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
-		return
-	}
-
 	// Ensure ID remains the same
-	updatedMuscle.Id = existingMuscle.Id
+	body.Id = existing_muscle.Id
 
-	result = h.db.Save(&updatedMuscle)
+	payload := models.Muscle{
+		Id:       body.Id,
+		Name:     body.Name,
+		ZhName:   body.ZhName,
+		Tags:     body.Tags,
+		Overview: body.Overview,
+		Features: body.Features,
+	}
+	result = h.db.Save(&payload)
 	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update muscle", "data": nil})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Muscle updated successfully", "data": updatedMuscle})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Muscle updated successfully", "data": nil})
 }
 
 // DeleteAction deletes a workout action
 func (h *MuscleHandler) DeleteMuscle(c *gin.Context) {
-	id := c.Param("id")
+	var body struct {
+		Id int `json:"id"`
+	}
 
-	var action models.WorkoutAction
-	result := h.db.First(&action, id)
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+
+	var muscle models.Muscle
+	result := h.db.First(&muscle, body.Id)
 	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Muscle not found", "data": nil})
 		return
 	}
 
-	result = h.db.Delete(&action)
+	result = h.db.Delete(&muscle)
 	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete muscle", "data": nil})
 		return

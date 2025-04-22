@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -13,32 +14,33 @@ import (
 // AuthMiddleware checks for a valid JWT token in the Authorization header
 func AuthMiddleware(logger *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
+		auth_header := c.GetHeader("Authorization")
+		if auth_header == "" {
 			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Authorization header required", "data": nil})
 			c.Abort()
 			return
 		}
 
+		fmt.Println("process in auth middleware")
+		fmt.Println(auth_header)
 		// Extract the token from the Authorization header
 		// Format: "Bearer <token>"
-		parts := strings.Split(authHeader, " ")
+		parts := strings.Split(auth_header, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Invalid Authorization header format", "data": nil})
 			c.Abort()
 			return
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		claims, err := models.ParseJWT(tokenString)
+		token_str := strings.TrimPrefix(auth_header, "Bearer ")
+		claims, err := models.ParseJWT(token_str)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Invalid or expired token", "data": nil})
 			c.Abort()
 			return
 		}
 
-		// Set coach ID in context
-		c.Set("coachId", claims.CoachId)
+		c.Set("id", claims.Id)
 		c.Next()
 	}
 }

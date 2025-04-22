@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -26,54 +27,76 @@ func NewWorkoutActionHandler(db *gorm.DB, logger *logger.Logger) *WorkoutActionH
 	}
 }
 
-// GetActions retrieves all workout actions
-func (h *WorkoutActionHandler) GetActions(c *gin.Context) {
+// GetWorkoutActionList retrieves all workout actions
+func (h *WorkoutActionHandler) GetWorkoutActionList(c *gin.Context) {
 	var actions []models.WorkoutAction
 
-	// Get query parameters for filtering
-	level := c.Query("level")
-	tag := c.Query("tag")
-	muscle := c.Query("muscle")
-	cursor := c.Query("cursor")
-	pageSize := c.Query("page_size")
+	type WorkoutActionListRequest struct {
+		Type       string `json:"type"`
+		Keyword    string `json:"keyword"`
+		Level      string `json:"level"`
+		Tag        string `json:"tag"`
+		Muscle     string `json:"muscle"`
+		NextMarker string `json:"next_marker"`
+		PageSize   int    `json:"page_size"`
+		Page       int    `json:"page"`
+	}
+
+	var request WorkoutActionListRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
 
 	// Get pagination parameters
 	limit := 10 // default page size
 
-	if pageSize != "" {
-		if parsedSize, err := strconv.Atoi(pageSize); err == nil && parsedSize > 0 {
-			limit = parsedSize
-		}
+	if request.PageSize != 0 {
+		limit = request.PageSize
 	}
 
 	// Start with base query
 	query := h.db
 
+	// 按创建时间排序
+	query = query.Order("created_at DESC")
+
 	// Apply cursor pagination if cursor is provided
-	if cursor != "" {
-		if cursorID, err := strconv.Atoi(cursor); err == nil {
-			query = query.Where("id > ?", cursorID)
+	if request.NextMarker != "" {
+		if cursorId, err := strconv.Atoi(request.NextMarker); err == nil {
+			fmt.Println("cursorId", cursorId)
+			query = query.Where("id < ?", cursorId)
 		}
+	}
+	if request.Page != 0 {
+		query = query.Offset((request.Page - 1) * limit)
 	}
 
 	// Apply filters if provided
-	if level != "" {
-		levelInt, err := strconv.Atoi(level)
+	if request.Type != "" {
+		query = query.Where("type = ?", request.Type)
+	}
+
+	if request.Keyword != "" {
+		query = query.Where("zh_name LIKE ? OR alias LIKE ?", "%"+request.Keyword+"%", "%"+request.Keyword+"%")
+	}
+	if request.Level != "" {
+		levelInt, err := strconv.Atoi(request.Level)
 		if err == nil {
 			query = query.Where("level = ?", levelInt)
 		}
 	}
 
-	if tag != "" {
-		query = query.Where("tags LIKE ?", "%"+tag+"%")
+	if request.Tag != "" {
+		query = query.Where("tags LIKE ?", "%"+request.Tag+"%")
 	}
 
-	if muscle != "" {
-		query = query.Where("target_muscle_ids LIKE ?", "%"+muscle+"%")
+	if request.Muscle != "" {
+		query = query.Where("target_muscle_ids LIKE ?", "%"+request.Muscle+"%")
 	}
 
 	// Add ordering and limit
-	query = query.Order("id asc").Limit(limit + 1)
+	// query = query.Order("id asc").Limit(limit + 1)
 
 	// Execute the query
 	result := query.Find(&actions)
@@ -82,14 +105,14 @@ func (h *WorkoutActionHandler) GetActions(c *gin.Context) {
 		return
 	}
 
-	hasMore := false
-	nextCursor := ""
+	has_more := false
+	next_cursor := ""
 
 	// Check if there are more results
 	if len(actions) > limit {
-		hasMore = true
-		actions = actions[:limit]                           // Remove the extra item we fetched
-		nextCursor = strconv.Itoa(int(actions[limit-1].Id)) // Get the last item's ID as next cursor
+		has_more = true
+		actions = actions[:limit]                            // Remove the extra item we fetched
+		next_cursor = strconv.Itoa(int(actions[limit-1].Id)) // Get the last item's ID as next cursor
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -98,18 +121,64 @@ func (h *WorkoutActionHandler) GetActions(c *gin.Context) {
 		"data": gin.H{
 			"list":        actions,
 			"page_size":   limit,
-			"has_more":    hasMore,
-			"next_marker": nextCursor,
+			"has_more":    has_more,
+			"next_marker": next_cursor,
 		},
 	})
 }
 
-// GetAction retrieves a specific workout action by ID
-func (h *WorkoutActionHandler) GetAction(c *gin.Context) {
-	id := c.Param("id")
+// GetWorkoutActionList retrieves all workout actions
+func (h *WorkoutActionHandler) GetWorkoutActionListByIds(c *gin.Context) {
+	var actions []models.WorkoutAction
+
+	type WorkoutActionListRequest struct {
+		Ids []int `json:"ids"`
+	}
+
+	var request WorkoutActionListRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	// Start with base query
+	query := h.db
+
+	// 按创建时间排序
+	query = query.Order("created_at DESC")
+
+	// Apply filters if provided
+	if len(request.Ids) > 0 {
+		query = query.Where("id IN (?)", request.Ids)
+	}
+	// Execute the query
+	result := query.Find(&actions)
+	if result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout actions", "data": nil})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "Success",
+		"data": gin.H{
+			"list": actions,
+		},
+	})
+}
+
+// GetWorkoutAction retrieves a specific workout action by ID
+func (h *WorkoutActionHandler) GetWorkoutAction(c *gin.Context) {
+	// id := c.Param("id")
+	var request struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
 
 	var action models.WorkoutAction
-	result := h.db.First(&action, id)
+	result := h.db.First(&action, request.Id)
 	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout action not found", "data": nil})
 		return

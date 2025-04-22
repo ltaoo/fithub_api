@@ -32,6 +32,8 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 
 	// API路由组
 	api := r.Group("/api")
+	authorized := api.Group("/")
+	authorized.Use(middlewares.AuthMiddleware(logger))
 	{
 		// 用户处理器
 		userHandler := handlers.NewUserHandler(db, logger)
@@ -40,90 +42,82 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		api.POST("/user/list", userHandler.GetUsers)
 		api.POST("/user/profile", userHandler.GetUser)
 
-		// 需要认证的路由
-		authorized := api.Group("/")
-		authorized.Use(middlewares.AuthMiddleware(logger))
 		{
+			authorized := api.Group("/user")
+			authorized.Use(middlewares.AuthMiddleware(logger))
 			authorized.POST("/user/create", userHandler.CreateUser)
 			authorized.POST("/user/update", userHandler.UpdateUser)
 			authorized.POST("/user/delete", userHandler.DeleteUser)
 		}
-
-		// Action routes
-		actionRouter := api.Group("/workout_action")
 		{
-			actionHandler := handlers.NewWorkoutActionHandler(db, logger)
-			actionRouter.POST("/list", actionHandler.GetActions)
-			actionRouter.POST("/profile", actionHandler.GetAction)
-			actionRouter.POST("/list/by_muscle", actionHandler.GetActionsByMuscle)
-			actionRouter.POST("/list/by_level", actionHandler.GetActionsByLevel)
-			actionRouter.POST("/list/related", actionHandler.GetRelatedActions)
 
-			// Protected action routes (require authentication)
-			actionRouter.Use(middlewares.AuthMiddleware(logger))
+			handler := handlers.NewWorkoutPlanHandler(db, logger)
+			api.POST("/workout_plan/list", handler.FetchWorkoutPlanList)
+			api.POST("/workout_plan/profile", handler.GetWorkoutPlan)
+			authorized.POST("/workout_plan/update", handler.UpdateWorkoutPlan)
+			authorized.POST("/workout_plan/delete", handler.DeleteWorkoutPlan)
+			authorized.POST("/workout_plan/create", handler.CreateWorkoutPlan)
+			authorized.POST("/workout_plan/mine", handler.FetchMyWorkoutPlanList)
+		}
+		{
+			handler := handlers.NewWorkoutDayHandler(db, logger)
+			authorized.POST("/workout_day/create", handler.CreateWorkoutDay)
+			authorized.POST("/workout_day/profile", handler.FetchWorkoutDayProfile)
+			authorized.POST("/workout_day/fetch_started", handler.FetchRunningWorkoutDay)
+			authorized.POST("/workout_day/start", handler.StartWorkoutDay)
+			authorized.POST("/workout_day/give_up", handler.GiveUpWorkoutDay)
+			authorized.POST("/workout_day/finish", handler.FinishWorkoutDay)
+			authorized.POST("/workout_day/update_steps", handler.UpdateWorkoutDaySteps)
+			authorized.POST("/workout_day/delete", handler.DeleteWorkoutDay)
+		}
+		{
+			handler := handlers.NewWorkoutActionHistoryHandler(db, logger)
+			authorized.POST("/workout_action_history/list", handler.FetchWorkoutActionHistoryList)
+		}
+		{
+			handler := handlers.NewWorkoutActionHandler(db, logger)
+			api.POST("/workout_action/list", handler.GetWorkoutActionList)
+			api.POST("/workout_action/list_by_ids", handler.GetWorkoutActionListByIds)
+			api.POST("/workout_action/profile", handler.GetWorkoutAction)
+			api.POST("/workout_action/list/by_muscle", handler.GetActionsByMuscle)
+			api.POST("/workout_action/list/by_level", handler.GetActionsByLevel)
+			api.POST("/workout_action/list/related", handler.GetRelatedActions)
+
 			{
-				actionRouter.POST("/create", actionHandler.CreateAction)
-				actionRouter.POST("/update", actionHandler.UpdateAction)
-				actionRouter.POST("/delete", actionHandler.DeleteAction)
+				authorized.POST("/workout_action/create", handler.CreateAction)
+				authorized.POST("/workout_action/update", handler.UpdateAction)
+				authorized.POST("/workout_action/delete", handler.DeleteAction)
 			}
 		}
-	}
-
-	// Coach routes
-	coachRouter := api.Group("/coach")
-	{
-		coachHandler := handlers.NewCoachHandler(db, logger)
-		coachRouter.POST("/register", coachHandler.RegisterCoach)
-		coachRouter.POST("/login", coachHandler.LoginCoach)
-		coachRouter.POST("/send-verification-code", coachHandler.SendVerificationCode)
-
-		// Protected coach routes (require authentication)
-		coachRouter.Use(middlewares.AuthMiddleware(logger))
 		{
-			coachRouter.POST("/profile", coachHandler.GetCoachProfile)
-			coachRouter.POST("/update", coachHandler.UpdateCoachProfile)
+			handler := handlers.NewCoachHandler(db, logger)
+			api.POST("/coach/register", handler.RegisterCoach)
+			api.POST("/coach/login", handler.LoginCoach)
+			api.POST("/coach/send-verification-code", handler.SendVerificationCode)
+			{
+				authorized.POST("/coach/profile", handler.GetCoachProfile)
+				authorized.POST("/coach/update", handler.UpdateCoachProfile)
+			}
 		}
-	}
-
-	// Muscle routes
-	muscleRouter := api.Group("/muscle")
-	{
-		muscleHandler := handlers.NewMuscleHandler(db, logger)
-		muscleRouter.POST("/list", muscleHandler.GetMuscles)
-		muscleRouter.POST("/profile", muscleHandler.GetMuscle)
-
-		// Protected muscle routes (require authentication)
-		muscleRouter.Use(middlewares.AuthMiddleware(logger))
 		{
-			muscleRouter.POST("/create", muscleHandler.CreateMuscle)
-			muscleRouter.POST("/update", muscleHandler.UpdateMuscle)
-			muscleRouter.POST("/delete", muscleHandler.DeleteMuscle)
+			handler := handlers.NewMuscleHandler(db, logger)
+			api.POST("/muscle/list", handler.FetchMuscleList)
+			api.POST("/muscle/profile", handler.GetMuscleProfile)
+
+			{
+				authorized.POST("/muscle/create", handler.CreateMuscle)
+				authorized.POST("/muscle/update", handler.UpdateMuscle)
+				authorized.POST("/muscle/delete", handler.DeleteMuscle)
+			}
 		}
-	}
-
-	// Equipment routes
-	equipmentRouter := api.Group("/equipment")
-	{
-		equipmentHandler := handlers.NewEquipmentHandler(db, logger)
-		equipmentRouter.POST("/list", equipmentHandler.GetEquipments)
-		equipmentRouter.POST("/profile", equipmentHandler.GetEquipment)
-
-		// Protected equipment routes (require authentication)
-		equipmentRouter.Use(middlewares.AuthMiddleware(logger))
 		{
-			equipmentRouter.POST("/create", equipmentHandler.CreateEquipment)
+			handler := handlers.NewEquipmentHandler(db, logger)
+			api.POST("/equipment/list", handler.FetchEquipmentList)
+			api.POST("/equipment/profile", handler.GetEquipment)
+			{
+				authorized.POST("/equipment/create", handler.CreateEquipment)
+			}
 		}
-	}
-
-	// Workout plan routes
-	workoutPlanRouter := api.Group("/workout_plan")
-	{
-		workoutPlanHandler := handlers.NewWorkoutPlanHandler(db, logger)
-		workoutPlanRouter.POST("/create", workoutPlanHandler.CreateWorkoutPlan)
-		workoutPlanRouter.POST("/list", workoutPlanHandler.ListWorkoutPlans)
-		workoutPlanRouter.POST("/profile", workoutPlanHandler.GetWorkoutPlan)
-		workoutPlanRouter.POST("/update", workoutPlanHandler.UpdateWorkoutPlan)
-		workoutPlanRouter.POST("/delete", workoutPlanHandler.DeleteWorkoutPlan)
 	}
 
 	return r

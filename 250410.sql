@@ -1,4 +1,9 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE schema_migrations (version uint64,dirty bool);
+INSERT INTO schema_migrations VALUES(2,0);
 CREATE TABLE LLM_AGENT(
+    
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
         name TEXT(255) NOT NULL, --名称
         desc TEXT(255), --描述信息
@@ -121,8 +126,24 @@ CREATE TABLE MUSCLE(
         features TEXT NOT NULL DEFAULT '{}' --功能
     
     );
-    
-    CREATE TABLE EQUIPMENT(
+INSERT INTO MUSCLE VALUES(1,'Brachialis','肱肌',replace('肱肌位于肱二头肌的深处，它从前肱骨延伸出来，在远端连接到近端尺骨末梢上。这块肌肉唯一的功能是屈曲肘部。\n肱肌的平均生理学横截面积为 7 平方厘米，是肘部所有肌肉中横截面最大的一块肌肉。\n相比之下，肱二头肌的横截面面积仅为 2.5 平方厘米。\n基于其较大的生理学横截面面积，预期在肘部的所有肌肉中，肱肌可以产生最大的力。','\n',char(10)),'手臂,肘屈肌','[{"title":"肘关节屈曲","details":"当前臂向靠近上臂移动时，肱肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(2,'Biceps brachii','肱二头肌',replace('肱二头肌在近端连接在肩胛骨上，在远端连接在桡骨的桡骨粗隆上。次要的远端附着点包括前臂的深筋膜，它穿过一个被称为纤维束的腱膜片。\n当同时肘屈曲和肘外旋，例如把调羹放到嘴边，肱二头肌产生了自己的最大肌电（EMG）信号。\n当弯曲且特意把前臂保持在内旋的位置时，肱二头肌的 EMG 活性相对较低。','\n',char(10)),'手臂,肘屈肌','[{"title":"肘关节屈曲","details":"当前臂向靠近上臂移动时，肱二头肌强烈收缩以完成这一动作"},{"title":"肘关节外旋","details":"外旋时会有更多的力"}]');
+INSERT INTO MUSCLE VALUES(3,'Triceps brachii','肱三头肌','肱三头肌有三头：长头、外侧头和内侧头。长头的近端附着点在肩孟骨的孟下结节上，因此，肱三头肌可以使肩伸展和内收。长头的体积很大，超过了肘关节的所有其他肌肉。','手臂,肘伸肌','[{"title":"肘关节伸直","details":"当前臂向远离上臂移动时，肱三头肌强烈收缩以完成这一动作"},{"title":"肩关节内收","details":"手臂向中间移动时，通过肱三头肌发力？"}]');
+INSERT INTO MUSCLE VALUES(4,'Deltoid','三角肌','位于肩部，是肩部的主要肌肉','肩膀','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(5,'Trapezius','斜方肌','位于背部，是背部的主要肌肉','背部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(6,'Pectoralis major','胸大肌','位于胸部，是胸部的主要肌肉','胸部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(7,'Latissimus dorsi','背阔肌','位于背部，是背部的主要肌肉','背部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(8,'Gluteus maximus','臀大肌','位于臀部，是臀部的主要肌肉','臀部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(9,'Quadriceps','股四头肌','位于大腿前侧，是腿部的主要肌肉','腿部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(10,'Hamstrings','股二头肌','位于大腿后侧，是腿部的主要肌肉','腿部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(12,'Abdominals','腹直肌','位于腹部，是腹部的主要肌肉','腹部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(13,'Obliques','腹斜肌','位于腹部，是腹部的主要肌肉','腹部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(14,'Serratus anterior','前锯肌','位于胸部，是胸部的主要肌肉','胸部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(15,'Rhomboids','菱形肌','位于背部，是背部的主要肌肉','背部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(16,'Erector spinae','竖脊肌','位于背部，是背部的主要肌肉','背部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(17,'Sartorius','梨状肌','位于臀部，是臀部的主要肌肉','臀部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
+INSERT INTO MUSCLE VALUES(18,'Brachioradialis','肱桡肌',replace('肱桡肌是所有肘部肌肉中最长的一块肌肉，它在近端连接在肱骨外侧髁上嵴上，在远端连接在桡骨的茎突旁边。肱桡肌的最大限度缩短导致了肘的完全屈曲，并使前臂旋转至将近中线位置。\nEMG 研究显示，肱桡肌是一块主要的肘屈肌，尤其是在巨大阻力下进行快速运动的时候。','\n',char(10)),'手臂,肘屈肌','[]');
+CREATE TABLE EQUIPMENT(
     
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
         name TEXT NOT NULL DEFAULT '', --器械名称
@@ -131,247 +152,6 @@ CREATE TABLE MUSCLE(
         overview TEXT NOT NULL DEFAULT '', --简要说明
         medias TEXT NOT NULL DEFAULT '{}' --图片、视频等
     );
-CREATE TABLE WORKOUT_ACTION(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        status INTEGER NOT NULL DEFAULT 1, --状态;1公开 2仅自己可见 3公开审核中 4公开审核失败
-        name TEXT(255) NOT NULL DEFAULT '', --动作名称
-        zh_name TEXT(255) NOT NULL DEFAULT '', --中文名称
-        alias TEXT(255) NOT NULL DEFAULT '', --别名
-        overview TEXT NOT NULL DEFAULT '', --简要说明
-        type TEXT NOT NULL DEFAULT "resistance", --动作类型;resistance、cardio、balance、flexibility、strength
-        level INTEGER NOT NULL DEFAULT 1, --难度等级;1-10
-        tags1 TEXT(255) NOT NULL DEFAULT '', --标签;逗号分割
-        tags2 TEXT(255) NOT NULL DEFAULT '', --标签;逗号分割
-        details TEXT(900) NOT NULL DEFAULT '{}', -- 详情 JSON
-        points TEXT(255) NOT NULL DEFAULT '{}', --动作要点;逗号分割
-        problems TEXT(255) NOT NULL DEFAULT '{}', --常见错误;逗号分割
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        updated_at DATETIME, --更新时间
-        equipment_ids TEXT(255) NOT NULL DEFAULT '', --器械;逗号分割
-        muscle_ids TEXT(255) NOT NULL DEFAULT '', --肌肉;逗号分割
-        alternative_action_ids TEXT(255) NOT NULL DEFAULT '', --替代动作;逗号分割
-        advanced_action_ids TEXT(255) NOT NULL DEFAULT '', --进阶动作;逗号分割
-        regressed_action_ids TEXT(255) NOT NULL DEFAULT '', --退阶动作;逗号分割
-        owner_id INTEGER NOT NULL DEFAULT 0, --教练id
-        score REAL NOT NULL DEFAULT 0, -- 动作评分
-        extra_config TEXT(1000) NOT NULL DEFAULT '{}', -- 额外配置
-        sort_idx INTEGER NOT NULL DEFAULT 0, -- 排序
-        pattern TEXT(255) NOT NULL DEFAULT '', -- 动作模式标签
-        primary_muscle_ids TEXT(255) NOT NULL DEFAULT '', -- 主要锻炼肌肉
-        secondary_muscle_ids TEXT(255) NOT NULL DEFAULT '' -- 次要锻炼肌肉
-    );
-    
-    CREATE TABLE WORKOUT_ACTION_MISTAKE(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        name TEXT(255) NOT NULL DEFAULT '', --错误名称
-        reason TEXT(255) NOT NULL DEFAULT '', --常见错误原因
-        solution_direction TEXT(255) NOT NULL DEFAULT '', --解决方案
-        solution_action_ids TEXT(255) NOT NULL DEFAULT '', --解决动作
-        solution_action_text TEXT(255) NOT NULL DEFAULT '' --解决动作描述
-    
-    );
-CREATE TABLE WORKOUT_PLAN(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        status INTEGER NOT NULL DEFAULT 1, --状态;1公开 2仅自己可见 3禁用
-        title TEXT(255) NOT NULL DEFAULT '', --计划名称
-        overview TEXT(255) NOT NULL DEFAULT '', --训练计划描述
-        level INTEGER NOT NULL DEFAULT 1, --适宜什么水平的人群;1-10
-        tags TEXT(255) NOT NULL DEFAULT '', --部位标签
-        details TEXT(1000) NOT NULL DEFAULT '{}', --内容详情 JSON;在创建、更新 plan 时，根据内容统计出的动作列表 JSON
-        points TEXT(255) NOT NULL DEFAULT '', --注意事项
-        suggestions TEXT(255) NOT NULL DEFAULT '', --训练计划建议
-        estimated_duration INTEGER NOT NULL DEFAULT 0, --预计耗时;单位 min
-        equipment_ids TEXT(255) NOT NULL DEFAULT '', --所需器械 id 列表
-        muscle_ids TEXT(255) NOT NULL DEFAULT '', --该计划练到的肌肉 id 列表
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        updated_at DATETIME, --更新时间
-        owner_id INTEGER NOT NULL DEFAULT 0 --创建人id
-    
-    );
-
-CREATE TABLE WORKOUT_PLAN_STEP(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        title TEXT(255) NOT NULL DEFAULT '', --动作(阶段)名称
-        type TEXT(255) NOT NULL DEFAULT 'strength', --动作(阶段)类型;warmup、strength、stretch、cool_down、cardio、heart、performance
-        idx INTEGER NOT NULL DEFAULT 1, --第几个动作(阶段)
-        set_count INTEGER NOT NULL DEFAULT 1, --组数
-        set_type TEXT(255) NOT NULL DEFAULT 'normal', --组数类型; normal combo free
-        set_rest_duration INTEGER NOT NULL DEFAULT 0, --组间休息时间
-        note TEXT(255) NOT NULL DEFAULT '', --该组额外信息说明
-        workout_plan_id INTEGER NOT NULL DEFAULT 0, --所属训练计划id
-        set_weight INTEGER NOT NULL DEFAULT '' --组负荷
-    
-    );
-CREATE TABLE WORKOUT_PLAN_ACTION(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        idx INTEGER NOT NULL DEFAULT 1, --动作顺序;超级组、循环组会需要该字段
-        action_id INTEGER NOT NULL DEFAULT 0, --要做的动作id
-        set_idx INTEGER NOT NULL DEFAULT 1, --第几组
-        reps INTEGER NOT NULL DEFAULT 0, --数量
-        reps_unit TEXT(255) NOT NULL DEFAULT '次', --单位
-        weight TEXT(255) NOT NULL DEFAULT '', --阻力;字符串，直接写成 60%1RM 或 12RM 或 自重、无负重等等？
-        tempo TEXT(255) NOT NULL DEFAULT '4/1/2', --节奏;4/1/2 表示离心4s，停顿1s，向心2s
-        rest_duration INTEGER NOT NULL DEFAULT 0, --间歇时间
-        note TEXT(255) NOT NULL DEFAULT '', --该组备注信息
-        workout_plan_step_id INTEGER NOT NULL DEFAULT 0 --关联的训练计划中组id
-    
-    );
-CREATE TABLE COACH(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        nickname TEXT(255) NOT NULL DEFAULT '', --昵称
-        avatar_url TEXT(255) NOT NULL DEFAULT '', --头像链接
-        bio TEXT(1000) NOT NULL DEFAULT '', --个人简介
-        specialties TEXT(255) NOT NULL DEFAULT '', --专长领域，逗号分隔
-        certification TEXT(1000) NOT NULL DEFAULT '{}', --认证信息，JSON格式
-        experience_years INTEGER NOT NULL DEFAULT 0, --从业年限
-        coach_type INTEGER NOT NULL DEFAULT 1, --教练类型;1私教 2团课 3在线
-        status INTEGER NOT NULL DEFAULT 1, --状态;1正常 2暂停服务 3封禁
-        config TEXT(1000) NOT NULL DEFAULT '{}', --配置信息
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        updated_at DATETIME --更新时间
-    
-    );
-INSERT INTO COACH VALUES(1,'admin@fithub.top','','','','{}',0,1,1,'{}','2025-04-02T17:42:25+08:00','2025-04-02T17:42:25+08:00');
-CREATE TABLE COACH_ACCOUNT(
-    
-        provider_type TEXT(255) NOT NULL, --帐号授权方式;email、phone、wxapp 等等
-        provider_id TEXT(255) NOT NULL, --帐号唯一标志;如果 email，这里就是 email 帐号，可以发送验证码来验证
-        provider_arg1 TEXT(255) NOT NULL DEFAULT '', --帐号授权参数
-        provider_arg2 TEXT(255) NOT NULL DEFAULT '', --授权参数2
-        provider_arg3 TEXT(255) NOT NULL DEFAULT '', --授权参数3;可以放很多额外信息，比如 expires
-        coach_id INTEGER NOT NULL DEFAULT 0, --帐号关联的用户id
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --帐号创建时间
-
-        PRIMARY KEY (provider_type, provider_id)
-    );
-INSERT INTO COACH_ACCOUNT VALUES('email_password','admin@fithub.top','$2a$10$DnmlfgRsF/ArxvCiu9CkrOc0euF4bsaU4aPsJcMysm0UHqVUVRdsW','','',1,'2025-04-02T17:42:25+08:00');
-CREATE TABLE COACH_RELATIONSHIP(
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        coach_id INTEGER NOT NULL, --教练id
-        student_id INTEGER NOT NULL, --学员id（也是教练id）
-        status INTEGER NOT NULL DEFAULT 1, --关系状态;1待确认 2已确认 3已拒绝 4已解除
-        role INTEGER NOT NULL DEFAULT 1, --关系角色;1教练-学员 2合作教练
-        note TEXT(255) NOT NULL DEFAULT '', --备注信息
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        updated_at DATETIME, --更新时间
-        
-        FOREIGN KEY (coach_id) REFERENCES COACH(id),
-        FOREIGN KEY (student_id) REFERENCES COACH(id)
-    );
-CREATE TABLE COACH_PROFILE(
-        coach_id INTEGER NOT NULL PRIMARY KEY, --教练id
-        name TEXT NOT NULL DEFAULT '', --名称
-        age INTEGER NOT NULL DEFAULT 0, --年龄
-        gender INTEGER NOT NULL DEFAULT 1, --性别
-        body_type INTEGER NOT NULL DEFAULT 2, --体型;1偏瘦 2中等 3偏胖 4肌肉 5匀称
-        height INTEGER NOT NULL DEFAULT 0, --身高，单位 cm
-        weight REAL NOT NULL DEFAULT 0, --体重，单位 kg
-        body_fat_percent INTEGER NOT NULL DEFAULT 0, --体脂率，12 就是 12%
-        risk_screenings TEXT(1000) NOT NULL DEFAULT '{}', --健康风险评估
-        training_goals TEXT(1000) NOT NULL DEFAULT '{}', --训练目标
-        training_frequency INTEGER NOT NULL DEFAULT 1, --训练频率;一周几次
-        training_preferences TEXT(1000) NOT NULL DEFAULT '{}', --训练偏好
-        diet_preferences TEXT(1000) NOT NULL DEFAULT '{}' --饮食偏好
-    );
-CREATE TABLE COACH_PHYSICAL_TEST(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        action_ids TEXT(255) NOT NULL DEFAULT '', --包含的动作
-        result TEXT(255) NOT NULL DEFAULT '', --评估结果
-        details TEXT(1000) NOT NULL DEFAULT '{}', --评估详情
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        coach_id INTEGER NOT NULL DEFAULT 0 --教练id
-    
-    );
-CREATE TABLE COACH_BODY_MEASUREMENT(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        height INTEGER NOT NULL DEFAULT 0, --身高;单位厘米
-        weight REAL NOT NULL DEFAULT 0, --体重;单位kg
-        body_fat_percentage REAL NOT NULL DEFAULT 0, --体脂率
-        heart_rate INTEGER NOT NULL DEFAULT 0, --静息心率;次每分钟
-        chest REAL NOT NULL DEFAULT 0, --胸围
-        waist REAL NOT NULL DEFAULT 0, --腰围
-        hip REAL NOT NULL DEFAULT 0, --臀围
-        arm REAL NOT NULL DEFAULT 0, --臂围
-        thigh REAL NOT NULL DEFAULT 0, --大腿围度
-        notes TEXT(255) NOT NULL DEFAULT '', --额外备注信息
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --体测时间
-        coach_id INTEGER NOT NULL DEFAULT 0 --教练id
-    
-    );
-CREATE TABLE WORKOUT_DAY(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        time TEXT NOT NULL DEFAULT '', --训练时间;年月日时分秒
-        status INTEGER NOT NULL DEFAULT 1, --训练日状态;1等待进行 2进行中 3已完成 4已过期 5手动作废
-        estimated_duration INTEGER NOT NULL DEFAULT 0, --预计时间
-        pending_steps TEXT(1000) NOT NULL DEFAULT '{}', --执行记录;JSON 数组
-        stats TEXT(1000) NOT NULL DEFAULT '{}', --统计信息;JSON 数组
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        started_at DATETIME, --开始时间
-        updated_at DATETIME, --更新时间
-        finished_at DATETIME, --结束时间
-        coach_id INTEGER NOT NULL DEFAULT 0, --教练id
-        student_id INTEGER NOT NULL DEFAULT 0, --学员id
-        workout_plan_id INTEGER NOT NULL DEFAULT 0 --关联的训练计划id
-    
-    );
-CREATE TABLE WORKOUT_DAY_STEP(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        idx INTEGER NOT NULL, --第几阶段
-        set_idx INTEGER NOT NULL, --第几组
-        remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
-        feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
-        set_details TEXT(1000) NOT NULL DEFAULT '{}', --组详情;JSON 数组
-        completed INTEGER NOT NULL, --是否完成;1完成 2未完成
-        workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日id
-        workout_plan_step_id INTEGER NOT NULL DEFAULT 0 --训练计划组id
-    
-    );
-CREATE TABLE WORKOUT_DAY_ACTION(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        action_id INTEGER NOT NULL DEFAULT 0, --做的动作id
-        set_idx INTEGER NOT NULL DEFAULT 0, --第几组
-        reps INTEGER NOT NULL DEFAULT 0, --实际数量
-        unit TEXT(255) NOT NULL DEFAULT '次', --单位
-        weight TEXT(255) NOT NULL DEFAULT '', --实际阻力;字符串 12kg 24lbs
-        remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
-        feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
-        extra_medias TEXT(1000) NOT NULL DEFAULT '{}', --拍照、录像记录;存 字符串列表
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间;CURRENT_TIMESTAMP
-        workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日 id
-        workout_day_step_id INTEGER NOT NULL DEFAULT 0, --训练日哪个组
-        workout_plan_action_id INTEGER NOT NULL DEFAULT 0 --
-    
-    );
-
-CREATE TABLE WORKOUT_ACTION_HISTORY(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        action_id INTEGER NOT NULL DEFAULT 0, --做的动作id
-        reps INTEGER NOT NULL DEFAULT 0, --实际数量
-        reps_unit TEXT(255) NOT NULL DEFAULT '次', --单位
-        weight INTEGER NOT NULL DEFAULT 0, --实际阻力;12kg 24lbs
-        weight_unit TEXT(255) NOT NULL DEFAULT '', --实际阻力单位;kg 24lbs
-        remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
-        feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
-        extra_medias TEXT(1000) NOT NULL DEFAULT '{}', --拍照、录像记录;存 字符串列表
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间;CURRENT_TIMESTAMP
-        workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日 id
-        student_id INTEGER NOT NULL DEFAULT 0
-    );
-
-
-
 INSERT INTO EQUIPMENT VALUES(1,'dumbbell','哑铃','','哑铃是一种用于增强肌肉力量训练的简单器材，可进行多种部位的力量练习。','{}');
 INSERT INTO EQUIPMENT VALUES(2,'barbell','杠铃','','杠铃是举重及健身练习的常见器械，可进行全身性的力量训练。','{}');
 INSERT INTO EQUIPMENT VALUES(3,'treadmill','跑步机','','跑步机是家庭及健身房常见的健身器材，是有氧运动的有效工具。','{}');
@@ -414,28 +194,31 @@ INSERT INTO EQUIPMENT VALUES(39,'Hack Squat Machine','哈克深蹲机','','','')
 INSERT INTO EQUIPMENT VALUES(40,'Lateral Raise Machine','侧平举机','','','');
 INSERT INTO EQUIPMENT VALUES(41,'T-Bar Row Machine','T 杠划船机','','','');
 INSERT INTO EQUIPMENT VALUES(42,'log','圆木','','','');
-
-
-INSERT INTO MUSCLE VALUES(1,'Brachialis','肱肌',replace('肱肌位于肱二头肌的深处，它从前肱骨延伸出来，在远端连接到近端尺骨末梢上。这块肌肉唯一的功能是屈曲肘部。\n肱肌的平均生理学横截面积为 7 平方厘米，是肘部所有肌肉中横截面最大的一块肌肉。\n相比之下，肱二头肌的横截面面积仅为 2.5 平方厘米。\n基于其较大的生理学横截面面积，预期在肘部的所有肌肉中，肱肌可以产生最大的力。','\n',char(10)),'手臂,肘屈肌','[{"title":"肘关节屈曲","details":"当前臂向靠近上臂移动时，肱肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(2,'Biceps brachii','肱二头肌',replace('肱二头肌在近端连接在肩胛骨上，在远端连接在桡骨的桡骨粗隆上。次要的远端附着点包括前臂的深筋膜，它穿过一个被称为纤维束的腱膜片。\n当同时肘屈曲和肘外旋，例如把调羹放到嘴边，肱二头肌产生了自己的最大肌电（EMG）信号。\n当弯曲且特意把前臂保持在内旋的位置时，肱二头肌的 EMG 活性相对较低。','\n',char(10)),'手臂,肘屈肌','[{"title":"肘关节屈曲","details":"当前臂向靠近上臂移动时，肱二头肌强烈收缩以完成这一动作"},{"title":"肘关节外旋","details":"外旋时会有更多的力"}]');
-INSERT INTO MUSCLE VALUES(3,'Triceps brachii','肱三头肌','肱三头肌有三头：长头、外侧头和内侧头。长头的近端附着点在肩孟骨的孟下结节上，因此，肱三头肌可以使肩伸展和内收。长头的体积很大，超过了肘关节的所有其他肌肉。','手臂,肘伸肌','[{"title":"肘关节伸直","details":"当前臂向远离上臂移动时，肱三头肌强烈收缩以完成这一动作"},{"title":"肩关节内收","details":"手臂向中间移动时，通过肱三头肌发力？"}]');
-INSERT INTO MUSCLE VALUES(4,'Deltoid','三角肌','位于肩部，是肩部的主要肌肉','肩膀','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(5,'Trapezius','斜方肌','位于背部，是背部的主要肌肉','背部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(6,'Pectoralis major','胸大肌','位于胸部，是胸部的主要肌肉','胸部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(7,'Latissimus dorsi','背阔肌','位于背部，是背部的主要肌肉','背部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(8,'Gluteus maximus','臀大肌','位于臀部，是臀部的主要肌肉','臀部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(9,'Quadriceps','股四头肌','位于大腿前侧，是腿部的主要肌肉','腿部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(10,'Hamstrings','股二头肌','位于大腿后侧，是腿部的主要肌肉','腿部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(12,'Abdominals','腹直肌','位于腹部，是腹部的主要肌肉','腹部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(13,'Obliques','腹斜肌','位于腹部，是腹部的主要肌肉','腹部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(14,'Serratus anterior','前锯肌','位于胸部，是胸部的主要肌肉','胸部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(15,'Rhomboids','菱形肌','位于背部，是背部的主要肌肉','背部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(16,'Erector spinae','竖脊肌','位于背部，是背部的主要肌肉','背部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(17,'Sartorius','梨状肌','位于臀部，是臀部的主要肌肉','臀部','[{"title":"肩关节外展","details":"当前臂向远离上臂移动时，三角肌强烈收缩以完成这一动作"}]');
-INSERT INTO MUSCLE VALUES(18,'Brachioradialis','肱桡肌',replace('肱桡肌是所有肘部肌肉中最长的一块肌肉，它在近端连接在肱骨外侧髁上嵴上，在远端连接在桡骨的茎突旁边。肱桡肌的最大限度缩短导致了肘的完全屈曲，并使前臂旋转至将近中线位置。\nEMG 研究显示，肱桡肌是一块主要的肘屈肌，尤其是在巨大阻力下进行快速运动的时候。','\n',char(10)),'手臂,肘屈肌','[]');
-
-
-
+CREATE TABLE WORKOUT_ACTION(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        status INTEGER NOT NULL DEFAULT 1, --状态;1公开 2仅自己可见 3禁用
+        name TEXT(255) NOT NULL DEFAULT '', --动作名称
+        zh_name TEXT(255) NOT NULL DEFAULT '', --中文名称
+        alias TEXT(255) NOT NULL DEFAULT '', --别名
+        overview TEXT NOT NULL DEFAULT '', --简要说明
+        type TEXT NOT NULL DEFAULT "resistance", --动作类型;resistance、cardio、balance、flexibility、strength
+        level INTEGER NOT NULL DEFAULT 1, --难度等级;1-10
+        tags1 TEXT(255) NOT NULL DEFAULT '', --标签;逗号分割
+        tags2 TEXT(255) NOT NULL DEFAULT '', --标签;逗号分割
+        details TEXT(900) NOT NULL DEFAULT '{}', -- 详情 JSON
+        points TEXT(255) NOT NULL DEFAULT '{}', --动作要点;逗号分割
+        problems TEXT(255) NOT NULL DEFAULT '{}', --常见错误;逗号分割
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+        updated_at DATETIME, --更新时间
+        equipment_ids TEXT(255) NOT NULL DEFAULT '', --器械;逗号分割
+        muscle_ids TEXT(255) NOT NULL DEFAULT '', --肌肉;逗号分割
+        alternative_action_ids TEXT(255) NOT NULL DEFAULT '', --替代动作;逗号分割
+        advanced_action_ids TEXT(255) NOT NULL DEFAULT '', --进阶动作;逗号分割
+        regressed_action_ids TEXT(255) NOT NULL DEFAULT '', --退阶动作;逗号分割
+        owner_id INTEGER NOT NULL DEFAULT 0 --教练id
+    
+    , score REAL NOT NULL DEFAULT 0, extra_config TEXT(1000) NOT NULL DEFAULT '{}', sort_idx INTEGER NOT NULL DEFAULT 0, pattern TEXT(255) NOT NULL DEFAULT '', primary_muscle_ids TEXT(255) NOT NULL DEFAULT '', secondary_muscle_ids TEXT(255) NOT NULL DEFAULT '');
 INSERT INTO WORKOUT_ACTION VALUES(1,1,'Barbell Bench Press','杠铃卧推','平板卧推','经典的上肢推举动作，主要锻炼胸大肌、三角肌前束和肱三头肌','resistance',4,'胸部,肩部','力量,体积','{"startPosition":"仰卧在平板凳上，双脚平踩地面，挺胸收腹，双手握住杠铃略宽于肩","steps":["控制杠铃缓慢下降至胸部","推举杠铃直至手臂完全伸直"]}','["保持手腕中立位","肩胛骨下沉并收紧","确保髋部始终接触凳面"]','[{"title":"手腕过度后仰","reason":"手腕力量不足或握姿不当","solution_direction":"调整握姿，加强手腕力量训练"}]','2025-04-02 09:42:07',NULL,'2','6,3,4','','','',0,0.0,'{}',0,'','','');
 INSERT INTO WORKOUT_ACTION VALUES(2,1,'Pull Up','引体向上','单杠引体','基础的背部训练动作，可全面锻炼背部肌群和手臂肌肉','resistance',5,'背部,手臂','力量,体积','{"startPosition":"双手正握单杠，略宽于肩，手臂完全伸直下垂","steps":["收紧背部肌肉，拉起身体直至下巴超过横杠","控制身体缓慢下降至起始位置"]}','["避免借力摆动","注意肩胛骨下沉","保持核心稳定"]','[{"title":"借力摆动","reason":"背部力量不足","solution_direction":"先做辅助引体向上，循序渐进"}]','2025-04-02 09:42:07',NULL,'14','7,2,5','','','',0,0.0,'{}',0,'','','');
 INSERT INTO WORKOUT_ACTION VALUES(3,1,'Squat','深蹲','自重深蹲','最基础的下肢训练动作，可全面锻炼下半身肌群','resistance',3,'腿部,臀部','力量,体积','{"startPosition":"双脚略宽于肩，脚尖略微外转","steps":["屈膝下蹲，同时保持躯干挺直","当大腿与地面平行时回到起始位置"]}','["保持脊柱中立","膝盖方向与脚尖一致","重心放在脚跟"]','[{"title":"膝盖内扣","reason":"髋外展肌群力量不足","solution_direction":"加强臀中肌训练"}]','2025-04-02 09:42:07',NULL,'','9,8,10','','','',0,0.0,'{}',0,'','','');
@@ -858,3 +641,350 @@ INSERT INTO WORKOUT_ACTION VALUES(419,1,'Zottman Curl','佐特曼弯举','',repl
 INSERT INTO WORKOUT_ACTION VALUES(420,1,'Romanian Deadlift','罗马尼亚硬拉','',replace('增强臀部和腘绳肌的力量与维度\n提高髋关节的灵活性和稳定性','\n',char(10)),'resistance',6,'下肢','','{"start_position":"双脚与肩同宽站立，脚尖微微向外，膝盖微区。双手正握杠铃，握距与肩同宽，杠铃置于大腿前方，手臂自然下垂。保持挺胸收腹，腰背挺直。","steps":["吸气，缓慢向前俯身，同时臀部向后移动，保持腰背挺直，哑铃沿着大腿、小腿往下移动，直到杠铃低于膝盖","吐气，臀部发力，将杠铃拉起，回到起始位置，双腿自然伸直"]}','["保持腰背挺直，避免弯腰弓背","臀部向后移动时，感受臀部和腘绳肌的拉伸","拉起杠铃时，以臀部发力为主，带动身体上升"]','[{"title":"腰部疼痛","reason":"竖脊肌有「维持脊柱稳定」的功能，腰部疼痛可能是由于竖脊肌过度紧张或在动作中脊柱没有保持中立位。\n臀大肌在罗马尼亚硬拉中的主导作用，如果臀大肌力量不足，可能导致腰部过度代偿。","solutions":["拉伸竖脊肌，强化核心肌群","强化臀大肌"]},{"title":"膝盖压力过大","reason":"股四头肌有「伸膝」的功能，膝盖压力过大可能是股四头肌过度参与动作，而臀大肌和腘绳肌发力不足。","solutions":["强化臀大肌和腘绳肌，调整动作姿势"]}]','2025-04-07 03:52:12','2025-04-07 11:52:12.829423+08:00','2','8','','','',0,0.0,'{}',0,'','','');
 INSERT INTO WORKOUT_ACTION VALUES(421,1,'Stiff Leg Deadlift','直腿硬拉','',replace('增强腘绳肌和臀大肌的力量与维度\n提高身体的稳定性和平衡能力','\n',char(10)),'resistance',8,'下肢,器械','','{"start_position":"双脚与肩同宽站立，脚尖微微向外，膝盖略微弯曲，双手正握闭握杠铃，握距略宽于肩","steps":["吸气，缓慢向前俯身，同时保持膝盖略微弯曲，将杠铃沿着小腿缓慢下放，直到身体与地面接近平行，此时背部保持挺直","吐气，收缩腘绳肌和臀大肌，将杠铃沿着小腿缓慢上拉，直到身体恢复到起始站立位置"]}','["保持膝盖略微弯曲，不要锁死，也不要弯曲","背部始终保持挺直，避免弯腰弓背","动作过程中以髋关节为轴进行屈伸"]','[{"title":"腰部疼痛","reason":"竖脊肌有「维持脊柱稳定」的功能，腰部疼痛可能是由于竖脊肌过度紧张或在动作中脊柱没有保持稳定。\n腘绳肌在直腿硬拉中起重要作用，如果腘绳肌力量不足，可能导致腰部过度代偿。","solutions":["拉伸竖脊肌，强化核心肌群","强化腘绳肌"]},{"title":"膝盖压力过大","reason":"股四头肌有「伸膝」的功能，膝盖压力过大可能是股四头肌在动作中过度发力，或者动作过程中膝盖没有保持稳定。","solutions":["强化股四头肌，注意动作规范"]}]','2025-04-07 03:54:42','2025-04-07 11:54:42.456592+08:00','2','8','','','',0,0.0,'{}',0,'','','');
 INSERT INTO WORKOUT_ACTION VALUES(422,1,'Leg Press','腿举','倒蹬',replace('增强下肢肌肉力量\n提高腿部爆发力\n改善下肢肌肉线条','\n',char(10)),'resistance',5,'下肢,器械','','{"start_position":"坐在腿举机上，背部紧贴靠背，双脚平放在踏板上，与肩同宽，脚尖略微向外。双手握住把手，调整好重量。","steps":["吸气，缓慢将踏板向身体方向拉回，直到大腿与躯干呈90度","吐气，用力将踏板向前推出，直到双腿自然伸直，但不要完全锁死膝盖"]}','["背部，尤其是下背部全程贴着靠背","腿部发力推动踏板，避免腰部借力","保持身体稳定，不要晃动"]','[{"title":"腰部压力过大","reason":"竖脊肌有「维持脊柱稳定」的功能，腰部压力过大可能是由于竖脊肌过度紧张或不够稳定，在腿举时无法有效支撑脊柱。","solutions":["拉伸竖脊肌，强化核心肌群"]},{"title":"膝盖疼痛","reason":"股四头肌有「伸膝」的功能，膝盖疼痛可能是股四头肌力量不均衡或发力方式不正确，导致膝盖承受过大压力。","solutions":["调整动作姿势，强化股四头肌"]}]','2025-04-09 15:46:53','2025-04-09 23:46:53.628012+08:00','9','9,8','','','',0,0.0,'{}',0,'','','');
+CREATE TABLE WORKOUT_ACTION_MISTAKE(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        name TEXT(255) NOT NULL DEFAULT '', --错误名称
+        reason TEXT(255) NOT NULL DEFAULT '', --常见错误原因
+        solution_direction TEXT(255) NOT NULL DEFAULT '', --解决方案
+        solution_action_ids TEXT(255) NOT NULL DEFAULT '', --解决动作
+        solution_action_text TEXT(255) NOT NULL DEFAULT '' --解决动作描述
+    
+    );
+CREATE TABLE WORKOUT_PLAN(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        status INTEGER NOT NULL DEFAULT 1, --状态;1公开 2仅自己可见 3禁用
+        title TEXT(255) NOT NULL DEFAULT '', --计划名称
+        overview TEXT(255) NOT NULL DEFAULT '', --训练计划描述
+        level INTEGER NOT NULL DEFAULT 1, --适宜什么水平的人群;1-10
+        tags TEXT(255) NOT NULL DEFAULT '', --部位标签
+        details TEXT(1000) NOT NULL DEFAULT '{}', --内容详情 JSON;在创建、更新 plan 时，根据内容统计出的动作列表 JSON
+        points TEXT(255) NOT NULL DEFAULT '', --注意事项
+        suggestions TEXT(255) NOT NULL DEFAULT '', --训练计划建议
+        estimated_duration INTEGER NOT NULL DEFAULT 0, --预计耗时;单位 min
+        equipment_ids TEXT(255) NOT NULL DEFAULT '', --所需器械 id 列表
+        muscle_ids TEXT(255) NOT NULL DEFAULT '', --该计划练到的肌肉 id 列表
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+        updated_at DATETIME, --更新时间
+        owner_id INTEGER NOT NULL DEFAULT 0 --创建人id
+    
+    );
+INSERT INTO WORKOUT_PLAN VALUES(1,0,'123','123123',1,'','{"title":"123","overview":"123123","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"杠铃卧推","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"胸部超级组","tags":[],"sets_count":3,"set_type":"combo","actions":[{"action_name":"杠铃卧推","reps":12,"unit":"次","rest_duration":0,"note":""},{"action_name":"引体向上","reps":12,"unit":"次","rest_duration":0,"note":""}],"sets":[],"note":""}]},{"text":"心肺","steps":[{"title":"HIIT 心肺","tags":[],"sets_count":3,"set_type":"free","actions":[{"action_name":"杠铃卧推","reps":12,"unit":"次","rest_duration":0,"note":""},{"action_name":"深蹲","reps":12,"unit":"次","rest_duration":0,"note":""},{"action_name":"深蹲","reps":12,"unit":"次","rest_duration":0,"note":""},{"action_name":"俯卧撑","reps":12,"unit":"次","rest_duration":0,"note":""}],"sets":[{"actions":[{"action_name":"杠铃卧推","reps":12,"unit":"次","rest_duration":0,"note":""},{"action_name":"深蹲","reps":12,"unit":"次","rest_duration":0,"note":""}],"note":""},{"actions":[{"action_name":"深蹲","reps":12,"unit":"次","rest_duration":0,"note":""}],"note":""},{"actions":[{"action_name":"俯卧撑","reps":12,"unit":"次","rest_duration":0,"note":""}],"note":""}],"note":""}]}],"sets_count":9,"actions_count":7}','[]','[]',60,'2,14','6,3,4,7,2,5,9,8,10','2025-04-02 09:43:52.521946+00:00','2025-04-02 22:31:10.017336+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(2,0,'初中级力量第一天','注意是胸腿，附带肩和三头',1,'','{"title":"初中级力量第一天","overview":"注意是胸腿，附带肩和三头","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"深蹲","reps":5,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"杠铃卧推","reps":5,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"杠铃卧推","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":5,"set_type":"normal","actions":[{"action_name":"深蹲","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"哑铃肩推","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"深蹲","reps":5,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"杠铃卧推","reps":5,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"杠铃卧推","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":5,"set_type":"normal","actions":[{"action_name":"深蹲","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"哑铃肩推","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":34,"actions_count":10}','[]','[]',60,'2,1','9,8,10,6,3,4','2025-04-02 11:02:20.503209+00:00','2025-04-02 22:14:11.357086+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(3,0,'初中级力量第二天','主项练背，附带肩和二头。',1,'','{"title":"初中级力量第二天","overview":"主项练背，附带肩和二头。","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":2,"set_type":"normal","actions":[{"action_name":"硬拉","reps":6,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"硬拉","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":4,"set_type":"normal","actions":[{"action_name":"引体向上","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"高位下拉","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":12,"actions_count":4}','[]','[]',60,'2,14,13','16,8,9,7,2,5','2025-04-02 11:06:43.714854+00:00','2025-04-02 22:13:46.686435+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(4,0,'初中级力量第4天','重复第一天的内容，胸腿+三头+肩',1,'','{"title":"初中级力量第4天","overview":"重复第一天的内容，胸腿+三头+肩","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"深蹲","reps":5,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"杠铃卧推","reps":5,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"杠铃卧推","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":5,"set_type":"normal","actions":[{"action_name":"深蹲","reps":6,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"哑铃肩推","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":17,"actions_count":5}','[]','[]',60,'2,1','9,8,10,6,3,4','2025-04-02 11:09:13.813705+00:00','2025-04-02 22:11:58.117814+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(5,0,'初中级力量第5天','背',1,'','{"title":"初中级力量第5天","overview":"背","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":2,"set_type":"normal","actions":[{"action_name":"硬拉","reps":4,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"硬拉","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"哑铃划船","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"引体向上","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"高位下拉","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"平板支撑","reps":60,"unit":"秒","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":17,"actions_count":6}','[]','[]',60,'2,1,14,13','16,8,9,7,5,15,2,12,13','2025-04-02 11:17:26.80243+00:00','2025-04-02 22:12:03.23151+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(6,0,'初中级力量第八天','重复重复再重复',1,'','{"title":"初中级力量第八天","overview":"重复重复再重复","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":5,"set_type":"normal","actions":[{"action_name":"深蹲","reps":5,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":5,"set_type":"normal","actions":[{"action_name":"杠铃卧推","reps":5,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"深蹲","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"哑铃肩推","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":16,"actions_count":4}','[]','[]',60,'2,1','9,8,10,6,3,4','2025-04-02 11:19:22.015434+00:00','2025-04-02 22:12:08.179722+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(7,0,'初中级力量第9天','背+二头',1,'','{"title":"初中级力量第9天","overview":"背+二头","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":1,"set_type":"normal","actions":[],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[],"sets":[],"note":""}]}],"sets_count":13,"actions_count":0}','[]','[]',60,'2,1,14','16,8,9,7,5,15,2,12,13','2025-04-02 11:21:44.921081+00:00','2025-04-02 22:12:13.284322+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(8,0,'uauauuaua','123123',1,'','{"title":"uauauuaua","overview":"123123","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"哑铃划船","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":3,"actions_count":1}','[]','[]',60,'1','7,5,15','2025-04-02 12:12:43+00:00','2025-04-02 22:12:48.1391+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(9,0,'为什么没有内容','123123',1,'','{"title":"为什么没有内容","overview":"123123","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"俯卧撑","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":3,"actions_count":1}','[]','[]',60,'','6,4,3','2025-04-02 12:12:54+00:00','2025-04-02 22:13:11.382107+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(10,0,'测试更新111','123123',1,'','{"title":"测试更新111","overview":"123123","timeline":[{"text":"力量","steps":[{"title":"深蹲+硬拉超级组","tags":[],"sets_count":2,"set_type":"combo","actions":[{"action_name":"深蹲","reps":12,"unit":"次","rest_duration":0,"note":""},{"action_name":"硬拉","reps":12,"unit":"次","rest_duration":0,"note":""}],"sets":[],"note":"阶段备注"}]}],"sets_count":2,"actions_count":2}','[]','[]',60,'2','9,8,10,16,7','2025-04-02 12:33:53.665131+00:00','2025-04-09 01:06:49.694705+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(11,0,'一周四练-周一','适合有一定训练经验的健身人群，更为专业、高效的训练计划，希望进一步增肌的同学可以尝试',1,'','{"title":"一周四练-周一","overview":"适合有一定训练经验的健身人群，更为专业、高效的训练计划，希望进一步增肌的同学可以尝试","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":4,"set_type":"normal","actions":[{"action_name":"杠铃卧推","reps":6,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"杠铃划船","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"上斜哑铃卧推","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"引体向上","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"肱三头肌下压","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"曲杠二头弯举","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"站姿哑铃侧平举","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":22,"actions_count":7}','[]','[]',60,'2,1,14,13','6,3,4,7,2,5,1','2025-04-06 14:59:33.561662+00:00','2025-04-07 00:22:29.096499+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(12,0,'一周四练-周二','这天都是练腿，强度很大。前一天注意休息，保证充足睡眠',1,'','{"title":"一周四练-周二","overview":"这天都是练腿，强度很大。前一天注意休息，保证充足睡眠","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":4,"set_type":"normal","actions":[{"action_name":"杠铃深蹲","reps":6,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":4,"set_type":"normal","actions":[{"action_name":"罗马尼亚硬拉","reps":6,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"坐姿腿屈伸","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"俯卧腿弯举","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"坐姿髋外展","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":4,"set_type":"normal","actions":[{"action_name":"史密斯提踵","reps":8,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":21,"actions_count":6}','["练前两小时不要进食，可以喝一些功能性饮料","强度过大可以减重量减组数，以安全为主"]','["练完及时补充快碳和蛋白"]',60,'2','9,8','2025-04-08 05:36:03.686306+00:00','2025-04-08 20:14:37.272034+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(13,2,'一周四练-周四','上身耐力组，胸肩背手臂都练',1,'','{"title":"一周四练-周四","overview":"上身耐力组，胸肩背手臂都练","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"哑铃卧推","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"高位下拉","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"杠铃肩上推举","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"坐姿划船","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"哑铃飞鸟","reps":15,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"肱三头肌绳索反握下拉","reps":15,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"曲杠二头弯举","reps":15,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":21,"actions_count":7}','[]','[]',60,'13,2,1','6,3,7,2,5,4,15,1','2025-04-09 15:39:12.898684+00:00','2025-04-09 23:39:12.898731+08:00',0);
+INSERT INTO WORKOUT_PLAN VALUES(14,2,'一周四练-周五','又是练腿的一天，注意不要感冒',1,'','{"title":"一周四练-周五","overview":"又是练腿的一天，注意不要感冒","timeline":[{"text":"力量","steps":[{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"腿举","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"罗马椅挺身","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"坐姿腿屈伸","reps":15,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"坐姿腿弯举","reps":15,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""},{"title":"","tags":[],"sets_count":3,"set_type":"normal","actions":[{"action_name":"坐姿杠铃提踵","reps":12,"unit":"次","rest_duration":90,"note":""}],"sets":[],"note":""}]}],"sets_count":15,"actions_count":5}','[]','[]',60,'9,15','9,8,16','2025-04-09 15:48:43.599086+00:00','2025-04-09 23:48:43.599139+08:00',0);
+CREATE TABLE WORKOUT_PLAN_STEP(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        title TEXT(255) NOT NULL DEFAULT '', --动作(阶段)名称
+        type TEXT(255) NOT NULL DEFAULT 'strength', --动作(阶段)类型;warmup、strength、stretch、cool_down、cardio、heart、performance
+        idx INTEGER NOT NULL DEFAULT 1, --第几个动作(阶段)
+        set_count INTEGER NOT NULL DEFAULT 1, --组数
+        set_type TEXT(255) NOT NULL DEFAULT 'normal', --组数类型; normal combo free
+        set_rest_duration INTEGER NOT NULL DEFAULT 0, --组间休息时间
+        note TEXT(255) NOT NULL DEFAULT '', --该组额外信息说明
+        workout_plan_id INTEGER NOT NULL DEFAULT 0 --所属训练计划id
+    
+    );
+INSERT INTO WORKOUT_PLAN_STEP VALUES(1,'','strength',0,3,'normal',90,'',1);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(2,'胸部超级组','strength',1,3,'combo',90,'',1);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(3,'HIIT 心肺','heart',2,3,'free',90,'',1);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(4,'','strength',0,3,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(5,'','strength',1,3,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(6,'','strength',2,3,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(7,'','strength',3,5,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(8,'','strength',4,3,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(9,'','strength',0,2,'normal',90,'',3);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(10,'','strength',1,3,'normal',90,'',3);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(11,'','strength',2,4,'normal',90,'',3);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(12,'','strength',3,3,'normal',90,'',3);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(13,'','strength',0,3,'normal',90,'',4);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(14,'','strength',1,3,'normal',90,'',4);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(15,'','strength',2,3,'normal',90,'',4);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(16,'','strength',3,5,'normal',90,'',4);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(17,'','strength',4,3,'normal',90,'',4);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(18,'','strength',0,2,'normal',90,'',5);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(19,'','strength',1,3,'normal',90,'',5);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(20,'','strength',2,3,'normal',90,'',5);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(21,'','strength',3,3,'normal',90,'',5);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(22,'','strength',4,3,'normal',90,'',5);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(23,'','strength',5,3,'normal',90,'',5);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(24,'','strength',0,5,'normal',90,'',6);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(25,'','strength',1,5,'normal',90,'',6);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(26,'','strength',2,3,'normal',90,'',6);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(27,'','strength',3,3,'normal',90,'',6);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(28,'','strength',0,1,'normal',90,'',7);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(29,'','strength',1,3,'normal',90,'',7);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(30,'','strength',2,3,'normal',90,'',7);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(31,'','strength',3,3,'normal',90,'',7);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(32,'','strength',4,3,'normal',90,'',7);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(33,'','strength',0,3,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(34,'','strength',1,3,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(35,'','strength',2,3,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(36,'','strength',3,5,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(37,'','strength',4,3,'normal',90,'',2);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(47,'深蹲+硬拉超级组','strength',0,2,'combo',30,'阶段备注',10);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(49,'','strength',0,3,'normal',90,'',8);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(50,'','strength',0,3,'normal',90,'',9);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(51,'','strength',0,4,'normal',90,'',11);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(52,'','strength',1,3,'normal',90,'',11);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(53,'','strength',2,3,'normal',90,'',11);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(54,'','strength',3,3,'normal',90,'',11);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(55,'','strength',4,3,'normal',90,'',11);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(56,'','strength',5,3,'normal',90,'',11);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(57,'','strength',6,3,'normal',90,'',11);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(58,'','strength',0,4,'normal',90,'',12);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(59,'','strength',1,4,'normal',90,'',12);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(60,'','strength',2,3,'normal',90,'',12);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(61,'','strength',3,3,'normal',90,'',12);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(62,'','strength',4,3,'normal',90,'',12);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(63,'','strength',5,4,'normal',90,'',12);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(64,'','strength',0,3,'normal',90,'',13);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(65,'','strength',1,3,'normal',90,'',13);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(66,'','strength',2,3,'normal',90,'',13);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(67,'','strength',3,3,'normal',90,'',13);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(68,'','strength',4,3,'normal',90,'',13);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(69,'','strength',5,3,'normal',90,'',13);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(70,'','strength',6,3,'normal',90,'',13);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(71,'','strength',0,3,'normal',90,'',14);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(72,'','strength',1,3,'normal',90,'',14);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(73,'','strength',2,3,'normal',90,'',14);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(74,'','strength',3,3,'normal',90,'',14);
+INSERT INTO WORKOUT_PLAN_STEP VALUES(75,'','strength',4,3,'normal',90,'',14);
+CREATE TABLE WORKOUT_PLAN_ACTION(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        idx INTEGER NOT NULL DEFAULT 1, --动作顺序;超级组、循环组会需要该字段
+        action_id INTEGER NOT NULL DEFAULT 0, --要做的动作id
+        set_idx INTEGER NOT NULL DEFAULT 1, --第几组
+        reps INTEGER NOT NULL DEFAULT 0, --数量
+        unit TEXT(255) NOT NULL DEFAULT '个', --单位
+        weight TEXT(255) NOT NULL DEFAULT '', --阻力;字符串，直接写成 60%1RM 或 12RM 或 自重、无负重等等？
+        tempo TEXT(255) NOT NULL DEFAULT '4/1/2', --节奏;4/1/2 表示离心4s，停顿1s，向心2s
+        rest_duration INTEGER NOT NULL DEFAULT 0, --间歇时间
+        note TEXT(255) NOT NULL DEFAULT '', --该组备注信息
+        workout_plan_step_id INTEGER NOT NULL DEFAULT 0 --关联的训练计划中组id
+    
+    );
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(2,0,1,0,12,'次','12RM','',0,'',2);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(3,1,2,0,12,'次','12RM','',0,'',2);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(4,0,1,0,12,'次','12RM','',0,'',3);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(5,1,3,0,12,'次','12RM','',0,'',3);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(6,0,3,1,12,'次','12RM','',0,'',3);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(7,0,8,2,12,'次','12RM','',0,'',3);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(8,0,3,0,5,'次','5RM','',90,'',4);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(9,0,1,0,5,'次','5RM','',90,'',5);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(10,0,1,0,8,'次','60%5RM','',90,'',6);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(11,0,3,0,8,'次','60%5RM','',90,'',7);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(12,0,5,0,12,'次','12RM','',90,'',8);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(13,0,6,0,6,'次','5RM','',90,'',9);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(14,0,6,0,8,'次','60%5RM','',90,'',10);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(15,0,2,0,12,'次','12RM','',90,'',11);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(16,0,10,0,12,'次','12RM','',90,'',12);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(17,0,3,0,5,'次','5RM','',90,'',13);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(18,0,1,0,5,'次','5RM','',90,'',14);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(19,0,1,0,8,'次','60%5RM','',90,'',15);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(20,0,3,0,6,'次','60%5RM','',90,'',16);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(21,0,5,0,12,'次','12RM','',90,'',17);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(22,0,6,0,4,'次','4RM','',90,'',18);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(23,0,6,0,8,'次','60%5RM','',90,'',19);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(24,0,7,0,12,'次','12RM','',90,'',20);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(25,0,2,0,12,'次','12RM','',90,'',21);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(26,0,10,0,12,'次','12RM','',90,'',22);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(27,0,4,0,60,'秒','12RM','',90,'',23);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(28,0,3,0,5,'次','5RM','',90,'',24);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(29,0,1,0,5,'次','5RM','',90,'',25);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(30,0,3,0,8,'次','60%5RM','',90,'',26);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(31,0,5,0,12,'次','12RM','',90,'',27);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(37,0,3,0,5,'次','5RM','',90,'',33);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(38,0,1,0,5,'次','5RM','',90,'',34);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(39,0,1,0,8,'次','60%5RM','',90,'',35);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(40,0,3,0,8,'次','60%5RM','',90,'',36);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(41,0,5,0,12,'次','12RM','',90,'',37);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(67,0,0,0,5,'次','5RM','',90,'',28);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(68,0,0,0,8,'次','60%5RM','',90,'',29);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(69,0,0,0,12,'次','12RM','',90,'',30);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(70,0,0,0,12,'次','12RM','',90,'',31);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(71,0,0,0,60,'秒','12RM','',90,'',32);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(72,0,1,0,12,'次','12RM','',90,'',1);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(88,0,7,0,12,'次','12RM','4/1/2',90,'',49);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(89,0,8,0,12,'次','12RM','4/1/2',90,'',50);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(90,0,1,0,6,'次','12RM','',90,'',51);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(91,0,14,0,8,'次','12RM','',90,'',52);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(92,0,28,0,12,'次','12RM','',90,'',53);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(93,0,2,0,12,'次','12RM','',90,'',54);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(94,0,74,0,12,'次','12RM','',90,'',55);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(95,0,13,0,12,'次','12RM','',90,'',56);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(96,0,23,0,12,'次','12RM','',90,'',57);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(97,0,16,0,6,'次','12RM','',90,'',58);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(98,0,420,0,6,'次','12RM','',90,'',59);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(99,0,124,0,12,'次','12RM','',90,'',60);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(100,0,290,0,12,'次','12RM','',90,'',61);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(101,0,39,0,12,'次','12RM','',90,'',62);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(102,0,367,0,8,'次','12RM','',90,'',63);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(103,0,3,0,12,'次','12RM','4/1/2',90,'',47);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(104,1,6,0,12,'次','12RM','4/1/2',90,'',47);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(105,0,64,0,12,'次','12RM','4/1/2',90,'',64);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(106,0,10,0,12,'次','12RM','4/1/2',90,'',65);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(107,0,15,0,12,'次','12RM','4/1/2',90,'',66);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(108,0,42,0,12,'次','12RM','4/1/2',90,'',67);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(109,0,66,0,15,'次','18RM','4/1/2',90,'',68);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(110,0,83,0,15,'次','18RM','4/1/2',90,'',69);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(111,0,13,0,15,'次','18RM','4/1/2',90,'',70);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(112,0,422,0,12,'次','12RM','4/1/2',90,'',71);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(113,0,36,0,12,'次','12RM','4/1/2',90,'',72);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(114,0,124,0,15,'次','15RM','4/1/2',90,'',73);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(115,0,91,0,15,'次','15RM','4/1/2',90,'',74);
+INSERT INTO WORKOUT_PLAN_ACTION VALUES(116,0,175,0,12,'次','12RM','4/1/2',90,'',75);
+CREATE TABLE COACH(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        nickname TEXT(255) NOT NULL DEFAULT '', --昵称
+        avatar_url TEXT(255) NOT NULL DEFAULT '', --头像链接
+        bio TEXT(1000) NOT NULL DEFAULT '', --个人简介
+        specialties TEXT(255) NOT NULL DEFAULT '', --专长领域，逗号分隔
+        certification TEXT(1000) NOT NULL DEFAULT '{}', --认证信息，JSON格式
+        experience_years INTEGER NOT NULL DEFAULT 0, --从业年限
+        coach_type INTEGER NOT NULL DEFAULT 1, --教练类型;1私教 2团课 3在线
+        status INTEGER NOT NULL DEFAULT 1, --状态;1正常 2暂停服务 3封禁
+        config TEXT(1000) NOT NULL DEFAULT '{}', --配置信息
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+        updated_at DATETIME --更新时间
+    
+    );
+INSERT INTO COACH VALUES(1,'ttt@funzm.com','','','','{}',0,1,1,'{}','2025-04-02T17:42:25+08:00','2025-04-02T17:42:25+08:00');
+CREATE TABLE COACH_ACCOUNT(
+    
+        provider_type TEXT(255) NOT NULL, --帐号授权方式;email、phone、wxapp 等等
+        provider_id TEXT(255) NOT NULL, --帐号唯一标志;如果 email，这里就是 email 帐号，可以发送验证码来验证
+        provider_arg1 TEXT(255) NOT NULL DEFAULT '', --帐号授权参数
+        provider_arg2 TEXT(255) NOT NULL DEFAULT '', --授权参数2
+        provider_arg3 TEXT(255) NOT NULL DEFAULT '', --授权参数3;可以放很多额外信息，比如 expires
+        coach_id INTEGER NOT NULL DEFAULT 0, --帐号关联的用户id
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --帐号创建时间
+
+        PRIMARY KEY (provider_type, provider_id)
+    );
+INSERT INTO COACH_ACCOUNT VALUES('email_password','ttt@funzm.com','$2a$10$DnmlfgRsF/ArxvCiu9CkrOc0euF4bsaU4aPsJcMysm0UHqVUVRdsW','','',1,'2025-04-02T17:42:25+08:00');
+CREATE TABLE COACH_RELATIONSHIP(
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        coach_id INTEGER NOT NULL, --教练id
+        student_id INTEGER NOT NULL, --学员id（也是教练id）
+        status INTEGER NOT NULL DEFAULT 1, --关系状态;1待确认 2已确认 3已拒绝 4已解除
+        role INTEGER NOT NULL DEFAULT 1, --关系角色;1教练-学员 2合作教练
+        note TEXT(255) NOT NULL DEFAULT '', --备注信息
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+        updated_at DATETIME, --更新时间
+        
+        FOREIGN KEY (coach_id) REFERENCES COACH(id),
+        FOREIGN KEY (student_id) REFERENCES COACH(id)
+    );
+CREATE TABLE COACH_PROFILE(
+        coach_id INTEGER NOT NULL PRIMARY KEY, --教练id
+        name TEXT NOT NULL DEFAULT '', --名称
+        age INTEGER NOT NULL DEFAULT 0, --年龄
+        gender INTEGER NOT NULL DEFAULT 1, --性别
+        body_type INTEGER NOT NULL DEFAULT 2, --体型;1偏瘦 2中等 3偏胖 4肌肉 5匀称
+        height INTEGER NOT NULL DEFAULT 0, --身高，单位 cm
+        weight REAL NOT NULL DEFAULT 0, --体重，单位 kg
+        body_fat_percent INTEGER NOT NULL DEFAULT 0, --体脂率，12 就是 12%
+        risk_screenings TEXT(1000) NOT NULL DEFAULT '{}', --健康风险评估
+        training_goals TEXT(1000) NOT NULL DEFAULT '{}', --训练目标
+        training_frequency INTEGER NOT NULL DEFAULT 1, --训练频率;一周几次
+        training_preferences TEXT(1000) NOT NULL DEFAULT '{}', --训练偏好
+        diet_preferences TEXT(1000) NOT NULL DEFAULT '{}' --饮食偏好
+    );
+CREATE TABLE COACH_PHYSICAL_TEST(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        action_ids TEXT(255) NOT NULL DEFAULT '', --包含的动作
+        result TEXT(255) NOT NULL DEFAULT '', --评估结果
+        details TEXT(1000) NOT NULL DEFAULT '{}', --评估详情
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+        coach_id INTEGER NOT NULL DEFAULT 0 --教练id
+    
+    );
+CREATE TABLE COACH_BODY_MEASUREMENT(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        height INTEGER NOT NULL DEFAULT 0, --身高;单位厘米
+        weight REAL NOT NULL DEFAULT 0, --体重;单位kg
+        body_fat_percentage REAL NOT NULL DEFAULT 0, --体脂率
+        heart_rate INTEGER NOT NULL DEFAULT 0, --静息心率;次每分钟
+        chest REAL NOT NULL DEFAULT 0, --胸围
+        waist REAL NOT NULL DEFAULT 0, --腰围
+        hip REAL NOT NULL DEFAULT 0, --臀围
+        arm REAL NOT NULL DEFAULT 0, --臂围
+        thigh REAL NOT NULL DEFAULT 0, --大腿围度
+        notes TEXT(255) NOT NULL DEFAULT '', --额外备注信息
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --体测时间
+        coach_id INTEGER NOT NULL DEFAULT 0 --教练id
+    
+    );
+CREATE TABLE WORKOUT_DAY(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        time TEXT NOT NULL DEFAULT '', --训练时间;年月日时分秒
+        status INTEGER NOT NULL DEFAULT 1, --训练日状态;1等待进行 2进行中 3已完成 4已过期 5手动作废
+        estimated_duration INTEGER NOT NULL DEFAULT 0, --预计时间
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+        updated_at DATETIME, --更新时间
+        coach_id INTEGER NOT NULL DEFAULT 0, --教练id
+        student_id INTEGER NOT NULL DEFAULT 0, --学员id
+        workout_plan_id INTEGER NOT NULL DEFAULT 0 --关联的训练计划id
+    
+    );
+CREATE TABLE WORKOUT_DAY_STEP(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        idx INTEGER NOT NULL, --第几阶段
+        set_idx INTEGER NOT NULL, --第几组
+        remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
+        feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
+        set_details TEXT(1000) NOT NULL DEFAULT '{}', --组详情;JSON 数组
+        completed INTEGER NOT NULL, --是否完成;1完成 2未完成
+        workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日id
+        workout_plan_step_id INTEGER NOT NULL DEFAULT 0 --训练计划组id
+    
+    );
+CREATE TABLE WORKOUT_DAY_ACTION(
+    
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        action_id INTEGER NOT NULL DEFAULT 0, --做的动作id
+        set_idx INTEGER NOT NULL DEFAULT 0, --第几组
+        reps INTEGER NOT NULL DEFAULT 0, --实际数量
+        unit TEXT(255) NOT NULL DEFAULT '个', --单位
+        weight TEXT(255) NOT NULL DEFAULT '', --实际阻力;字符串 12kg 24lbs
+        remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
+        feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
+        extra_medias TEXT(1000) NOT NULL DEFAULT '{}', --拍照、录像记录;存 字符串列表
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间;CURRENT_TIMESTAMP
+        workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日 id
+        workout_day_step_id INTEGER NOT NULL DEFAULT 0, --训练日哪个组
+        workout_plan_action_id INTEGER NOT NULL DEFAULT 0 --
+    
+    );
+DELETE FROM sqlite_sequence;
+INSERT INTO sqlite_sequence VALUES('MUSCLE',18);
+INSERT INTO sqlite_sequence VALUES('EQUIPMENT',42);
+INSERT INTO sqlite_sequence VALUES('WORKOUT_ACTION',422);
+INSERT INTO sqlite_sequence VALUES('COACH',1);
+INSERT INTO sqlite_sequence VALUES('WORKOUT_PLAN',14);
+INSERT INTO sqlite_sequence VALUES('WORKOUT_PLAN_STEP',75);
+INSERT INTO sqlite_sequence VALUES('WORKOUT_PLAN_ACTION',116);
+CREATE UNIQUE INDEX version_unique ON schema_migrations (version);
+CREATE INDEX idx_coach_student ON COACH_RELATIONSHIP(coach_id, student_id);
+CREATE INDEX idx_workout_action_sort ON WORKOUT_ACTION(sort_idx);
+CREATE INDEX idx_workout_action_pattern ON WORKOUT_ACTION(pattern);
+COMMIT;

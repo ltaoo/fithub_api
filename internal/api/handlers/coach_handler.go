@@ -117,7 +117,7 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 	}
 
 	// Create a Coach struct to insert
-	newCoach := struct {
+	the_coach_created := struct {
 		Nickname  string
 		Config    string
 		CreatedAt string
@@ -132,7 +132,7 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 	// Insert the coach record and get the ID
 	result := h.db.Exec(
 		"INSERT INTO COACH (nickname, config, created_at, updated_at) VALUES (?, ?, ?, ?)",
-		newCoach.Nickname, newCoach.Config, newCoach.CreatedAt, newCoach.UpdatedAt,
+		the_coach_created.Nickname, the_coach_created.Config, the_coach_created.CreatedAt, the_coach_created.UpdatedAt,
 	)
 
 	if result.Error != nil {
@@ -141,9 +141,9 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 	}
 
 	// Get the last inserted ID
-	var coachId int
+	var coach_id int
 	err = h.db.Raw("SELECT id FROM COACH WHERE nickname = ? AND created_at = ? ORDER BY id DESC LIMIT 1",
-		newCoach.Nickname, newCoach.CreatedAt).Row().Scan(&coachId)
+		the_coach_created.Nickname, the_coach_created.CreatedAt).Row().Scan(&coach_id)
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to retrieve coach ID", "data": nil})
@@ -166,7 +166,7 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 	// Create Account type is email_password
 
 	// Email + Password authentication
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hashed_pwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to hash password", "data": nil})
@@ -174,7 +174,7 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 	}
 	tx := h.db.Exec(
 		"INSERT INTO COACH_ACCOUNT (provider_type, provider_id, provider_arg1, created_at, coach_id) VALUES (?, ?, ?, ?, ?)",
-		req.Type, req.Email, string(hashedPassword), time.Now().Format(time.RFC3339), coachId,
+		req.Type, req.Email, string(hashed_pwd), time.Now().Format(time.RFC3339), coach_id,
 	)
 	if tx.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create coach account", "data": nil})
@@ -182,7 +182,7 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 	}
 
 	// Generate JWT token
-	token, err := models.GenerateJWT(string(coachId))
+	token, err := models.GenerateJWT(coach_id)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to generate token", "data": nil})
 		return
@@ -198,7 +198,7 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 	// }
 
 	response := models.AuthResponse{
-		Token:  token,
+		Token:  "Bearer " + token,
 		Status: "success",
 	}
 
@@ -218,8 +218,8 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 		return
 	}
 
-	var coachId int
-	var providerArg1 string
+	var coach_id int
+	var provider_arg1 string
 	var coach Coach
 
 	// Determine authentication method
@@ -233,7 +233,7 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 			req.Type, req.Email,
 		).Row()
 
-		err := row.Scan(&coachId, &providerArg1)
+		err := row.Scan(&coach_id, &provider_arg1)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Invalid email or password", "data": nil})
@@ -244,7 +244,7 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 		}
 
 		// Verify password
-		err = bcrypt.CompareHashAndPassword([]byte(providerArg1), []byte(req.Password))
+		err = bcrypt.CompareHashAndPassword([]byte(provider_arg1), []byte(req.Password))
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Invalid email or password", "data": nil})
 			return
@@ -258,11 +258,11 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 	// Get coach details
 	row := h.db.Raw(
 		"SELECT id, nickname, avatar_url, config, created_at, updated_at FROM COACH WHERE id = ?",
-		coachId,
+		coach_id,
 	).Row()
 
 	// 添加日志以便调试
-	h.logger.Info("Attempting to fetch coach with ID: %v", coachId)
+	h.logger.Info("Attempting to fetch coach with ID: %v", coach_id)
 
 	err := row.Scan(&coach.Id, &coach.Nickname, &coach.AvatarURL, &coach.Config, &coach.CreatedAt, &coach.UpdatedAt)
 	if err != nil {
@@ -278,7 +278,7 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 	}
 
 	// Generate JWT token
-	token, err := models.GenerateJWT(string(coachId))
+	token, err := models.GenerateJWT(coach_id)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to generate token", "data": nil})
 		return
@@ -286,7 +286,7 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 
 	// Return response
 	response := models.AuthResponse{
-		Token:  token,
+		Token:  "Bearer " + token,
 		Status: "success",
 	}
 

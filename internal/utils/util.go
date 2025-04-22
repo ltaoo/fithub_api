@@ -14,6 +14,10 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+func ThisIsMyHelperFunction() string {
+	return "hello"
+}
+
 type User struct {
 	Id uint `json:"id"`
 	// 其他字段...

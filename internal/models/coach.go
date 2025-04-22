@@ -96,65 +96,60 @@ const (
 // AuthResponse represents the response for authentication operations
 type AuthResponse struct {
 	Token  string `json:"token"`
-	Coach  Coach  `json:"coach"`
 	Status string `json:"status"`
 }
 
 // JWTConfig holds JWT configuration
 type JWTConfig struct {
-	SecretKey     string
+	SecretKey     []byte
 	TokenDuration time.Duration
 }
 
 // Claims represents the JWT claims
 type Claims struct {
-	CoachId string `json:"coach_id"`
-	jwt.RegisteredClaims
+	Id        float64 `json:"id"`
+	ExpiresAt float64 `json:"expires_at"`
+	Issuer    string  `json:"issuer"`
 }
 
 // Default JWT configuration
 var DefaultJWTConfig = JWTConfig{
-	SecretKey:     "your-secret-key-change-in-production", // Should be loaded from environment variables
-	TokenDuration: 24 * time.Hour,                         // 24 hours
+	SecretKey:     []byte("your-secret-key-change-in-production"), // Should be loaded from environment variables
+	TokenDuration: 24 * time.Hour,                                 // 24 hours
 }
 
 // Helper function to generate JWT token
-func GenerateJWT(coachId string) (string, error) {
-	expirationTime := time.Now().Add(DefaultJWTConfig.TokenDuration)
+func GenerateJWT(coach_id int) (string, error) {
+	expiration_time := time.Now().Add(DefaultJWTConfig.TokenDuration)
 
-	claims := &Claims{
-		CoachId: coachId,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer:    "myapi",
-			Subject:   coachId,
-		},
+	fmt.Println("before generate claims")
+	fmt.Println(coach_id)
+	claims := jwt.MapClaims{
+		"id":         coach_id,
+		"expires_at": jwt.NewNumericDate(expiration_time),
+		"issuer":     "top.fithub",
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(DefaultJWTConfig.SecretKey))
+	str, err := token.SignedString(DefaultJWTConfig.SecretKey)
 
 	if err != nil {
 		return "", err
 	}
 
-	return tokenString, nil
+	return str, nil
 }
 
 // ParseJWT parses and validates a JWT token
-func ParseJWT(tokenString string) (*Claims, error) {
+func ParseJWT(str string) (*Claims, error) {
 	// Remove "Bearer " prefix if present
-	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+	str = strings.TrimPrefix(str, "Bearer ")
+	token, err := jwt.Parse(str, func(token *jwt.Token) (interface{}, error) {
 		// Validate the signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(DefaultJWTConfig.SecretKey), nil
+		return DefaultJWTConfig.SecretKey, nil
 	})
 
 	if err != nil {
@@ -164,7 +159,15 @@ func ParseJWT(tokenString string) (*Claims, error) {
 	if !token.Valid {
 		return nil, errors.New("invalid token")
 	}
-
+	v, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, errors.New("invalid token")
+	}
+	claims := &Claims{
+		Id:        v["id"].(float64),
+		ExpiresAt: v["expires_at"].(float64),
+		Issuer:    v["issuer"].(string),
+	}
 	return claims, nil
 }
 
@@ -187,7 +190,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// Set coach ID in context
-		c.Set("coachId", claims.CoachId)
+		c.Set("coachId", claims.Id)
 		c.Next()
 	}
 }

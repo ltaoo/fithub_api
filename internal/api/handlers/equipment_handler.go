@@ -25,13 +25,25 @@ func NewEquipmentHandler(db *gorm.DB, logger *logger.Logger) *EquipmentHandler {
 }
 
 // GetMuscles retrieves all muscles
-func (h *EquipmentHandler) GetEquipments(c *gin.Context) {
+func (h *EquipmentHandler) FetchEquipmentList(c *gin.Context) {
 	var equipments []models.Equipment
 
 	// Get query parameters for filtering
+	type RequestPayload struct {
+		Ids []int `json:"ids"`
+	}
+	var request RequestPayload
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
 
 	// Start with base query
 	query := h.db
+
+	if len(request.Ids) != 0 {
+		query = query.Where("id IN (?)", request.Ids)
+	}
 
 	result := query.Find(&equipments)
 	if result.Error != nil {

@@ -36,6 +36,7 @@ type WorkoutPlanStep struct {
 	SetType         string `json:"set_type"`
 	SetCount        int    `json:"set_count"`
 	SetRestDuration int    `json:"set_rest_duration"`
+	SetWeight       string `json:"set_weight"`
 	Note            string `json:"note"`
 	WorkoutPlanId   int    `json:"workout_plan_id"`
 
@@ -53,12 +54,14 @@ type WorkoutPlanAction struct {
 	ActionId          int    `json:"action_id"`
 	SetIdx            int    `json:"set_idx"`
 	Reps              int    `json:"reps" gorm:"default:12"`
-	Unit              string `json:"unit" gorm:"default:'次'"`
+	RepsUnit          string `json:"reps_unit" gorm:"default:'次'"`
 	Weight            string `json:"weight"`
 	Tempo             string `json:"tempo" gorm:"default:'4/1/2'"`
 	RestDuration      int    `json:"rest_duration" gorm:"default:90"`
 	Note              string `json:"note"`
 	WorkoutPlanStepId int    `json:"workout_plan_step_id"`
+
+	Action WorkoutAction `json:"action" gorm:"foreignKey:ActionId"`
 }
 
 func (WorkoutPlanAction) TableName() string {
