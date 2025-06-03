@@ -6,7 +6,7 @@ import (
 
 // User 代表系统中的用户
 type User struct {
-	ID           uint      `json:"id"`
+	Id           int       `json:"id"`
 	Username     string    `json:"username"`
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"password_hash"`

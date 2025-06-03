@@ -72,29 +72,31 @@ type WorkoutDayId struct {
 	Id int `json:"id"`
 }
 
-func (h *WorkoutDayHandler) FetchRunningWorkoutDay(c *gin.Context) {
-	var plan models.WorkoutDay
-	// 使用 Preload 预加载关联的 Steps 和 Actions
-	result := h.db.
+func (h *WorkoutDayHandler) FetchStartedWorkoutDay(c *gin.Context) {
+	id := int(c.GetFloat64("id"))
+
+	var workout_days []models.WorkoutDay
+	r := h.db.
 		Where("status = ?", int(models.WorkoutDayStatusStarted)).
-		First(&plan)
+		Where("student_id = ?", id).
+		Find(&workout_days)
 
-	if result.Error == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout day not found", "data": nil})
+	if r.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": r.Error.Error(), "data": nil})
 		return
 	}
 
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": result.Error.Error(), "data": nil})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day retrieved successfully", "data": plan})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day retrieved successfully", "data": gin.H{
+		"list": workout_days,
+	}})
 }
 
 func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
-	var id WorkoutDayId
-	if err := c.ShouldBindJSON(&id); err != nil {
+	id := int(c.GetFloat64("id"))
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
@@ -103,10 +105,8 @@ func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 	// 使用 Preload 预加载关联的 Steps 和 Actions
 	result := h.db.
 		Preload("WorkoutPlan").
-		Preload("WorkoutPlan.Steps").
-		Preload("WorkoutPlan.Steps.Actions").
-		Preload("WorkoutPlan.Steps.Actions.Action").
-		Where("id = ?", id.Id).
+		Where("id = ?", body.Id).
+		Where("student_id = ?", id).
 		First(&workout_day)
 
 	if result.Error == gorm.ErrRecordNotFound {
@@ -119,41 +119,20 @@ func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 		return
 	}
 
-	body := gin.H{
-		"id":            workout_day.Id,
-		"status":        workout_day.Status,
-		"started_at":    workout_day.StartedAt,
-		"pending_steps": workout_day.PendingSteps,
-		"steps":         workout_day.WorkoutPlan.Steps,
-		"workout_plan":  workout_day.WorkoutPlan,
+	data := gin.H{
+		"id":              workout_day.Id,
+		"status":          workout_day.Status,
+		"started_at":      workout_day.StartedAt,
+		"pending_steps":   workout_day.PendingSteps,
+		"updated_details": workout_day.UpdatedDetails,
+		"workout_plan":    workout_day.WorkoutPlan,
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day retrieved successfully", "data": body})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day retrieved successfully", "data": data})
 }
 
-func (h *WorkoutDayHandler) StartWorkoutDay(c *gin.Context) {
-	var id WorkoutDayId
-	if err := c.ShouldBindJSON(&id); err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
-		return
-	}
-
-	var day models.WorkoutDay
-	if result := h.db.First(&day, id.Id); result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout day not found", "data": nil})
-		return
-	}
-
-	day.Status = int(models.WorkoutDayStatusStarted)
-	now := time.Now().UTC()
-	day.StartedAt = &now
-	h.db.Save(&day)
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day started successfully", "data": gin.H{"id": day.Id}})
-}
-
-func (h *WorkoutDayHandler) FinishWorkoutDay(c *gin.Context) {
-	// var id WorkoutDayId
+func (h *WorkoutDayHandler) UpdateWorkoutDayPlanDetails(c *gin.Context) {
+	id := int(c.GetFloat64("id"))
 	var body struct {
 		Id   int    `json:"id"`
 		Data string `json:"data"`
@@ -162,93 +141,25 @@ func (h *WorkoutDayHandler) FinishWorkoutDay(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
-
+	// if body.Data == "" {
+	// 	c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Missing the details", "data": nil})
+	// 	return
+	// }
 	var day models.WorkoutDay
-	if result := h.db.First(&day, body.Id); result.Error != nil {
+	if result := h.db.Where("student_id = ?", id).First(&day, body.Id); result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout day not found", "data": nil})
 		return
 	}
-
-	day.Status = int(models.WorkoutDayStatusFinished)
-	if body.Data != "" {
-		day.PendingSteps = body.Data
-	}
+	day.UpdatedDetails = body.Data
 	now := time.Now().UTC()
-	day.FinishedAt = &now
+	day.UpdatedAt = &now
 	h.db.Save(&day)
 
-	type WorkoutDayPendingAction struct {
-		StepIdx     int     `json:"step_idx"`
-		SetIdx      int     `json:"set_idx"`
-		ActIdx      int     `json:"act_idx"`
-		ActionId    int     `json:"action_id"`
-		Reps        int     `json:"reps"`
-		RepsUnit    string  `json:"reps_unit"`
-		Weight      float64 `json:"weight"`
-		WeightUnit  string  `json:"weight_unit"`
-		Remark      string  `json:"remark"`
-		Completed   bool    `json:"completed"`
-		CompletedAt int     `json:"completed_at"`
-	}
-
-	type WorkoutDayPendingData struct {
-		StepIdx int                       `json:"step_idx"`
-		SetIdx  int                       `json:"set_idx"`
-		Data    []WorkoutDayPendingAction `json:"data"`
-	}
-
-	var pending_data WorkoutDayPendingData
-	if day.PendingSteps != "" {
-		fmt.Println(day.PendingSteps)
-		if err := json.Unmarshal([]byte(day.PendingSteps), &pending_data); err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 600, "msg": "The PendingSteps has something wrong", "data": nil})
-			return
-		}
-		for _, action := range pending_data.Data {
-			if action.Completed {
-				// Create workout action history record
-				history := models.WorkoutActionHistory{
-					WorkoutDayId: body.Id,
-					StudentId:    int(day.StudentId),
-					ActionId:     action.ActionId,
-					Reps:         action.Reps,
-					RepsUnit:     action.RepsUnit,
-					Weight:       int(action.Weight),
-					WeightUnit:   action.WeightUnit,
-					Remark:       action.Remark,
-					CreatedAt:    time.Unix(int64(action.CompletedAt), 0),
-				}
-
-				if result := h.db.Create(&history); result.Error != nil {
-					h.logger.Error("Failed to create workout action history", result.Error)
-				}
-			}
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day finished successfully", "data": gin.H{"id": day.Id}})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day started successfully", "data": gin.H{"id": day.Id}})
 }
 
-func (h *WorkoutDayHandler) GiveUpWorkoutDay(c *gin.Context) {
-	var id WorkoutDayId
-	if err := c.ShouldBindJSON(&id); err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
-		return
-	}
-
-	var day models.WorkoutDay
-	if result := h.db.First(&day, id.Id); result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout day not found", "data": nil})
-		return
-	}
-
-	day.Status = int(models.WorkoutDayStatusGiveUp)
-	h.db.Save(&day)
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day finished successfully", "data": gin.H{"id": day.Id}})
-}
-
-func (h *WorkoutDayHandler) UpdateWorkoutDaySteps(c *gin.Context) {
+func (h *WorkoutDayHandler) UpdateWorkoutDayStepProgress(c *gin.Context) {
+	id := int(c.GetFloat64("id"))
 	// 绑定更新的数据
 	var body struct {
 		Id   int    `json:"id"`
@@ -261,7 +172,7 @@ func (h *WorkoutDayHandler) UpdateWorkoutDaySteps(c *gin.Context) {
 
 	// 先获取现有的计划
 	var existing_day models.WorkoutDay
-	if result := h.db.First(&existing_day, body.Id); result.Error != nil {
+	if result := h.db.Where("student_id = ?", id).First(&existing_day, body.Id); result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout day not found", "data": nil})
 			return
@@ -295,14 +206,148 @@ func (h *WorkoutDayHandler) UpdateWorkoutDaySteps(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day updated successfully", "data": gin.H{"id": existing_day.Id}})
 }
 
-func (h *WorkoutDayHandler) DeleteWorkoutDay(c *gin.Context) {
-	var id WorkoutDayId
-	if err := c.ShouldBindJSON(&id); err != nil {
+func (h *WorkoutDayHandler) StartWorkoutDay(c *gin.Context) {
+	id := int(c.GetFloat64("id"))
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
 
-	result := h.db.Where("id = ?", id.Id).Delete(&models.WorkoutDay{})
+	var day models.WorkoutDay
+	if result := h.db.Where("student_id = ?", id).First(&day, body.Id); result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout day not found", "data": nil})
+		return
+	}
+
+	day.Status = int(models.WorkoutDayStatusStarted)
+	now := time.Now().UTC()
+	day.StartedAt = &now
+	h.db.Save(&day)
+
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day started successfully", "data": gin.H{"id": day.Id}})
+}
+
+func (h *WorkoutDayHandler) FinishWorkoutDay(c *gin.Context) {
+	id := int(c.GetFloat64("id"))
+	var body struct {
+		Id   int    `json:"id"`
+		Data string `json:"data"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	var day models.WorkoutDay
+	if result := h.db.Where("student_id = ?", id).First(&day, body.Id); result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout day not found", "data": nil})
+		return
+	}
+
+	day.Status = int(models.WorkoutDayStatusFinished)
+	if body.Data != "" {
+		day.PendingSteps = body.Data
+	}
+	now := time.Now().UTC()
+	day.FinishedAt = &now
+	h.db.Save(&day)
+
+	type WorkoutDayPendingAction struct {
+		Idx         int     `json:"idx"`
+		ActionId    int     `json:"action_id"`
+		Reps        int     `json:"reps"`
+		RepsUnit    string  `json:"reps_unit"`
+		Weight      float64 `json:"weight"`
+		WeightUnit  string  `json:"weight_unit"`
+		Remark      string  `json:"remark"`
+		Completed   bool    `json:"completed"`
+		CompletedAt int     `json:"completed_at"`
+		Time1       *int    `json:"time1"`
+		Time2       *int    `json:"time2"`
+		Time3       *int    `json:"time3"`
+	}
+
+	type WorkoutDayPendingSet struct {
+		StepIdx int                       `json:"step_idx"`
+		Idx     int                       `json:"idx"`
+		Actions []WorkoutDayPendingAction `json:"actions"`
+	}
+
+	type WorkoutDayPendingData250424 struct {
+		Version string                 `json:"v"`
+		StepIdx int                    `json:"step_idx"`
+		SetIdx  int                    `json:"set_idx"`
+		Sets    []WorkoutDayPendingSet `json:"sets"`
+	}
+
+	var pending_data WorkoutDayPendingData250424
+	if day.PendingSteps != "" {
+		fmt.Println(day.PendingSteps)
+		if err := json.Unmarshal([]byte(day.PendingSteps), &pending_data); err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 600, "msg": "The PendingSteps has something wrong", "data": nil})
+			return
+		}
+		for _, set := range pending_data.Sets {
+			for _, act := range set.Actions {
+				if act.Completed {
+					// Create workout action history record
+					history := models.WorkoutActionHistory{
+						WorkoutDayId:    body.Id,
+						StudentId:       int(day.StudentId),
+						WorkoutActionId: act.ActionId,
+						Reps:            act.Reps,
+						RepsUnit:        act.RepsUnit,
+						Weight:          int(act.Weight),
+						WeightUnit:      act.WeightUnit,
+						CreatedAt:       time.Unix(int64(act.CompletedAt), 0),
+					}
+
+					if result := h.db.Create(&history); result.Error != nil {
+						h.logger.Error("Failed to create workout action history", result.Error)
+					}
+				}
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day finished successfully", "data": gin.H{"id": day.Id}})
+}
+
+func (h *WorkoutDayHandler) GiveUpWorkoutDay(c *gin.Context) {
+	id := int(c.GetFloat64("id"))
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	var day models.WorkoutDay
+	if result := h.db.Where("student_id = ?", id).First(&day, body.Id); result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout day not found", "data": nil})
+		return
+	}
+
+	day.Status = int(models.WorkoutDayStatusGiveUp)
+	h.db.Save(&day)
+
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day finished successfully", "data": gin.H{"id": day.Id}})
+}
+func (h *WorkoutDayHandler) DeleteWorkoutDay(c *gin.Context) {
+	id := int(c.GetFloat64("id"))
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	result := h.db.Where("student_id = ?", id).Where("id = ?", body.Id).Delete(&models.WorkoutDay{})
 	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete workout day", "data": nil})
 		return
@@ -326,79 +371,54 @@ type WorkoutDayFilter struct {
 }
 
 func (h *WorkoutDayHandler) FetchWorkoutDayList(c *gin.Context) {
-	var plans []models.WorkoutDay
+	id := int(c.GetFloat64("id"))
+	var body struct {
+		models.Pagination
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
 
-	// Get query parameters for filtering
-	level := c.Query("level")
-	tag := c.Query("tag")
-	muscle := c.Query("muscle")
-	cursor := c.Query("cursor")
-	pageSize := c.Query("page_size")
+	var days []models.WorkoutDay
 
 	// Get pagination parameters
 	limit := 10 // default page size
 
-	if pageSize != "" {
-		if parsedSize, err := strconv.Atoi(pageSize); err == nil && parsedSize > 0 {
-			limit = parsedSize
-		}
+	if body.PageSize != 0 {
+		limit = body.PageSize
 	}
 
 	// Start with base query
 	query := h.db
-
-	// Apply cursor pagination if cursor is provided
-	if cursor != "" {
-		if cursorID, err := strconv.Atoi(cursor); err == nil {
-			query = query.Where("id > ?", cursorID)
-		}
-	}
-
-	// Apply filters if provided
-	if level != "" {
-		levelInt, err := strconv.Atoi(level)
-		if err == nil {
-			query = query.Where("level = ?", levelInt)
-		}
-	}
-
-	if tag != "" {
-		query = query.Where("tags LIKE ?", "%"+tag+"%")
-	}
-
-	if muscle != "" {
-		query = query.Where("target_muscle_ids LIKE ?", "%"+muscle+"%")
-	}
-
-	// Add ordering and limit
-	// query = query.Order("id asc").Limit(limit + 1)
+	query = query.Where("student_id = ?", id)
 	query = query.Order("created_at desc").Limit(limit + 1)
 
 	// Execute the query
-	result := query.Find(&plans)
+	result := query.Find(&days)
 	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout days", "data": nil})
 		return
 	}
 
-	hasMore := false
-	nextCursor := ""
+	has_more := false
+	next_cursor := ""
 
 	// Check if there are more results
-	if len(plans) > limit {
-		hasMore = true
-		plans = plans[:limit]                             // Remove the extra item we fetched
-		nextCursor = strconv.Itoa(int(plans[limit-1].Id)) // Get the last item's ID as next cursor
+	if len(days) > limit {
+		has_more = true
+		days = days[:limit]                               // Remove the extra item we fetched
+		next_cursor = strconv.Itoa(int(days[limit-1].Id)) // Get the last item's ID as next cursor
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
 		"data": gin.H{
-			"list":        plans,
+			"list":        days,
 			"page_size":   limit,
-			"has_more":    hasMore,
-			"next_marker": nextCursor,
+			"has_more":    has_more,
+			"next_marker": next_cursor,
 		},
 	})
 }

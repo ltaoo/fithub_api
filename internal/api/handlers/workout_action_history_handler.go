@@ -24,34 +24,56 @@ func NewWorkoutActionHistoryHandler(db *gorm.DB, logger *logger.Logger) *Workout
 	}
 }
 
-// FetchMuscleList retrieves all muscles
+// 获取健身动作历史记录
 func (h *WorkoutActionHistoryHandler) FetchWorkoutActionHistoryList(c *gin.Context) {
-	var histories []models.WorkoutActionHistory
+	uid := int(c.GetFloat64("id"))
 
-	id, existing := c.Get("id")
-	if !existing {
-		c.JSON(http.StatusOK, gin.H{"code": 900, "msg": "Please login", "data": nil})
-		return
-	}
 	type Body struct {
 		models.Pagination
+		WorkoutDayId    int    `json:"workout_day_id"`
+		WorkoutActionId int    `json:"workout_action_id"`
+		OrderBy         string `json:"order_by"`
 	}
 	var body Body
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
+
+	offset := (body.Page - 1) * body.PageSize
+
 	// Start with base query
-	query := h.db.Preload("Action")
+	query := h.db.Preload("WorkoutAction")
+	if body.WorkoutDayId != 0 {
+		query = query.Where("workout_day_id = ?", body.WorkoutDayId)
+	}
+	if body.WorkoutActionId != 0 {
+		query = query.Where("action_id = ?", body.WorkoutActionId)
+	}
 
-	query = query.Where("student_id = ?", id)
-	query = query.Order("created_at desc").Limit(body.PageSize + 1)
+	query = query.Where("student_id = ?", uid)
+	if body.WorkoutDayId != 0 {
+		query = query.Order("created_at desc")
+	}
+	if body.WorkoutActionId != 0 {
+		query = query.Order("weight desc")
+	}
+	query = query.Offset(offset).Limit(body.PageSize)
 
-	result := query.Find(&histories)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch muscles" + result.Error.Error(), "data": nil})
+	var histories []models.WorkoutActionHistory
+	if err := query.Find(&histories).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout history: " + err.Error(), "data": nil})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Success", "data": gin.H{"list": histories, "total": len(histories)}})
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "Success",
+		"data": gin.H{
+			"list":      histories,
+			"page":      body.Page,
+			"page_size": body.PageSize,
+			"has_more":  len(histories) >= body.PageSize,
+		},
+	})
 }

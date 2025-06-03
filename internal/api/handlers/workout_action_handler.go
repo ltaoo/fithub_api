@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -27,77 +27,69 @@ func NewWorkoutActionHandler(db *gorm.DB, logger *logger.Logger) *WorkoutActionH
 	}
 }
 
-// GetWorkoutActionList retrieves all workout actions
-func (h *WorkoutActionHandler) GetWorkoutActionList(c *gin.Context) {
-	var actions []models.WorkoutAction
+// FetchWorkoutActionList retrieves all workout actions
+func (h *WorkoutActionHandler) FetchWorkoutActionList(c *gin.Context) {
 
-	type WorkoutActionListRequest struct {
+	var body struct {
 		Type       string `json:"type"`
 		Keyword    string `json:"keyword"`
-		Level      string `json:"level"`
 		Tag        string `json:"tag"`
+		Level      string `json:"level"`
 		Muscle     string `json:"muscle"`
 		NextMarker string `json:"next_marker"`
 		PageSize   int    `json:"page_size"`
 		Page       int    `json:"page"`
 	}
-
-	var request WorkoutActionListRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
 
 	// Get pagination parameters
-	limit := 10 // default page size
+	limit := 20 // default page size
 
-	if request.PageSize != 0 {
-		limit = request.PageSize
+	if body.PageSize != 0 {
+		limit = body.PageSize
 	}
 
 	// Start with base query
 	query := h.db
 
-	// 按创建时间排序
-	query = query.Order("created_at DESC")
-
 	// Apply cursor pagination if cursor is provided
-	if request.NextMarker != "" {
-		if cursorId, err := strconv.Atoi(request.NextMarker); err == nil {
-			fmt.Println("cursorId", cursorId)
-			query = query.Where("id < ?", cursorId)
+	if body.NextMarker != "" {
+		if cursor_id, err := strconv.Atoi(body.NextMarker); err == nil {
+			query = query.Where("id < ?", cursor_id)
 		}
 	}
-	if request.Page != 0 {
-		query = query.Offset((request.Page - 1) * limit)
+	if body.Page != 0 {
+		query = query.Offset((body.Page - 1) * limit)
 	}
 
 	// Apply filters if provided
-	if request.Type != "" {
-		query = query.Where("type = ?", request.Type)
+	if body.Type != "" {
+		query = query.Where("type = ?", body.Type)
 	}
-
-	if request.Keyword != "" {
-		query = query.Where("zh_name LIKE ? OR alias LIKE ?", "%"+request.Keyword+"%", "%"+request.Keyword+"%")
+	if body.Keyword != "" {
+		query = query.Where("zh_name LIKE ? OR alias LIKE ?", "%"+body.Keyword+"%", "%"+body.Keyword+"%")
 	}
-	if request.Level != "" {
-		levelInt, err := strconv.Atoi(request.Level)
+	if body.Level != "" {
+		levelInt, err := strconv.Atoi(body.Level)
 		if err == nil {
 			query = query.Where("level = ?", levelInt)
 		}
 	}
-
-	if request.Tag != "" {
-		query = query.Where("tags LIKE ?", "%"+request.Tag+"%")
+	if body.Tag != "" {
+		query = query.Where("tags1 LIKE ?", "%"+body.Tag+"%")
 	}
-
-	if request.Muscle != "" {
-		query = query.Where("target_muscle_ids LIKE ?", "%"+request.Muscle+"%")
+	if body.Muscle != "" {
+		query = query.Where("target_muscle_ids LIKE ?", "%"+body.Muscle+"%")
 	}
-
+	// 按创建时间排序
+	// query = query.Order("created_at DESC")
 	// Add ordering and limit
-	// query = query.Order("id asc").Limit(limit + 1)
+	query = query.Order("sort_idx desc").Limit(limit + 1)
 
+	var actions []models.WorkoutAction
 	// Execute the query
 	result := query.Find(&actions)
 	if result.Error != nil {
@@ -201,8 +193,7 @@ func (h *WorkoutActionHandler) GetActionsByMuscle(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Success", "data": actions})
 }
 
-// GetActionsByLevel retrieves workout actions by difficulty level
-func (h *WorkoutActionHandler) GetActionsByLevel(c *gin.Context) {
+func (h *WorkoutActionHandler) FetchWorkoutActionsByLevel(c *gin.Context) {
 	levelStr := c.Param("level")
 	level, err := strconv.Atoi(levelStr)
 	if err != nil {
@@ -220,104 +211,125 @@ func (h *WorkoutActionHandler) GetActionsByLevel(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Success", "data": actions})
 }
 
-// GetRelatedActions retrieves advanced and regressed actions for a specific action
-func (h *WorkoutActionHandler) GetRelatedActions(c *gin.Context) {
-	id := c.Param("id")
-
+// 获取指定动作的 进阶、退阶、替代动作
+func (h *WorkoutActionHandler) FetchRelatedWorkoutActions(c *gin.Context) {
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
 	var action models.WorkoutAction
-	result := h.db.First(&action, id)
-	if result.Error != nil {
+	r := h.db.First(&action, body.Id)
+	if r.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout action not found", "data": nil})
 		return
 	}
-
 	// Get advanced actions
-	var advancedActions []models.WorkoutAction
+	var advanced_workout_actions []models.WorkoutAction
 	if action.AdvancedActionIds != "" {
-		advancedIDs := strings.Split(action.AdvancedActionIds, ",")
-		h.db.Where("id IN ?", advancedIDs).Find(&advancedActions)
+		advanced_ids := strings.Split(action.AdvancedActionIds, ",")
+		h.db.Where("id IN ?", advanced_ids).Find(&advanced_workout_actions)
 	}
-
 	// Get regressed actions
-	var regressedActions []models.WorkoutAction
+	var regressed_actions []models.WorkoutAction
 	if action.RegressedActionIds != "" {
-		regressedIDs := strings.Split(action.RegressedActionIds, ",")
-		h.db.Where("id IN ?", regressedIDs).Find(&regressedActions)
+		regressed_ids := strings.Split(action.RegressedActionIds, ",")
+		h.db.Where("id IN ?", regressed_ids).Find(&regressed_actions)
 	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
 		"data": gin.H{
-			"advanced":  advancedActions,
-			"regressed": regressedActions,
+			"advanced":  advanced_workout_actions,
+			"regressed": regressed_actions,
 		},
 	})
 }
 
-// CreateAction creates a new workout action
-func (h *WorkoutActionHandler) CreateAction(c *gin.Context) {
-	var action models.WorkoutAction
+// 创建动作
+func (h *WorkoutActionHandler) CreateWorkoutAction(c *gin.Context) {
+	var body models.WorkoutAction
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	result := h.db.Create(&body)
+	if result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create", "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "the record created successfully", "data": body})
+}
 
-	if err := c.ShouldBindJSON(&action); err != nil {
+// 更新动作详情
+func (h *WorkoutActionHandler) UpdateWorkoutActionProfile(c *gin.Context) {
+	var body models.WorkoutAction
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
 
-	result := h.db.Create(&action)
+	var existing_action models.WorkoutAction
+	result := h.db.First(&existing_action, body.Id)
 	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create workout action", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "the record not found", "data": nil})
+		return
+	}
+	now := time.Now().UTC()
+	result = h.db.Model(&existing_action).Updates(models.WorkoutAction{
+		Name:                 body.Name,
+		ZhName:               body.ZhName,
+		Alias:                body.Alias,
+		Overview:             body.Overview,
+		SortIdx:              body.SortIdx,
+		Type:                 body.Type,
+		Level:                body.Level,
+		Score:                body.Score,
+		Tags1:                body.Tags1,
+		Tags2:                body.Tags2,
+		Pattern:              body.Pattern,
+		Details:              body.Details,
+		Points:               body.Points,
+		Problems:             body.Problems,
+		ExtraConfig:          body.ExtraConfig,
+		UpdatedAt:            &now,
+		MuscleIds:            body.MuscleIds,
+		PrimaryMuscleIds:     body.PrimaryMuscleIds,
+		SecondaryMuscleIds:   body.SecondaryMuscleIds,
+		EquipmentIds:         body.EquipmentIds,
+		AlternativeActionIds: body.AlternativeActionIds,
+		AdvancedActionIds:    body.AdvancedActionIds,
+		RegressedActionIds:   body.RegressedActionIds,
+	})
+	if result.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update", "data": nil})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout action created successfully", "data": action})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "updated successfully", "data": body})
 }
 
-// UpdateAction updates an existing workout action
-func (h *WorkoutActionHandler) UpdateAction(c *gin.Context) {
-	id := c.Param("id")
-
-	var existingAction models.WorkoutAction
-	result := h.db.First(&existingAction, id)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout action not found", "data": nil})
-		return
+// 删除动作
+func (h *WorkoutActionHandler) DeleteWorkoutAction(c *gin.Context) {
+	var body struct {
+		Id int `json:"id"`
 	}
-
-	var updatedAction models.WorkoutAction
-	if err := c.ShouldBindJSON(&updatedAction); err != nil {
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-
-	// Ensure ID remains the same
-	updatedAction.Id = existingAction.Id
-
-	result = h.db.Save(&updatedAction)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update workout action", "data": nil})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout action updated successfully", "data": updatedAction})
-}
-
-// DeleteAction deletes a workout action
-func (h *WorkoutActionHandler) DeleteAction(c *gin.Context) {
-	id := c.Param("id")
-
 	var action models.WorkoutAction
-	result := h.db.First(&action, id)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout action not found", "data": nil})
+	r := h.db.First(&action, body.Id)
+	if r.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "the record not found", "data": nil})
 		return
 	}
-
-	result = h.db.Delete(&action)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete workout action", "data": nil})
+	r = h.db.Delete(&action)
+	if r.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete the record", "data": nil})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout action deleted successfully", "data": nil})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "the record deleted successfully", "data": nil})
 }

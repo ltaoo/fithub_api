@@ -1,3 +1,4 @@
+
 CREATE TABLE LLM_AGENT(
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
         name TEXT(255) NOT NULL, --名称
@@ -221,26 +222,41 @@ CREATE TABLE WORKOUT_PLAN_ACTION(
         workout_plan_step_id INTEGER NOT NULL DEFAULT 0 --关联的训练计划中组id
     
     );
-CREATE TABLE COACH(
-    
+
+CREATE TABLE WORKOUT_PLAN_COLLECTION(
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        title TEXT NOT NULL DEFAULT '', --标题
+        overview TEXT NOT NULL DEFAULT '', --简要描述
+        level INTEGER NOT NULL DEFAULT 1, --难度
+        type INTEGER NOT NULL DEFAULT 1, -- 1周循环 2月循环
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+        updated_at DATETIME, -- 更新时间
+        owner_id INTEGER NOT NULL DEFAULT 0 --创建者
+    ); -- 周期计划
+
+CREATE TABLE WORKOUT_PLAN_IN_COLLECTION(
+	weekday INTEGER NOT NULL DEFAULT 0, --训练计划处于周几
+	day INTEGER NOT NULL DEFAULT 0, --训练计划处于几号
+        workout_plan_collection_id INTEGER NOT NULL, --集合id
+	workout_plan_id INTEGER NOT NULL --训练计划id
+    );
+
+
+CREATE TABLE COACH(
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        profile1_id INTEGER, --详情
+        profile2_id INTEGER, --详情
         nickname TEXT(255) NOT NULL DEFAULT '', --昵称
-        avatar_url TEXT(255) NOT NULL DEFAULT '', --头像链接
         bio TEXT(1000) NOT NULL DEFAULT '', --个人简介
-        specialties TEXT(255) NOT NULL DEFAULT '', --专长领域，逗号分隔
-        certification TEXT(1000) NOT NULL DEFAULT '{}', --认证信息，JSON格式
-        experience_years INTEGER NOT NULL DEFAULT 0, --从业年限
-        coach_type INTEGER NOT NULL DEFAULT 1, --教练类型;1私教 2团课 3在线
+        coach_type INTEGER NOT NULL DEFAULT 1, --教练类型;1普通 2私教 3团课 4在线
         status INTEGER NOT NULL DEFAULT 1, --状态;1正常 2暂停服务 3封禁
         config TEXT(1000) NOT NULL DEFAULT '{}', --配置信息
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
         updated_at DATETIME --更新时间
     
     );
-INSERT INTO COACH VALUES(1,'admin@fithub.top','','','','{}',0,1,1,'{}','2025-04-02T17:42:25+08:00','2025-04-02T17:42:25+08:00');
 CREATE TABLE COACH_ACCOUNT(
-    
-        provider_type TEXT(255) NOT NULL, --帐号授权方式;email、phone、wxapp 等等
+        provider_type int NOT NULL, --帐号授权方式;email、phone、wxapp 等等
         provider_id TEXT(255) NOT NULL, --帐号唯一标志;如果 email，这里就是 email 帐号，可以发送验证码来验证
         provider_arg1 TEXT(255) NOT NULL DEFAULT '', --帐号授权参数
         provider_arg2 TEXT(255) NOT NULL DEFAULT '', --授权参数2
@@ -250,7 +266,6 @@ CREATE TABLE COACH_ACCOUNT(
 
         PRIMARY KEY (provider_type, provider_id)
     );
-INSERT INTO COACH_ACCOUNT VALUES('email_password','admin@fithub.top','$2a$10$DnmlfgRsF/ArxvCiu9CkrOc0euF4bsaU4aPsJcMysm0UHqVUVRdsW','','',1,'2025-04-02T17:42:25+08:00');
 CREATE TABLE COACH_RELATIONSHIP(
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
         coach_id INTEGER NOT NULL, --教练id
@@ -259,14 +274,13 @@ CREATE TABLE COACH_RELATIONSHIP(
         role INTEGER NOT NULL DEFAULT 1, --关系角色;1教练-学员 2合作教练
         note TEXT(255) NOT NULL DEFAULT '', --备注信息
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        updated_at DATETIME, --更新时间
-        
-        FOREIGN KEY (coach_id) REFERENCES COACH(id),
-        FOREIGN KEY (student_id) REFERENCES COACH(id)
+        updated_at DATETIME --更新时间
     );
-CREATE TABLE COACH_PROFILE(
-        coach_id INTEGER NOT NULL PRIMARY KEY, --教练id
-        name TEXT NOT NULL DEFAULT '', --名称
+CREATE TABLE COACH_PROFILE1(
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        coach_id INTEGER NOT NULL, --教练id
+        nickname TEXT NOT NULL DEFAULT '', --名称
+        avatar_url TEXT NOT NULL DEFAULT '', --头像
         age INTEGER NOT NULL DEFAULT 0, --年龄
         gender INTEGER NOT NULL DEFAULT 1, --性别
         body_type INTEGER NOT NULL DEFAULT 2, --体型;1偏瘦 2中等 3偏胖 4肌肉 5匀称
@@ -279,6 +293,13 @@ CREATE TABLE COACH_PROFILE(
         training_preferences TEXT(1000) NOT NULL DEFAULT '{}', --训练偏好
         diet_preferences TEXT(1000) NOT NULL DEFAULT '{}' --饮食偏好
     );
+CREATE TABLE COACH_PROFILE2(
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+        coach_id INTEGER NOT NULL, --教练id
+        specialties TEXT(255) NOT NULL DEFAULT '', --专长领域，逗号分隔
+        certification TEXT(1000) NOT NULL DEFAULT '{}', --认证信息，JSON格式
+        experience_years INTEGER NOT NULL DEFAULT 0 --从业年限
+);
 CREATE TABLE COACH_PHYSICAL_TEST(
     
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
@@ -286,7 +307,7 @@ CREATE TABLE COACH_PHYSICAL_TEST(
         result TEXT(255) NOT NULL DEFAULT '', --评估结果
         details TEXT(1000) NOT NULL DEFAULT '{}', --评估详情
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        coach_id INTEGER NOT NULL DEFAULT 0 --教练id
+        coach_id INTEGER NOT NULL DEFAULT 0 --学员id
     
     );
 CREATE TABLE COACH_BODY_MEASUREMENT(
@@ -303,16 +324,17 @@ CREATE TABLE COACH_BODY_MEASUREMENT(
         thigh REAL NOT NULL DEFAULT 0, --大腿围度
         notes TEXT(255) NOT NULL DEFAULT '', --额外备注信息
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --体测时间
-        coach_id INTEGER NOT NULL DEFAULT 0 --教练id
+        coach_id INTEGER NOT NULL DEFAULT 0 --学员id
     
     );
 CREATE TABLE WORKOUT_DAY(
     
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
         time TEXT NOT NULL DEFAULT '', --训练时间;年月日时分秒
-        status INTEGER NOT NULL DEFAULT 1, --训练日状态;1等待进行 2进行中 3已完成 4已过期 5手动作废
+        status INTEGER NOT NULL DEFAULT 1, --训练日状态; 1等待进行 2进行中 3已完成 4已过期 5手动作废
         estimated_duration INTEGER NOT NULL DEFAULT 0, --预计时间
         pending_steps TEXT(1000) NOT NULL DEFAULT '{}', --执行记录;JSON 数组
+        updated_details TEXT(1000) NOT NULL DEFAULT '', --执行记录;JSON 数组
         stats TEXT(1000) NOT NULL DEFAULT '{}', --统计信息;JSON 数组
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
         started_at DATETIME, --开始时间

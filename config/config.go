@@ -52,7 +52,7 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("DB_PASSWORD", "postgres")
 	viper.SetDefault("DB_NAME", "myapi")
 	viper.SetDefault("DB_PATH", "./myapi.db")
-	viper.SetDefault("MIGRATIONS_PATH", "file://internal/db/migrations")
+	viper.SetDefault("MIGRATIONS_PATH", "file:///migrations")
 
 	config := &Config{
 		ServerAddress:  viper.GetString("SERVER_ADDRESS"),

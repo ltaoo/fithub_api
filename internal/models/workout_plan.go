@@ -8,6 +8,7 @@ type WorkoutPlan struct {
 	Status            int        `json:"status" gorm:"default:2"` // 2仅自己可见
 	Title             string     `json:"title"`
 	Overview          string     `json:"overview"`
+	CoverURL          string     `json:"cover_url"`
 	Level             int        `json:"level" gorm:"default:1"`
 	Tags              string     `json:"tags"`
 	EstimatedDuration int        `json:"estimated_duration" gorm:"default:60"`
@@ -19,12 +20,40 @@ type WorkoutPlan struct {
 	CreatedAt         time.Time  `json:"created_at" gorm:"default:CURRENT_TIMESTAMP"`
 	UpdatedAt         *time.Time `json:"updated_at"`
 	OwnerId           int        `json:"owner_id"`
-
-	Steps []WorkoutPlanStep `json:"steps" gorm:"foreignKey:WorkoutPlanId"`
 }
 
 func (WorkoutPlan) TableName() string {
 	return "WORKOUT_PLAN"
+}
+
+type WorkoutPlanCollection struct {
+	Id        int        `json:"id"`
+	Title     string     `json:"title"`
+	Overview  string     `json:"overview"`
+	Level     int        `json:"level"`
+	Type      int        `json:"type"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
+	OwnerId   int        `json:"owner_id"`
+
+	WorkoutPlans []WorkoutPlanInCollection `json:"workout_plans"`
+}
+
+func (WorkoutPlanCollection) TableName() string {
+	return "WORKOUT_PLAN_COLLECTION"
+}
+
+type WorkoutPlanInCollection struct {
+	Weekday                 int `json:"weekday"`
+	Day                     int `json:"day"`
+	WorkoutPlanCollectionId int `json:"workout_plan_collection_id"`
+
+	WorkoutPlanId int         `json:"workout_plan_id"`
+	WorkoutPlan   WorkoutPlan `json:"workout_plan"`
+}
+
+func (WorkoutPlanInCollection) TableName() string {
+	return "WORKOUT_PLAN_IN_COLLECTION"
 }
 
 // WorkoutPlanSet 表示训练计划中的一组
@@ -66,4 +95,18 @@ type WorkoutPlanAction struct {
 
 func (WorkoutPlanAction) TableName() string {
 	return "WORKOUT_PLAN_ACTION"
+}
+
+type WorkoutPlanSet struct {
+	Id        int       `json:"id"`
+	Title     string    `json:"title"`
+	Overview  string    `json:"overview"`
+	IconURL   string    `json:"icon_url"`
+	Idx       int       `json:"idx"`
+	Details   string    `json:"details"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (WorkoutPlanSet) TableName() string {
+	return "WORKOUT_PLAN_SET"
 }

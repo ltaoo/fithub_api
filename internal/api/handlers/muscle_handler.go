@@ -26,12 +26,10 @@ func NewMuscleHandler(db *gorm.DB, logger *logger.Logger) *MuscleHandler {
 
 // FetchMuscleList retrieves all muscles
 func (h *MuscleHandler) FetchMuscleList(c *gin.Context) {
-	var muscles []models.Muscle
 
-	type RequestPayload struct {
+	var request struct {
 		Ids []int `json:"ids"`
 	}
-	var request RequestPayload
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
@@ -44,7 +42,8 @@ func (h *MuscleHandler) FetchMuscleList(c *gin.Context) {
 		query = query.Where("id IN (?)", request.Ids)
 	}
 
-	result := query.Find(&muscles)
+	var muscles []models.Muscle
+	result := query.Find(&muscles).Order("created_at DESC")
 	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch muscles" + result.Error.Error(), "data": nil})
 		return

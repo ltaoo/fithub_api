@@ -12,10 +12,10 @@ type WorkoutActionHistory struct {
 	ExtraMedias string    `json:"extra_medias"`
 	CreatedAt   time.Time `json:"created_at"`
 
-	WorkoutDayId int           `json:"workout_day_id"`
-	StudentId    int           `json:"student_id"`
-	ActionId     int           `json:"action_id"`
-	Action       WorkoutAction `json:"action" gorm:"foreignKey:ActionId"`
+	WorkoutDayId    int           `json:"workout_day_id"`
+	StudentId       int           `json:"student_id"`
+	WorkoutActionId int           `json:"action_id" gorm:"column:action_id"`
+	WorkoutAction   WorkoutAction `json:"action" gorm:"foreignKey:WorkoutActionId"`
 }
 
 func (WorkoutActionHistory) TableName() string {

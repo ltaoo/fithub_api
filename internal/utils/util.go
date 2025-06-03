@@ -19,7 +19,7 @@ func ThisIsMyHelperFunction() string {
 }
 
 type User struct {
-	Id uint `json:"id"`
+	Id int `json:"id"`
 	// 其他字段...
 }
 
@@ -32,11 +32,11 @@ func GetUser(c *gin.Context) *User {
 	if !ok {
 		return nil
 	}
-	userId, ok := claims["id"].(float64)
+	user_id, ok := claims["id"].(float64)
 	if !ok {
 		return nil
 	}
-	return &User{Id: uint(userId)}
+	return &User{Id: int(user_id)}
 }
 
 type RequestPayload struct {

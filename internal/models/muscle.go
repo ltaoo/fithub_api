@@ -8,6 +8,7 @@ type Muscle struct {
 	Tags     string `json:"tags"`
 	Overview string `json:"overview"`
 	Features string `json:"features"`
+	Pics     string `json:"pics"`
 }
 
 func (Muscle) TableName() string {

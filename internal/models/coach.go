@@ -13,22 +13,21 @@ import (
 
 // Coach 教练模型
 type Coach struct {
-	Id              uint       `json:"id" gorm:"primaryKey"`
-	Nickname        string     `json:"nickname" gorm:"not null"`
-	AvatarURL       string     `json:"avatar_url"`
-	Bio             string     `json:"bio" gorm:"default:''"`             // 个人简介
-	Specialties     string     `json:"specialties" gorm:"default:''"`     // 专长领域
-	Certification   string     `json:"certification" gorm:"default:'{}'"` // 认证信息
-	ExperienceYears int        `json:"experience_years" gorm:"default:0"` // 从业年限
-	CoachType       int        `json:"coach_type" gorm:"default:1"`       // 教练类型
-	Status          int        `json:"status" gorm:"default:1"`           // 状态
-	Config          string     `json:"config" gorm:"default:'{}'"`
-	CreatedAt       time.Time  `json:"created_at"`
-	UpdatedAt       *time.Time `json:"updated_at"`
+	Id        int        `json:"id" gorm:"primaryKey"`
+	Nickname  string     `json:"nickname"`
+	Bio       string     `json:"bio" gorm:"default:''"`       // 个人简介
+	CoachType int        `json:"coach_type" gorm:"default:1"` // 教练类型
+	Status    int        `json:"status" gorm:"default:1"`     // 状态
+	Config    string     `json:"config" gorm:"default:'{}'"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
 
-	// 关联
-	Students []CoachRelationship `json:"students" gorm:"foreignKey:CoachId"`  // 作为教练的关系
-	Coaches  []CoachRelationship `json:"coaches" gorm:"foreignKey:StudentId"` // 作为学员的关系
+	Students   []CoachRelationship `json:"students" gorm:"foreignKey:CoachId"`  // 作为教练的关系
+	Coaches    []CoachRelationship `json:"coaches" gorm:"foreignKey:StudentId"` // 作为学员的关系
+	Profile1Id int                 `json:"profile1_id"`
+	Profile1   CoachProfile1       `json:"profile1" gorm:"foreignKey:Profile1Id"`
+	Profile2Id int                 `json:"profile2_id"`
+	Profile2   CoachProfile2       `json:"profile2" gorm:"foreignKey:Profile2Id"`
 }
 
 func (Coach) TableName() string {
@@ -37,24 +36,60 @@ func (Coach) TableName() string {
 
 // CoachAccount 教练账号模型
 type CoachAccount struct {
-	ProviderType string    `json:"provider_type" gorm:"primaryKey"`
-	ProviderId   string    `json:"provider_id" gorm:"primaryKey"`
-	ProviderArg1 int       `json:"provider_arg1"`
+	ProviderType int       `json:"provider_type"`
+	ProviderId   string    `json:"provider_id"`
+	ProviderArg1 string    `json:"provider_arg1"`
 	ProviderArg2 string    `json:"provider_arg2"`
 	ProviderArg3 string    `json:"provider_arg3"`
-	CoachId      uint      `json:"coach_id" gorm:"not null"`
 	CreatedAt    time.Time `json:"created_at"`
+
+	CoachId int   `json:"coach_id"`
+	Coach   Coach `json:"coach"`
 }
 
 func (CoachAccount) TableName() string {
 	return "COACH_ACCOUNT"
 }
 
+type CoachProfile1 struct {
+	Id                  int    `json:"id"`
+	CoachId             int    `json:"coach_id"`
+	Nickname            string `json:"nickname"`
+	AvatarURL           string `json:"avatar_url"`
+	Age                 int    `json:"age"`
+	Gender              int    `json:"gender"`
+	BodyType            int    `json:"body_type"`
+	Height              int    `json:"height"`
+	Weight              int    `json:"weight"`
+	BodyFatPercent      int    `json:"body_fat_percent"`
+	RiskScreenings      string `json:"risk_screenings"`
+	TrainingGoals       string `json:"training_goals"`
+	TrainingFrequency   int    `json:"training_frequency"`
+	TrainingPreferences string `json:"training_preferences"`
+	DietPreferences     string `json:"diet_preferences"`
+}
+
+func (CoachProfile1) TableName() string {
+	return "COACH_PROFILE1"
+}
+
+type CoachProfile2 struct {
+	Id              int    `json:"id"`
+	CoachId         int    `json:"coach_id"`
+	Specialties     string `json:"specialties"`
+	Certification   string `json:"certification"`
+	ExperienceYears string `json:"experience_years"`
+}
+
+func (CoachProfile2) TableName() string {
+	return "COACH_PROFILE2"
+}
+
 // CoachRelationship 教练-学员关系模型
 type CoachRelationship struct {
-	Id        uint       `json:"id" gorm:"primaryKey"`
-	CoachId   uint       `json:"coach_id" gorm:"not null"`   // 教练ID
-	StudentId uint       `json:"student_id" gorm:"not null"` // 学员ID
+	Id        int        `json:"id" gorm:"primaryKey"`
+	CoachId   int        `json:"coach_id" gorm:"not null"`   // 教练ID
+	StudentId int        `json:"student_id" gorm:"not null"` // 学员ID
 	Status    int        `json:"status" gorm:"default:1"`    // 关系状态
 	Role      int        `json:"role" gorm:"default:1"`      // 关系角色
 	Note      string     `json:"note" gorm:"default:''"`     // 备注信息
@@ -72,6 +107,8 @@ func (CoachRelationship) TableName() string {
 
 // 常量定义
 const (
+	AccountProviderTypeEmailWithPwd = 1
+
 	// CoachType 教练类型
 	CoachTypePersonal = 1 // 私教
 	CoachTypeGroup    = 2 // 团课
