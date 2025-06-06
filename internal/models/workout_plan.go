@@ -26,7 +26,7 @@ func (WorkoutPlan) TableName() string {
 	return "WORKOUT_PLAN"
 }
 
-type WorkoutPlanCollection struct {
+type WorkoutSchedule struct {
 	Id        int        `json:"id"`
 	Title     string     `json:"title"`
 	Overview  string     `json:"overview"`
@@ -36,24 +36,42 @@ type WorkoutPlanCollection struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 	OwnerId   int        `json:"owner_id"`
 
-	WorkoutPlans []WorkoutPlanInCollection `json:"workout_plans"`
+	WorkoutPlans []WorkoutPlanInSchedule `json:"workout_plans" gorm:"foreignKey:WorkoutPlanCollectionId"`
 }
 
-func (WorkoutPlanCollection) TableName() string {
+func (WorkoutSchedule) TableName() string {
 	return "WORKOUT_PLAN_COLLECTION"
 }
 
-type WorkoutPlanInCollection struct {
-	Weekday                 int `json:"weekday"`
-	Day                     int `json:"day"`
-	WorkoutPlanCollectionId int `json:"workout_plan_collection_id"`
+type WorkoutPlanInSchedule struct {
+	Weekday int `json:"weekday"`
+	Day     int `json:"day"`
 
-	WorkoutPlanId int         `json:"workout_plan_id"`
-	WorkoutPlan   WorkoutPlan `json:"workout_plan"`
+	WorkoutPlanId           int         `json:"workout_plan_id"`
+	WorkoutPlan             WorkoutPlan `json:"workout_plan"`
+	WorkoutPlanCollectionId int         `json:"workout_plan_collection_id"`
+	// WorkoutPlanCollection   WorkoutSchedule `json:"workout_schedule" gorm:"foreignKey:WorkoutPlanCollectionId"`
 }
 
-func (WorkoutPlanInCollection) TableName() string {
+func (WorkoutPlanInSchedule) TableName() string {
 	return "WORKOUT_PLAN_IN_COLLECTION"
+}
+
+type CoachWorkoutSchedule struct {
+	Id          int        `json:"id"`
+	Interval    int        `json:"interval"`
+	Status      int        `json:"status"`
+	AppliedAt   time.Time  `json:"applied_at"`
+	CancelledAt *time.Time `json:"cancelled_at"`
+
+	WorkoutPlanCollectionId int             `json:"workout_plan_collection_id"`
+	WorkoutPlanCollection   WorkoutSchedule `json:"workout_plan_collection"`
+	CoachId                 int             `json:"coach_id"`
+	Coach                   Coach           `json:"coach"`
+}
+
+func (CoachWorkoutSchedule) TableName() string {
+	return "COACH_WORKOUT_PLAN_COLLECTION"
 }
 
 // WorkoutPlanSet 表示训练计划中的一组

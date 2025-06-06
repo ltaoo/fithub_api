@@ -25,7 +25,7 @@ func NewDatabase(cfg *config.Config) (*gorm.DB, error) {
 			cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort)
 		dialector = postgres.Open(dsn)
 	case "sqlite":
-		dialector = sqlite.Open(cfg.DBPath)
+		dialector = sqlite.Open(cfg.DBPath + "?_busy_timeout=5000&_journal=WAL&_synchronous=NORMAL")
 	default:
 		return nil, fmt.Errorf("unsupported database type: %s", cfg.DBType)
 	}

@@ -39,11 +39,18 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		userHandler := handlers.NewUserHandler(db, logger)
 
 		// 公开路由
-		api.POST("/user/list", userHandler.GetUsers)
-		api.POST("/user/profile", userHandler.GetUser)
+		// api.POST("/user/list", userHandler.GetUsers)
+		// api.POST("/user/profile", userHandler.GetUser)
 
 		{
 			handler := handlers.NewCoachHandler(db, logger)
+			api.POST("/auth/web_register", handler.RegisterCoach)
+			api.POST("/auth/web_login", handler.LoginCoach)
+			// api.POST("/coach/send-verification-code", handler.SendVerificationCode)
+
+			authorized.POST("/auth/profile", handler.GetCoachProfile)
+			authorized.POST("/auth/update_profile", handler.UpdateCoachProfile)
+			authorized.POST("/auth/refresh_token", handler.RefreshToken)
 			authorized.POST("/student/create", handler.CreateStudent)
 			authorized.POST("/student/list", handler.FetchMyStudentList)
 			authorized.POST("/student/profile", handler.FetchMyStudentProfile)
@@ -65,8 +72,15 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/workout_plan/delete", handler.DeleteWorkoutPlan)
 			authorized.POST("/workout_plan/create", handler.CreateWorkoutPlan)
 			authorized.POST("/workout_plan/mine", handler.FetchMyWorkoutPlanList)
-			authorized.POST("/workout_plan_collection/create", handler.CreateWorkoutPlanCollection)
-			authorized.POST("/workout_plan_collection/profile", handler.FetchWorkoutPlanCollectionProfile)
+			// 周期计划
+			authorized.POST("/workout_schedule/list", handler.FetchWorkoutScheduleList)
+			authorized.POST("/workout_schedule/create", handler.CreateWorkoutSchedule)
+			authorized.POST("/workout_schedule/update", handler.UpdateWorkoutSchedule)
+			authorized.POST("/workout_schedule/profile", handler.FetchWorkoutScheduleProfile)
+			authorized.POST("/workout_schedule/apply", handler.ApplyWorkoutSchedule)
+			authorized.POST("/workout_schedule/cancel", handler.CancelWorkoutSchedule)
+			authorized.POST("/workout_schedule/enabled", handler.FetchMyWorkoutScheduleList)
+			// 计划合集
 			authorized.POST("/workout_plan_set/list", handler.FetchWorkoutPlanSetList)
 			authorized.POST("/workout_plan_set/create", handler.CreateWorkoutPlanSet)
 			authorized.POST("/workout_plan_set/update", handler.UpdateWorkoutPlanSet)
@@ -76,17 +90,20 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/workout_day/list", handler.FetchWorkoutDayList)
 			authorized.POST("/workout_day/create", handler.CreateWorkoutDay)
 			authorized.POST("/workout_day/profile", handler.FetchWorkoutDayProfile)
-			authorized.POST("/workout_day/fetch_started", handler.FetchStartedWorkoutDay)
+			authorized.POST("/workout_day/has_started", handler.CheckHasStartedWorkoutDay)
+			authorized.POST("/workout_day/started_list", handler.FetchStartedWorkoutDay)
 			authorized.POST("/workout_day/start", handler.StartWorkoutDay)
 			authorized.POST("/workout_day/give_up", handler.GiveUpWorkoutDay)
 			authorized.POST("/workout_day/finish", handler.FinishWorkoutDay)
 			authorized.POST("/workout_day/update_steps", handler.UpdateWorkoutDayStepProgress)
 			authorized.POST("/workout_day/update_details", handler.UpdateWorkoutDayPlanDetails)
 			authorized.POST("/workout_day/delete", handler.DeleteWorkoutDay)
+			authorized.POST("/student/workout_day_list", handler.FetchMyStudentWorkoutDayList)
 		}
 		{
 			handler := handlers.NewWorkoutActionHistoryHandler(db, logger)
-			authorized.POST("/workout_action_history/list", handler.FetchWorkoutActionHistoryList)
+			authorized.POST("/workout_action_history/list_of_workout_day", handler.FetchWorkoutActionHistoryListOfWorkoutDay)
+			authorized.POST("/workout_action_history/list_of_workout_action", handler.FetchWorkoutActionHistoryListOfWorkoutAction)
 		}
 		{
 			handler := handlers.NewWorkoutActionHandler(db, logger)
@@ -97,66 +114,54 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			api.POST("/workout_action/list/by_level", handler.FetchWorkoutActionsByLevel)
 			api.POST("/workout_action/list/related", handler.FetchRelatedWorkoutActions)
 
-			{
-				authorized.POST("/workout_action/create", handler.CreateWorkoutAction)
-				authorized.POST("/workout_action/update", handler.UpdateWorkoutActionProfile)
-				authorized.POST("/workout_action/delete", handler.DeleteWorkoutAction)
-			}
-		}
-		{
-			handler := handlers.NewCoachHandler(db, logger)
-			api.POST("/coach/register", handler.RegisterCoach)
-			api.POST("/coach/login", handler.LoginCoach)
-			api.POST("/coach/send-verification-code", handler.SendVerificationCode)
-			{
-				authorized.POST("/coach/profile", handler.GetCoachProfile)
-				authorized.POST("/coach/update", handler.UpdateCoachProfile)
-			}
+			authorized.POST("/workout_action/create", handler.CreateWorkoutAction)
+			authorized.POST("/workout_action/update", handler.UpdateWorkoutActionProfile)
+			authorized.POST("/workout_action/delete", handler.DeleteWorkoutAction)
 		}
 		{
 			handler := handlers.NewMuscleHandler(db, logger)
 			api.POST("/muscle/list", handler.FetchMuscleList)
 			api.POST("/muscle/profile", handler.GetMuscleProfile)
 
-			{
-				authorized.POST("/muscle/create", handler.CreateMuscle)
-				authorized.POST("/muscle/update", handler.UpdateMuscle)
-				authorized.POST("/muscle/delete", handler.DeleteMuscle)
-			}
+			authorized.POST("/muscle/create", handler.CreateMuscle)
+			authorized.POST("/muscle/update", handler.UpdateMuscle)
+			authorized.POST("/muscle/delete", handler.DeleteMuscle)
 		}
 		{
 			handler := handlers.NewEquipmentHandler(db, logger)
 			api.POST("/equipment/list", handler.FetchEquipmentList)
 			api.POST("/equipment/profile", handler.GetEquipment)
-			{
-				authorized.POST("/equipment/create", handler.CreateEquipment)
-			}
+			authorized.POST("/equipment/create", handler.CreateEquipment)
 		}
 		{
 			handler := handlers.NewSubscriptionHandler(db, logger)
-			{
-				authorized.POST("/subscription_plan/list", handler.FetchSubscriptionPlanList)
-				authorized.POST("/subscription_plan/create", handler.CreateSubscriptionPlan)
-				authorized.POST("/subscription_order/calc", handler.CalcSubscriptionOrderAmount)
-			}
+			authorized.POST("/subscription_plan/list", handler.FetchSubscriptionPlanList)
+			authorized.POST("/subscription_plan/create", handler.CreateSubscriptionPlan)
+			authorized.POST("/subscription_order/calc", handler.CalcSubscriptionOrderAmount)
 		}
 		{
 			handler := handlers.NewQuizHandler(db, logger)
-			{
-				authorized.POST("/quiz/list", handler.FetchQuizList)
-				authorized.POST("/quiz/create", handler.CreateQuiz)
-				authorized.POST("/paper/list", handler.FetchPaperList)
-				authorized.POST("/paper/profile", handler.FetchPaperProfile)
-				authorized.POST("/paper/create", handler.CreatePaper)
-				authorized.POST("/paper/update", handler.UpdatePaper)
-				authorized.POST("/exam/running", handler.FetchRunningExam)
-				authorized.POST("/exam/start", handler.StartExamWithPaper)
-				authorized.POST("/exam/profile", handler.FetchExamProfile)
-				authorized.POST("/exam/answer", handler.UpdateQuizAnswer)
-				authorized.POST("/exam/complete", handler.CompleteExam)
-				authorized.POST("/exam/give_up", handler.GiveUpExam)
-				authorized.POST("/exam/result", handler.FetchExamResult)
-			}
+			authorized.POST("/quiz/list", handler.FetchQuizList)
+			authorized.POST("/quiz/create", handler.CreateQuiz)
+			authorized.POST("/paper/list", handler.FetchPaperList)
+			authorized.POST("/paper/profile", handler.FetchPaperProfile)
+			authorized.POST("/paper/create", handler.CreatePaper)
+			authorized.POST("/paper/update", handler.UpdatePaper)
+			authorized.POST("/exam/running", handler.FetchRunningExam)
+			authorized.POST("/exam/list", handler.FetchExamList)
+			authorized.POST("/exam/start", handler.StartExamWithPaper)
+			authorized.POST("/exam/profile", handler.FetchExamProfile)
+			authorized.POST("/exam/answer", handler.UpdateQuizAnswer)
+			authorized.POST("/exam/complete", handler.CompleteExam)
+			authorized.POST("/exam/give_up", handler.GiveUpExam)
+			authorized.POST("/exam/result", handler.FetchExamResult)
+		}
+		{
+			handler := handlers.NewReportHandler(db, logger)
+			authorized.POST("/report/create", handler.CreateReport)
+			authorized.POST("/report/profile", handler.FetchReportProfile)
+			authorized.POST("/report/list", handler.FetchReportList)
+			authorized.POST("/report/list_of_mine", handler.FetchMineReportList)
 		}
 	}
 

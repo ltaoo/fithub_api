@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS EXAM (
 
 -- 答题记录 会有两种情况，一、题目答完直接给结果；二、试卷中答题，全部答完一起结算给结果
 CREATE TABLE IF NOT EXISTS QUIZ_ANSWER (
-  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,     -- 试卷结果id
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,     -- 答题记录id
   quiz_id INTEGER NOT NULL DEFAULT 0,  --题目id
   exam_id INTEGER NOT NULL DEFAULT 0, --考试id 上面的情况二才会有该值
   paper_id INTEGER NOT NULL DEFAULT 0, --试卷id 上面的情况二才会有该值
@@ -155,3 +155,39 @@ CREATE TABLE IF NOT EXISTS QUIZ_ANSWER (
   updated_at DATETIME,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 答题时间
 );
+
+CREATE TABLE IF NOT EXISTS COACH_REPORT (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,     --反馈id
+  type INTEGER NOT NULL DEFAULT 0, --类型 还没确定
+  status INTEGER NOT NULL DEFAULT 1, --状态 1待处理 2已完成 3不处理 4被撤销
+  d INTEGER NOT NULL DEFAULT 0, --隐式删除 0否 1是
+  content TEXT NOT NULL DEFAULT '', --反馈内容
+  reply_content TEXT NOT NULL DEFAULT '', --处理说明
+  reason_type TEXT NOT NULL DEFAULT '', --反馈某样事物的问题 比如 健身动作、训练计划、试卷答案 等等
+  reason_id INTEGER NOT NULL DEFAULT 0, --反馈某样事物的问题 比如 健身动作、训练计划、试卷答案 等等
+  coach_id INTEGER NOT NULL DEFAULT 0, --反馈人
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 反馈时间
+);
+
+-- 用户应用了某个周期计划
+CREATE TABLE IF NOT EXISTS COACH_WORKOUT_PLAN_COLLECTION (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,     
+  coach_id INTEGER NOT NULL DEFAULT 0,
+  workout_plan_collection_id INTEGER NOT NULL DEFAULT 0,
+  status INTEGER NOT NULL DEFAULT 0, --应用状态 1应用中 2手动取消 
+  interval INTEGER NOT NULL DEFAULT 0, --是否周期循环
+  applied_at DATETIME, --使用该周期的时间
+  cancelled_at DATETIME --取消使用该周期的时间
+);
+
+-- 用户指定某天的训练安排表，在用户 推迟/提前训练 时能用到
+CREATE TABLE IF NOT EXISTS COACH_WORKOUT_SCHEDULE (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,     
+  coach_id INTEGER NOT NULL DEFAULT 0,
+  date_text TEXT NOT NULL DEFAULT '', --某天 YYYY-MM-DD
+  date DATETIME,
+  status INTEGER NOT NULL DEFAULT 0, --0未安排 1训练 2休息
+  tags TEXT NOT NULL DEFAULT '', --额外展示的标签
+  content TEXT NOT NULL DEFAULT '{}'
+);
+

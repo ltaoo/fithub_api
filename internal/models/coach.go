@@ -3,11 +3,9 @@ package models
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -22,12 +20,12 @@ type Coach struct {
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
 
-	Students   []CoachRelationship `json:"students" gorm:"foreignKey:CoachId"`  // 作为教练的关系
-	Coaches    []CoachRelationship `json:"coaches" gorm:"foreignKey:StudentId"` // 作为学员的关系
 	Profile1Id int                 `json:"profile1_id"`
 	Profile1   CoachProfile1       `json:"profile1" gorm:"foreignKey:Profile1Id"`
 	Profile2Id int                 `json:"profile2_id"`
 	Profile2   CoachProfile2       `json:"profile2" gorm:"foreignKey:Profile2Id"`
+	Students   []CoachRelationship `json:"students" gorm:"foreignKey:CoachId"`  // 作为教练的关系
+	Coaches    []CoachRelationship `json:"coaches" gorm:"foreignKey:StudentId"` // 作为学员的关系
 }
 
 func (Coach) TableName() string {
@@ -88,17 +86,16 @@ func (CoachProfile2) TableName() string {
 // CoachRelationship 教练-学员关系模型
 type CoachRelationship struct {
 	Id        int        `json:"id" gorm:"primaryKey"`
-	CoachId   int        `json:"coach_id" gorm:"not null"`   // 教练ID
-	StudentId int        `json:"student_id" gorm:"not null"` // 学员ID
-	Status    int        `json:"status" gorm:"default:1"`    // 关系状态
-	Role      int        `json:"role" gorm:"default:1"`      // 关系角色
-	Note      string     `json:"note" gorm:"default:''"`     // 备注信息
+	Status    int        `json:"status" gorm:"default:1"` // 关系状态
+	Role      int        `json:"role" gorm:"default:1"`   // 关系角色
+	Note      string     `json:"note" gorm:"default:''"`  // 备注信息
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
 
-	// 关联
-	Coach   Coach `json:"coach" gorm:"foreignKey:CoachId"`     // 教练信息
-	Student Coach `json:"student" gorm:"foreignKey:StudentId"` // 学员信息
+	CoachId   int   `json:"coach_id" gorm:"not null"`            // 教练ID
+	Coach     Coach `json:"coach" gorm:"foreignKey:CoachId"`     // 教练信息
+	StudentId int   `json:"student_id" gorm:"not null"`          // 学员ID
+	Student   Coach `json:"student" gorm:"foreignKey:StudentId"` // 学员信息
 }
 
 func (CoachRelationship) TableName() string {
@@ -206,28 +203,4 @@ func ParseJWT(str string) (*Claims, error) {
 		Issuer:    v["issuer"].(string),
 	}
 	return claims, nil
-}
-
-// AuthMiddleware is a middleware to authenticate requests
-func AuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Authorization header is required", "data": nil})
-			c.Abort()
-			return
-		}
-
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		claims, err := ParseJWT(tokenString)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Invalid or expired token", "data": nil})
-			c.Abort()
-			return
-		}
-
-		// Set coach ID in context
-		c.Set("coachId", claims.Id)
-		c.Next()
-	}
 }

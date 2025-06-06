@@ -35,17 +35,38 @@ func (h *QuizHandler) FetchPaperList(c *gin.Context) {
 		return
 	}
 	query := h.db
-	var papers []models.Paper
-	r := query.Find(&papers)
+	limit := 20
+	if body.PageSize != 0 {
+		limit = body.PageSize
+	}
+	if body.Page != 0 {
+		query = query.Offset((body.Page - 1) * limit)
+	}
+
+	var list []models.Paper
+	r := query.Find(&list)
 	if r.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch discount policies", "data": nil})
 		return
 	}
+
+	has_more := false
+	next_cursor := ""
+
+	if len(list) > limit {
+		has_more = true
+		list = list[:limit]                               // Remove the extra item we fetched
+		next_cursor = strconv.Itoa(int(list[limit-1].Id)) // Get the last item's ID as next cursor
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "",
 		"data": gin.H{
-			"list": papers,
+			"list":        list,
+			"page_size":   limit,
+			"has_more":    has_more,
+			"next_marker": next_cursor,
 		},
 	})
 }
@@ -460,7 +481,7 @@ func (h *QuizHandler) StartExamWithPaper(c *gin.Context) {
 	now := time.Now()
 	// 创建考试记录
 	exam := models.Exam{
-		Status:    2, // 待开始
+		Status:    2, // 进行中
 		PaperId:   body.PaperId,
 		StudentId: uid,
 		StartedAt: &now,
@@ -470,7 +491,7 @@ func (h *QuizHandler) StartExamWithPaper(c *gin.Context) {
 	if err := tx.Create(&exam).Error; err != nil {
 		tx.Rollback()
 		h.logger.Error("Failed to create exam", err)
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create exam", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to start exam", "data": nil})
 		return
 	}
 
@@ -552,6 +573,53 @@ func (h *QuizHandler) FetchRunningExam(c *gin.Context) {
 		"msg":  "",
 		"data": gin.H{
 			"list": exams,
+		},
+	})
+}
+
+func (h *QuizHandler) FetchExamList(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		models.Pagination
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	query := h.db
+	limit := 20
+	if body.PageSize != 0 {
+		limit = body.PageSize
+	}
+	if body.Page != 0 {
+		query = query.Offset((body.Page - 1) * limit)
+	}
+	query.Order("created_at DESC").Limit(limit + 1)
+	var list []models.Exam
+	if err := query.Where("student_id = ?", uid).Preload("Paper").Find(&list).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": nil})
+			return
+		}
+		h.logger.Error("Failed to fetch exam list", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch exam", "data": nil})
+		return
+	}
+	has_more := false
+	next_cursor := ""
+	if len(list) > limit {
+		has_more = true
+		list = list[:limit]                               // Remove the extra item we fetched
+		next_cursor = strconv.Itoa(int(list[limit-1].Id)) // Get the last item's ID as next cursor
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "",
+		"data": gin.H{
+			"list":        list,
+			"page_size":   limit,
+			"has_more":    has_more,
+			"next_marker": next_cursor,
 		},
 	})
 }
@@ -999,9 +1067,8 @@ func (h *QuizHandler) GiveUpExam(c *gin.Context) {
 	// 更新考试状态为已放弃
 	now := time.Now()
 	updates := map[string]interface{}{
-		"status":     5, // 5表示已放弃
-		"ended_at":   now,
-		"updated_at": now,
+		"status":     4, // 4表示已放弃
+		"give_up_at": now,
 	}
 
 	if err := tx.Model(&exam).Updates(updates).Error; err != nil {

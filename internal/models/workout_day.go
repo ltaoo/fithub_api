@@ -6,22 +6,24 @@ import (
 
 // WorkoutDay represents a training day record
 type WorkoutDay struct {
-	Id                int64      `db:"id" json:"id"`                                 // Primary key
-	Time              string     `db:"time" json:"time"`                             // Training time (YYYY-MM-DD HH:MM:SS)
-	Status            int        `db:"status" json:"status"`                         // Status: 1=Pending 2=In Progress 3=Completed 4=Expired 5=Cancelled
-	EstimatedDuration int        `db:"estimated_duration" json:"estimated_duration"` // Estimated duration
-	PendingSteps      string     `db:"pending_steps" json:"pending_steps"`           // Execution records in JSON array
-	UpdatedDetails    string     `db:"updated_details" json:"updated_details"`       // Execution records in JSON array
-	Stats             string     `db:"stats" json:"stats"`                           // Statistics in JSON array
-	CreatedAt         time.Time  `db:"created_at" json:"created_at"`                 // Creation time
-	StartedAt         *time.Time `db:"started_at" json:"started_at,omitempty"`       // Start time
-	UpdatedAt         *time.Time `db:"updated_at" json:"updated_at,omitempty"`       // Update time
-	FinishedAt        *time.Time `db:"finished_at" json:"finished_at,omitempty"`     // Finish time
-	CoachId           int64      `db:"coach_id" json:"coach_id"`                     // Coach ID
-	StudentId         int64      `db:"student_id" json:"student_id"`                 // Student ID
-	WorkoutPlanId     int64      `db:"workout_plan_id" json:"workout_plan_id"`       // Associated workout plan ID
+	Id                int        `json:"id" db:"id"`                                 // Primary key
+	Time              string     `json:"time" db:"time"`                             // Training time (YYYY-MM-DD HH:MM:SS)
+	Status            int        `json:"status" db:"status"`                         // Status: 1=Pending 2=In Progress 3=Completed 4=Expired 5=Cancelled
+	EstimatedDuration int        `json:"estimated_duration" db:"estimated_duration"` // Estimated duration
+	PendingSteps      string     `json:"pending_steps" db:"pending_steps"`           // Execution records in JSON array
+	UpdatedDetails    string     `json:"updated_details" db:"updated_details"`       // Execution records in JSON array
+	Stats             string     `json:"stats" db:"stats"`                           // Statistics in JSON array
+	CreatedAt         time.Time  `json:"created_at" db:"created_at"`                 // Creation time
+	StartedAt         *time.Time `json:"started_at,omitempty" db:"started_at"`       // Start time
+	UpdatedAt         *time.Time `json:"updated_at,omitempty" db:"updated_at"`       // Update time
+	FinishedAt        *time.Time `json:"finished_at,omitempty" db:"finished_at"`     // Finish time
+	CoachId           int        `json:"coach_id" db:"coach_id" `                    // Coach ID
 
-	WorkoutPlan     WorkoutPlan            `json:"workout_plan" gorm:"foreignKey:WorkoutPlanId"`
+	WorkoutPlanId int         `json:"workout_plan_id" db:"workout_plan_id"` // Associated workout plan ID
+	WorkoutPlan   WorkoutPlan `json:"workout_plan" gorm:"foreignKey:WorkoutPlanId"`
+	StudentId     int         `json:"student_id" db:"student_id"`
+	Student       Coach       `json:"student" gorm:"foreignKey:StudentId"`
+
 	ActionHistories []WorkoutActionHistory `json:"action_histories" gorm:"foreignKey:WorkoutDayId"`
 }
 

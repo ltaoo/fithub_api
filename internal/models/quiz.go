@@ -69,12 +69,14 @@ type Exam struct {
 	Score       int        `json:"score" gorm:"not null;default:0"`
 	CorrectRate int        `json:"correct_rate" gorm:"not null;default:0"`
 	Pass        int        `json:"pass" gorm:"not null;default:0"` // 0否 1是
-	PaperId     int        `json:"paper_id" gorm:"not null;default:0"`
 	StudentId   int        `json:"student_id" gorm:"not null;default:0"`
 	StartedAt   *time.Time `json:"started_at"`
 	CompletedAt *time.Time `json:"completed_at"` // 完成时间 包含交卷、超时自动提交
-	UpdatedAt   *time.Time `json:"updated_at"`
+	GiveUpAt    *time.Time `json:"give_up_at"`   // 手动放弃时间
 	CreatedAt   time.Time  `json:"created_at" gorm:"not null;default:CURRENT_TIMESTAMP"`
+
+	PaperId int   `json:"paper_id" gorm:"not null;default:0"`
+	Paper   Paper `json:"paper"`
 }
 
 // TableName specifies the table name for Exam

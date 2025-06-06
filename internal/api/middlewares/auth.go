@@ -1,9 +1,9 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"myapi/internal/models"
 	"myapi/pkg/logger"
@@ -21,8 +21,8 @@ func AuthMiddleware(logger *logger.Logger) gin.HandlerFunc {
 			return
 		}
 
-		fmt.Println("process in auth middleware")
-		fmt.Println(auth_header)
+		// fmt.Println("process in auth middleware")
+		// fmt.Println(auth_header)
 		// Extract the token from the Authorization header
 		// Format: "Bearer <token>"
 		parts := strings.Split(auth_header, " ")
@@ -39,7 +39,12 @@ func AuthMiddleware(logger *logger.Logger) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
+		// 检查过期时间
+		if claims.ExpiresAt < float64(time.Now().Unix()) {
+			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Token has expired", "data": nil})
+			c.Abort()
+			return
+		}
 		c.Set("id", claims.Id)
 		c.Next()
 	}
