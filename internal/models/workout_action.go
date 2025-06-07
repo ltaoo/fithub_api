@@ -12,6 +12,7 @@ type WorkoutAction struct {
 	ZhName               string     `json:"zh_name" gorm:"column:zh_name;not null"`
 	Alias                string     `json:"alias" gorm:"column:alias;not null"`
 	Overview             string     `json:"overview" gorm:"column:overview;not null"`
+	CoverURL             string     `json:"cover_url"`
 	SortIdx              int        `json:"sort_idx"`
 	Type                 string     `json:"type" gorm:"column:type;not null"`
 	Level                int        `json:"level" gorm:"column:level;default:1"`

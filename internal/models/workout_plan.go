@@ -19,7 +19,9 @@ type WorkoutPlan struct {
 	Suggestions       string     `json:"suggestions"`
 	CreatedAt         time.Time  `json:"created_at" gorm:"default:CURRENT_TIMESTAMP"`
 	UpdatedAt         *time.Time `json:"updated_at"`
-	OwnerId           int        `json:"owner_id"`
+
+	OwnerId int   `json:"owner_id"`
+	Creator Coach `json:"creator" gorm:"foreignKey:OwnerId"`
 }
 
 func (WorkoutPlan) TableName() string {
@@ -34,9 +36,11 @@ type WorkoutSchedule struct {
 	Type      int        `json:"type"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
-	OwnerId   int        `json:"owner_id"`
 
 	WorkoutPlans []WorkoutPlanInSchedule `json:"workout_plans" gorm:"foreignKey:WorkoutPlanCollectionId"`
+
+	OwnerId int   `json:"owner_id"`
+	Creator Coach `json:"creator" gorm:"foreignKey:OwnerId"`
 }
 
 func (WorkoutSchedule) TableName() string {

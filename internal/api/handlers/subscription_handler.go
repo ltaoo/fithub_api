@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"myapi/internal/models"
+	"myapi/internal/pkg/pagination"
 	"myapi/pkg/logger"
 	"net/http"
 	"sort"
@@ -34,9 +35,7 @@ func (h *SubscriptionHandler) FetchSubscriptionPlanList(c *gin.Context) {
 	}
 	query := h.db
 	var plans []models.SubscriptionPlan
-
-	r := query.Find(&plans)
-	if r.Error != nil {
+	if err := query.Find(&plans).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch discount policies", "data": nil})
 		return
 	}
@@ -303,6 +302,39 @@ func (h *SubscriptionHandler) CalcSubscriptionOrderAmount(c *gin.Context) {
 				},
 			},
 			"text": text,
+		},
+	})
+}
+
+func (h *SubscriptionHandler) FetchSubscriptionList(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		models.Pagination
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	query := h.db
+	query = query.Where("coach_id = ?", uid).Preload("SubscriptionPlan")
+	pb := pagination.NewPaginationBuilder[models.Subscription](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
+	var list []models.Subscription
+	if err := pb.Build().Find(&list).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	list2, has_more, next_marker := pb.ProcessResults(list)
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "",
+		"data": gin.H{
+			"list":        list2,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_marker,
 		},
 	})
 }

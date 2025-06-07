@@ -10,6 +10,7 @@ type WorkoutDay struct {
 	Time              string     `json:"time" db:"time"`                             // Training time (YYYY-MM-DD HH:MM:SS)
 	Status            int        `json:"status" db:"status"`                         // Status: 1=Pending 2=In Progress 3=Completed 4=Expired 5=Cancelled
 	EstimatedDuration int        `json:"estimated_duration" db:"estimated_duration"` // Estimated duration
+	GroupNo           string     `json:"group_no"`                                   // 一起训练的标记
 	PendingSteps      string     `json:"pending_steps" db:"pending_steps"`           // Execution records in JSON array
 	UpdatedDetails    string     `json:"updated_details" db:"updated_details"`       // Execution records in JSON array
 	Stats             string     `json:"stats" db:"stats"`                           // Statistics in JSON array

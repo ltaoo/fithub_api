@@ -3,10 +3,11 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"myapi/internal/models"
+	"myapi/internal/pkg/pagination"
+	"myapi/internal/pkg/sensitive"
 	"myapi/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -14,35 +15,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Coach represents a coach in the system
-// type Coach struct {
-// 	Id        int    `json:"id"`
-// 	Nickname  string `json:"nickname"`
-// 	AvatarURL string `json:"avatar_url,omitempty"`
-// 	Config    string `json:"config"`
-// 	CreatedAt string `json:"created_at"`
-// 	UpdatedAt string `json:"updated_at"`
-// }
-
-// CoachAccount represents an authentication method for a coach
-// type CoachAccount struct {
-// 	ProviderType string    `json:"provider_type"`
-// 	ProviderId   string    `json:"provider_id"`
-// 	ProviderArg1 int       `json:"provider_arg1,omitempty"`
-// 	ProviderArg2 string    `json:"provider_arg2,omitempty"`
-// 	ProviderArg3 string    `json:"provider_arg3,omitempty"`
-// 	UserId       string    `json:"coach_id"`
-// 	CreatedAt    time.Time `json:"created_at"`
-// }
-
-// CoachLoginRequest represents the request body for coach login
-type CoachLoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password,omitempty"`
-	Type     string `json:"provider_type"`
-}
-
-// CoachHandler handles coach-related requests
 type CoachHandler struct {
 	db     *gorm.DB
 	logger *logger.Logger
@@ -55,6 +27,9 @@ func NewCoachHandler(db *gorm.DB, logger *logger.Logger) *CoachHandler {
 		logger: logger,
 	}
 }
+
+var AvatarPrefix = "//static.fithub.top/avatars/"
+var DefaultAvatarURL = AvatarPrefix + "default1.jpeg"
 
 func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 
@@ -125,7 +100,6 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 501, "msg": "注册失败", "data": nil})
 		return
 	}
-
 	the_coach_account := models.CoachAccount{
 		ProviderType: models.AccountProviderTypeEmailWithPwd,
 		ProviderId:   body.Email,
@@ -139,37 +113,41 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 502, "msg": "注册失败", "data": nil})
 		return
 	}
-	fmt.Println("-----------------")
-	fmt.Println("About to create CoachProfile1")
 	profile1 := models.CoachProfile1{
 		CoachId:   the_coach.Id,
 		Nickname:  nickname,
-		AvatarURL: "",
+		AvatarURL: DefaultAvatarURL,
 	}
-	fmt.Println("Created profile1 struct:", profile1)
 	if err := tx.Create(&profile1).Error; err != nil {
-		fmt.Println("Error creating profile1:", err)
 		tx.Rollback()
 		h.logger.Error("Failed to create profile1", err)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create coach account", "data": nil})
 		return
 	}
-	fmt.Println("Successfully created profile1")
-	fmt.Println("===================")
 	the_coach.Profile1Id = profile1.Id
 	if err := tx.Save(&the_coach).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create coach account", "data": nil})
 		return
 	}
-
-	// if err := tx.Create(models.CoachProfile2{
-	// 	CoachId: the_coach.Id,
-	// }).Error; err != nil {
-	// 	tx.Rollback()
-	// 	h.logger.Error("Failed to create profile2", err)
-	// 	c.JSON(http.StatusOK, gin.H{"code": 503, "msg": "注册失败", "data": nil})
-	// 	return
-	// }
+	var subscription_plan models.SubscriptionPlan
+	if err := tx.First(&subscription_plan).Error; err == nil {
+		day_count := 30
+		expired_at := now.AddDate(0, 0, day_count)
+		subscription := models.Subscription{
+			Step:               2,
+			Count:              30,
+			ExpectExpiredAt:    &expired_at,
+			Reason:             "注册赠送",
+			SubscriptionPlanId: subscription_plan.Id,
+			CoachId:            the_coach.Id,
+			ActiveAt:           &now,
+			CreatedAt:          now,
+		}
+		if err := tx.Create(&subscription).Error; err != nil {
+			h.logger.Error("Failed to create subscription", err)
+		}
+	}
 
 	// Generate JWT token
 	token, err := models.GenerateJWT(the_coach.Id)
@@ -181,7 +159,6 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		// 提交失败（如数据库崩溃），可能需要处理补偿逻辑
 		tx.Rollback()
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
@@ -249,64 +226,130 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Login successful", "data": response})
 }
 
-// GetCoachProfile retrieves the coach's profile
-func (h *CoachHandler) GetCoachProfile(c *gin.Context) {
+func (h *CoachHandler) FetchCoachProfile(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
-	var coach models.Coach
-
-	if err := h.db.Where("id = ?", uid).Preload("Profile1").First(&coach).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "the profile not found", "data": nil})
-		} else {
-			h.logger.Error("Failed to find paper", err)
-			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to find profile", "data": nil})
+	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered from panic:", r)
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
 		}
+	}()
+	var coach models.Coach
+	if err := tx.
+		Where("id = ?", uid).
+		Preload("Profile1").
+		First(&coach).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
 		return
 	}
 
-	var subscription models.Subscription
-	if err := h.db.Where("coach_id = ?", uid).Preload("SubscriptionPlan").First(&subscription).Error; err != nil {
+	// First try to find the latest active subscription
+	var active_subscription models.Subscription
+	if err := tx.Where("coach_id = ? AND step = 2", uid).Order("created_at DESC").Preload("SubscriptionPlan").First(&active_subscription).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
-			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to find profile", "data": nil})
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
 		}
 	}
+	// Check if active subscription is expired and handle status updates
+	if active_subscription.Id != 0 {
+		now := time.Now()
+		if active_subscription.ExpectExpiredAt != nil && now.After(*active_subscription.ExpectExpiredAt) {
+			// Update expired subscription status
+			if err := tx.Model(&active_subscription).Update("step", 3).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
 
-	resp := gin.H{
-		"nickname":   coach.Profile1.Nickname,
-		"avatar_url": coach.Profile1.AvatarURL,
-		"subscription": gin.H{
-			"visible": false,
-			"text":    "unknown",
-		},
-	}
-	if subscription.Id != 0 {
-		resp["subscription"] = gin.H{
-			"text":    subscription.SubscriptionPlan.Name,
-			"visible": true,
+			// Find and activate the next pending subscription
+			var next_subscription models.Subscription
+			if err := tx.Where("coach_id = ? AND step = 1", uid).Order("created_at ASC").First(&next_subscription).Error; err != nil {
+				if err != gorm.ErrRecordNotFound {
+					c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+					return
+				}
+			}
+			if next_subscription.Id != 0 {
+				// Update next subscription to active
+				if err := tx.Model(&next_subscription).Update("step", 2).Error; err != nil {
+					tx.Rollback()
+					c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+					return
+				}
+				// Update active_subscription to the newly activated one
+				active_subscription = next_subscription
+			}
 		}
 	}
-	if coach.Profile1.Nickname == "" {
-		resp["nickname"] = coach.Nickname
+	// Then find the latest subscription regardless of status
+	var latest_subscription models.Subscription
+	if err := h.db.Where("coach_id = ?", uid).Order("created_at DESC").Preload("SubscriptionPlan").First(&latest_subscription).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Success", "data": resp})
+	subscription_resp := gin.H{
+		"name":       "",
+		"status":     0,
+		"expired_at": "",
+	}
+
+	// If we have a latest subscription
+	if latest_subscription.Id != 0 {
+		// If the latest is pending and we have an active one, use the active one
+		if latest_subscription.Step != 2 && active_subscription.Id != 0 {
+			subscription_resp = gin.H{
+				"name":       active_subscription.SubscriptionPlan.Name,
+				"status":     active_subscription.Step,
+				"expired_at": active_subscription.ExpectExpiredAt,
+			}
+		} else {
+			// Otherwise use the latest one
+			subscription_resp = gin.H{
+				"name":       latest_subscription.SubscriptionPlan.Name,
+				"status":     latest_subscription.Step,
+				"expired_at": latest_subscription.ExpectExpiredAt,
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan retrieved successfully", "data": gin.H{
+		"id":           coach.Id,
+		"nickname":     coach.Profile1.Nickname,
+		"avatar_url":   coach.Profile1.AvatarURL,
+		"subscription": subscription_resp,
+	}})
 }
 
 func (h *CoachHandler) UpdateCoachProfile(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
 	var body struct {
-		Nickname  string `json:"nickname"`
-		AvatarURL string `json:"avatar_url"`
+		Nickname  string `json:"nickname,omitempty" binding:"omitempty,min=3,max=10" label:"昵称"`
+		AvatarURL string `json:"avatar_url" label:"头像"`
 		Config    string `json:"config"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
 	if body.AvatarURL == "" && body.Nickname == "" {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少修改参数", "data": nil})
+		return
+	}
+
+	// Check for sensitive words in nickname
+	if body.Nickname != "" && sensitive.ContainsSensitiveWord(body.Nickname) {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "昵称包含敏感词", "data": nil})
 		return
 	}
 
@@ -318,34 +361,59 @@ func (h *CoachHandler) UpdateCoachProfile(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
 		}
 	}()
-	var user models.CoachProfile1
-	if err := tx.Where("coach_id = ?", uid).First(&user).Error; err != nil {
-		tx.Rollback()
-		h.logger.Error("Failed to find record", err)
+	var existing models.Coach
+	if err := tx.Where("id = ?", uid).Preload("Profile1").First(&existing).Error; err != nil {
+		h.logger.Error("Failed to find models.Coach", err)
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "记录不存在", "data": nil})
-		return
 	}
-	updates := map[string]interface{}{
-		"nickname":   body.Nickname,
-		"avatar_url": body.AvatarURL,
+	if existing.Profile1Id == 0 {
+		var existing_profile1 models.CoachProfile1
+		if err := tx.Where("coach_id = ?", uid).First(&existing_profile1).Error; err != nil {
+			if err != gorm.ErrRecordNotFound {
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
+			// 处理历史遗留问题 不存在 CoachProfile1
+			existing_profile1.CoachId = existing.Id
+			if err := tx.Create(&existing_profile1).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
+
+		}
+		// 处理历史遗留问题 CoachProfile1 没有关联上 Coach
+		if err := tx.Model(&existing).Updates(map[string]interface{}{
+			"profile1_id": existing_profile1.Id,
+		}).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		existing.Profile1 = existing_profile1
 	}
+	updates := map[string]interface{}{}
 	if body.Nickname != "" {
 		updates["nickname"] = body.Nickname
 	}
 	if body.AvatarURL != "" {
-		updates["avatar_url"] = body.AvatarURL
+		updates["avatar_url"] = AvatarPrefix + body.AvatarURL
 	}
-	if err := h.db.Model(&user).Updates(updates).Error; err != nil {
+	if err := tx.Model(&existing.Profile1).Updates(updates).Error; err != nil {
 		tx.Rollback()
 		h.logger.Error("Failed to update the record", err)
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update the record", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Profile updated successfully", "data": nil})
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": nil})
 }
 
 // SendVerificationCode sends a verification code to the specified email
@@ -415,7 +483,7 @@ func (h *CoachHandler) CreateStudent(c *gin.Context) {
 	profile1 := models.CoachProfile1{
 		CoachId:   student.Id,
 		Nickname:  body.Name,
-		AvatarURL: "",
+		AvatarURL: DefaultAvatarURL,
 		Age:       body.Age,
 		Gender:    body.Gender,
 	}
@@ -447,6 +515,99 @@ func (h *CoachHandler) CreateStudent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan created successfully", "data": gin.H{"id": student.Id}})
+}
+
+func (h *CoachHandler) UpdateStudentProfile(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		Id        int    `json:"id"`
+		Nickname  string `json:"nickname" binding:"min=3,max=10"`
+		AvatarURL string `json:"avatar_url"`
+		Age       int    `json:"age"`
+		Gender    int    `json:"gender"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少id参数", "data": nil})
+		return
+	}
+	if body.Nickname != "" && sensitive.ContainsSensitiveWord(body.Nickname) {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "昵称包含敏感词", "data": nil})
+		return
+	}
+	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
+	var relation models.CoachRelationship
+	if err := tx.Where("coach_id = ? AND student_id = ?", uid, body.Id).First(&relation).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "异常操作", "data": nil})
+		return
+	}
+	var existing models.Coach
+	if err := tx.Where("id = ?", body.Id).Preload("Profile1").First(&existing).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "记录不存在", "data": nil})
+		return
+	}
+	if existing.Profile1Id == 0 {
+		var existing_profile1 models.CoachProfile1
+		if err := tx.Where("coach_id = ?", body.Id).First(&existing_profile1).Error; err != nil {
+			if err != gorm.ErrRecordNotFound {
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
+			existing_profile1.CoachId = existing.Id
+			// 处理历史遗留问题 不存在 CoachProfile1
+			if err := tx.Create(&existing_profile1).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
+		}
+		// 处理历史遗留问题 CoachProfile1 没有关联上 Coach
+		if err := tx.Model(&existing).Updates(map[string]interface{}{
+			"profile1_id": existing_profile1.Id,
+		}).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		existing.Profile1 = existing_profile1
+	}
+	updates := map[string]interface{}{}
+	if body.Nickname != "" {
+		updates["nickname"] = body.Nickname
+	}
+	if body.AvatarURL != "" {
+		updates["avatar_url"] = AvatarPrefix + body.AvatarURL
+	}
+	if body.Age != 0 {
+		updates["age"] = body.Age
+	}
+	if body.Gender != 0 {
+		updates["gender"] = body.Gender
+	}
+	if err := tx.Model(&existing.Profile1).Updates(&updates).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": nil})
 }
 
 func (h *CoachHandler) DeleteMyStudent(c *gin.Context) {
@@ -484,32 +645,22 @@ func (h *CoachHandler) FetchMyStudentList(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-
 	query := h.db
-	limit := 20
-	if body.PageSize != 0 {
-		limit = body.PageSize
-	}
-	if body.Page != 0 {
-		query = query.Offset((body.Page - 1) * limit)
-	}
 	query = query.Where("coach_id = ?", uid)
-	query = query.Order("created_at desc").Limit(body.PageSize + 1)
+
+	pb := pagination.NewPaginationBuilder[models.CoachRelationship](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
 
 	var list []models.CoachRelationship
-	if err := query.Preload("Student").Preload("Student.Profile1").Find(&list).Error; err != nil {
+	if err := pb.Build().Preload("Student").Preload("Student.Profile1").Find(&list).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	has_more := false
-	next_cursor := ""
-	if len(list) > limit {
-		has_more = true
-		list = list[:limit]
-		next_cursor = strconv.Itoa(int(list[limit-1].Id))
-	}
+	list2, has_more, next_marker := pb.ProcessResults(list)
 	data_list := []interface{}{}
-	for _, v := range list {
+	for _, v := range list2 {
 		data_list = append(data_list, map[string]interface{}{
 			"id":         v.StudentId,
 			"nickname":   v.Student.Profile1.Nickname,
@@ -518,16 +669,15 @@ func (h *CoachHandler) FetchMyStudentList(c *gin.Context) {
 			"gender":     v.Student.Profile1.Gender,
 		})
 	}
-	data := map[string]interface{}{
-		"list":        data_list,
-		"page_size":   limit,
-		"has_more":    has_more,
-		"next_marker": next_cursor,
-	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
-		"data": data,
+		"data": gin.H{
+			"list":        data_list,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_marker,
+		},
 	})
 }
 
@@ -587,46 +737,6 @@ func (h *CoachHandler) FetchMyStudentProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan retrieved successfully", "data": data})
 }
 
-func (h *CoachHandler) FetchMyProfile(c *gin.Context) {
-	uid := int(c.GetFloat64("id"))
-
-	var coach models.Coach
-	r := h.db.
-		Where("id = ?", uid).
-		Preload("Profile1").
-		First(&coach)
-	if r.Error == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "the record not found", "data": nil})
-		return
-	}
-	if r.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": r.Error.Error(), "data": nil})
-		return
-	}
-
-	var subscription models.Subscription
-	r2 := h.db.Where("coach_id = ?", uid).Preload("SubscriptionPlan").First(&subscription)
-	if r2.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": r2.Error.Error(), "data": nil})
-		return
-	}
-	subscription_resp := gin.H{
-		"visible": false,
-		"text":    "unknown",
-	}
-	if subscription.Id != 0 {
-		subscription_resp = gin.H{
-			"visible": true,
-			"text":    subscription.SubscriptionPlan.Name,
-		}
-	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan retrieved successfully", "data": gin.H{
-		"nickname":     coach.Profile1.Nickname,
-		"avatar_url":   coach.Profile1.AvatarURL,
-		"subscription": subscription_resp,
-	}})
-}
-
 func (h *CoachHandler) RefreshToken(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
@@ -644,4 +754,17 @@ func (h *CoachHandler) RefreshToken(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Token refreshed successfully", "data": response})
+}
+
+type PersonAvatar struct {
+	Id  string
+	URL string
+}
+type PersonWithAvatars struct {
+	Id      int
+	Avatars []PersonAvatar
+}
+type AvatarGroup struct {
+	Gender  int
+	Persons []PersonWithAvatars
 }

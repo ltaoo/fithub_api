@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"myapi/internal/models"
+	"myapi/internal/pkg/pagination"
 	"myapi/pkg/logger"
 )
 
@@ -65,24 +67,75 @@ func (h *WorkoutPlanHandler) FetchWorkoutPlanProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
-
-	var plan models.WorkoutPlan
-	// 使用 Preload 预加载关联的 Steps 和 Actions
-	result := h.db.
-		Where("id = ?", body.Id).
-		First(&plan)
-
-	if result.Error == gorm.ErrRecordNotFound {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout plan not found", "data": nil})
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少id参数", "data": nil})
 		return
 	}
-
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": result.Error.Error(), "data": nil})
+	query := h.db.Where("id = ?", body.Id)
+	var record models.WorkoutPlan
+	if err := query.
+		Preload("Creator.Profile1").
+		First(&record).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 404, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到记录", "data": nil})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan retrieved successfully", "data": plan})
+	type WorkoutPlanStepJSON250607 struct {
+		Title           string `json:"title"`
+		Type            string `json:"type"`
+		Idx             int    `json:"idx"`
+		SetType         string `json:"set_type"`
+		SetCount        int    `json:"set_count"`
+		SetRestDuration int    `json:"set_rest_duration"`
+		SetWeight       string `json:"set_weight"`
+		Actions         []struct {
+			ActionId int `json:"action_id"`
+			Action   struct {
+				Id     int    `json:"id"`
+				Name   string `json:"name"`
+				ZhName string `json:"zh_name"`
+			} `json:"action"`
+			Idx          int    `json:"idx"`
+			SetIdx       int    `json:"set_idx"`
+			Weight       string `json:"weight"`
+			Reps         int    `json:"reps"`
+			RepsUnit     string `json:"reps_unit"`
+			RestDuration int    `json:"rest_duration"`
+			Note         string `json:"note"`
+		} `json:"actions"`
+		Note string `json:"note"`
+	}
+	type WorkoutPlanProfileJSON250607 struct {
+		Version string                      `json:"v"`
+		Steps   []WorkoutPlanStepJSON250607 `json:"steps"`
+	}
+	var details WorkoutPlanProfileJSON250607
+	if err := json.Unmarshal([]byte(record.Details), &details); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 600, "msg": err.Error(), "data": nil})
+		return
+	}
+	data := map[string]interface{}{
+		"id":                 record.Id,
+		"title":              record.Title,
+		"overview":           record.Overview,
+		"level":              record.Level,
+		"estimated_duration": record.EstimatedDuration,
+		"suggestions":        record.Suggestions,
+		"tags":               record.Tags,
+		"cover_url":          record.CoverURL,
+		"equipment_ids":      record.EquipmentIds,
+		"muscle_ids":         record.MuscleIds,
+		"steps":              details.Steps,
+		"creator": map[string]interface{}{
+			"nickname":   record.Creator.Profile1.Nickname,
+			"avatar_url": record.Creator.Profile1.AvatarURL,
+		},
+		"created_at": record.CreatedAt,
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan retrieved successfully", "data": data})
 }
 
 func (h *WorkoutPlanHandler) UpdateWorkoutPlan(c *gin.Context) {
@@ -160,79 +213,62 @@ func (h *WorkoutPlanHandler) DeleteWorkoutPlan(c *gin.Context) {
 }
 
 func (h *WorkoutPlanHandler) FetchWorkoutPlanList(c *gin.Context) {
-	var plans []models.WorkoutPlan
-
-	// Get query parameters for filtering
-	level := c.Query("level")
-	tag := c.Query("tag")
-	muscle := c.Query("muscle")
-	cursor := c.Query("cursor")
-	pageSize := c.Query("page_size")
-
-	// Get pagination parameters
-	limit := 10 // default page size
-
-	if pageSize != "" {
-		if parsedSize, err := strconv.Atoi(pageSize); err == nil && parsedSize > 0 {
-			limit = parsedSize
-		}
+	var body struct {
+		models.Pagination
+		Level  int    `json:"level"`
+		Tag    string `json:"tag"`
+		Muscle string `json:"muscle"`
 	}
 
-	// Start with base query
-	query := h.db
-
-	// Apply cursor pagination if cursor is provided
-	if cursor != "" {
-		if cursorID, err := strconv.Atoi(cursor); err == nil {
-			query = query.Where("id > ?", cursorID)
-		}
-	}
-
-	// Apply filters if provided
-	if level != "" {
-		levelInt, err := strconv.Atoi(level)
-		if err == nil {
-			query = query.Where("level = ?", levelInt)
-		}
-	}
-
-	if tag != "" {
-		query = query.Where("tags LIKE ?", "%"+tag+"%")
-	}
-
-	if muscle != "" {
-		query = query.Where("target_muscle_ids LIKE ?", "%"+muscle+"%")
-	}
-
-	// Add ordering and limit
-	// query = query.Order("id asc").Limit(limit + 1)
-	query = query.Order("created_at desc").Limit(limit + 1)
-
-	// Execute the query
-	result := query.Find(&plans)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout plans", "data": nil})
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 
-	has_more := false
-	next_cursor := ""
-
-	// Check if there are more results
-	if len(plans) > limit {
-		has_more = true
-		plans = plans[:limit]                              // Remove the extra item we fetched
-		next_cursor = strconv.Itoa(int(plans[limit-1].Id)) // Get the last item's ID as next cursor
+	query := h.db
+	if body.Level != 0 {
+		query = query.Where("level = ?", body.Level)
 	}
+	if body.Tag != "" {
+		query = query.Where("tags LIKE ?", "%"+body.Tag+"%")
+	}
+	if body.Muscle != "" {
+		query = query.Where("target_muscle_ids LIKE ?", "%"+body.Muscle+"%")
+	}
+	pb := pagination.NewPaginationBuilder[models.WorkoutPlan](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
 
+	var list1 []models.WorkoutPlan
+	if err := pb.Build().Preload("Creator.Profile1").Find(&list1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	var list []map[string]interface{}
+	for _, v := range list2 {
+		list = append(list, map[string]interface{}{
+			"id":                 v.Id,
+			"title":              v.Title,
+			"overview":           v.Overview,
+			"level":              v.Level,
+			"tags":               v.Tags,
+			"estimated_duration": v.EstimatedDuration,
+			"creator": map[string]interface{}{
+				"nickname":   v.Creator.Profile1.Nickname,
+				"avatar_url": v.Creator.Profile1.AvatarURL,
+			},
+		})
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
 		"data": gin.H{
-			"list":        plans,
-			"page_size":   limit,
+			"list":        list,
+			"page_size":   pb.GetLimit(),
 			"has_more":    has_more,
-			"next_marker": next_cursor,
+			"next_marker": next_marker,
 		},
 	})
 }
@@ -527,7 +563,6 @@ func (h *WorkoutPlanHandler) FetchWorkoutScheduleProfile(c *gin.Context) {
 
 func (h *WorkoutPlanHandler) FetchWorkoutScheduleList(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
-
 	var body struct {
 		models.Pagination
 		Level int    `json:"level"`
@@ -537,43 +572,38 @@ func (h *WorkoutPlanHandler) FetchWorkoutScheduleList(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
-
-	// Get pagination parameters
-	limit := 10 // default page size
-
-	if body.PageSize != 0 {
-		limit = body.PageSize
-	}
-
-	// Start with base query
 	query := h.db
 	query = query.Where("owner_id = ?", uid)
-	// Apply filters if provided
 	if body.Level != 0 {
 		query = query.Where("level = ?", body.Level)
 	}
 	if body.Tag != "" {
 		query = query.Where("tags LIKE ?", "%"+body.Tag+"%")
 	}
-	// query = query.Order("id asc").Limit(limit + 1)
-	query = query.Order("created_at desc").Limit(limit + 1)
+	pb := pagination.NewPaginationBuilder[models.WorkoutSchedule](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
 
-	// Execute the query
-	var list []models.WorkoutSchedule
-	result := query.Find(&list)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": result.Error.Error(), "data": nil})
+	var list1 []models.WorkoutSchedule
+	if err := pb.Build().Preload("Creator.Profile1").Find(&list1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-
-	has_more := false
-	next_cursor := ""
-
-	// Check if there are more results
-	if len(list) > limit {
-		has_more = true
-		list = list[:limit]                               // Remove the extra item we fetched
-		next_cursor = strconv.Itoa(int(list[limit-1].Id)) // Get the last item's ID as next cursor
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	var list []map[string]interface{}
+	for _, v := range list2 {
+		list = append(list, map[string]interface{}{
+			"id":       v.Id,
+			"type":     v.Type,
+			"title":    v.Title,
+			"overview": v.Overview,
+			"level":    v.Level,
+			"creator": map[string]interface{}{
+				"nickname":   v.Creator.Profile1.Nickname,
+				"avatar_url": v.Creator.Profile1.AvatarURL,
+			},
+		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -581,9 +611,9 @@ func (h *WorkoutPlanHandler) FetchWorkoutScheduleList(c *gin.Context) {
 		"msg":  "Success",
 		"data": gin.H{
 			"list":        list,
-			"page_size":   limit,
+			"page_size":   pb.GetLimit(),
 			"has_more":    has_more,
-			"next_marker": next_cursor,
+			"next_marker": next_marker,
 		},
 	})
 }
@@ -732,59 +762,58 @@ func (h *WorkoutPlanHandler) FetchMyWorkoutScheduleList(c *gin.Context) {
 
 // 训练计划合集，用来在前端按组展示
 func (h *WorkoutPlanHandler) FetchWorkoutPlanSetList(c *gin.Context) {
-	var plans []models.WorkoutPlanSet
 
-	cursor := c.Query("cursor")
-	pageSize := c.Query("page_size")
-
-	// Get pagination parameters
-	limit := 100 // default page size
-
-	if pageSize != "" {
-		if parsedSize, err := strconv.Atoi(pageSize); err == nil && parsedSize > 0 {
-			limit = parsedSize
-		}
+	var body struct {
+		models.Pagination
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
 	}
 
-	// Start with base query
 	query := h.db
+	pb := pagination.NewPaginationBuilder[models.WorkoutPlanSet](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
 
-	// Apply cursor pagination if cursor is provided
-	if cursor != "" {
-		if cursorID, err := strconv.Atoi(cursor); err == nil {
-			query = query.Where("id > ?", cursorID)
-		}
-	}
-
-	// Add ordering and limit
-	// query = query.Order("id asc").Limit(limit + 1)
-	query = query.Order("created_at desc").Limit(limit + 1)
-
-	// Execute the query
-	result := query.Find(&plans)
-	if result.Error != nil {
+	var list1 []models.WorkoutPlanSet
+	if err := pb.Build().Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout plans", "data": nil})
 		return
 	}
 
-	has_more := false
-	next_cursor := ""
-
-	// Check if there are more results
-	if len(plans) > limit {
-		has_more = true
-		plans = plans[:limit]                              // Remove the extra item we fetched
-		next_cursor = strconv.Itoa(int(plans[limit-1].Id)) // Get the last item's ID as next cursor
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	type WorkoutPlanSetJSON250607 struct {
+		Id       int    `json:"id"`
+		Type     string `json:"type"`
+		Title    string `json:"title"`
+		Overview string `json:"overview"`
+		Tags     string `json:"tags"`
 	}
 
+	var list []map[string]interface{}
+	for _, v := range list2 {
+		var details []WorkoutPlanSetJSON250607
+		if err := json.Unmarshal([]byte(v.Details), &details); err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 600, "msg": err.Error(), "data": nil})
+			return
+		}
+		list = append(list, map[string]interface{}{
+			"id":      v.Id,
+			"title":   v.Title,
+			"idx":     v.Idx,
+			"details": details,
+		})
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
 		"data": gin.H{
-			"list":        plans,
-			"page_size":   limit,
+			"list":        list,
+			"page_size":   pb.GetLimit(),
 			"has_more":    has_more,
-			"next_marker": next_cursor,
+			"next_marker": next_marker,
 		},
 	})
 }

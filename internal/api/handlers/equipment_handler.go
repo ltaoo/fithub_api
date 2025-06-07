@@ -26,14 +26,12 @@ func NewEquipmentHandler(db *gorm.DB, logger *logger.Logger) *EquipmentHandler {
 
 // GetMuscles retrieves all muscles
 func (h *EquipmentHandler) FetchEquipmentList(c *gin.Context) {
-	var equipments []models.Equipment
 
 	// Get query parameters for filtering
-	type RequestPayload struct {
+	var body struct {
 		Ids []int `json:"ids"`
 	}
-	var request RequestPayload
-	if err := c.ShouldBindJSON(&request); err != nil {
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
@@ -41,13 +39,13 @@ func (h *EquipmentHandler) FetchEquipmentList(c *gin.Context) {
 	// Start with base query
 	query := h.db
 
-	if len(request.Ids) != 0 {
-		query = query.Where("id IN (?)", request.Ids)
+	if len(body.Ids) != 0 {
+		query = query.Where("id IN (?)", body.Ids)
 	}
 
-	result := query.Find(&equipments)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch equipments" + result.Error.Error(), "data": nil})
+	var equipments []models.Equipment
+	if err := query.Find(&equipments).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch equipments" + err.Error(), "data": nil})
 		return
 	}
 
@@ -120,14 +118,11 @@ func (h *EquipmentHandler) DeleteEquipment(c *gin.Context) {
 	id := c.Param("id")
 
 	var equipment models.Equipment
-	result := h.db.First(&equipment, id)
-	if result.Error != nil {
+	if err := h.db.First(&equipment, id).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Equipment not found", "data": nil})
 		return
 	}
-
-	result = h.db.Delete(&equipment)
-	if result.Error != nil {
+	if err := h.db.Delete(&equipment).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete equipment", "data": nil})
 		return
 	}

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -22,6 +23,48 @@ func NewWorkoutActionHistoryHandler(db *gorm.DB, logger *logger.Logger) *Workout
 		db:     db,
 		logger: logger,
 	}
+}
+
+func (h *WorkoutActionHistoryHandler) CreateWorkoutHistory(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+
+	var body struct {
+		WorkoutActionId int    `json:"workout_action_id"`
+		Reps            int    `json:"reps"`
+		RepsUnit        string `json:"reps_unit"`
+		Weight          int    `json:"weight"`
+		WeightUnit      string `json:"weight_unit"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.WorkoutActionId == 0 || body.Reps == 0 || body.Weight == 0 || body.RepsUnit == "" || body.WeightUnit == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少动作参数", "data": nil})
+		return
+	}
+	if uid == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "参数错误", "data": nil})
+		return
+	}
+
+	history := models.WorkoutActionHistory{
+		StudentId:       uid,
+		WorkoutActionId: body.WorkoutActionId,
+		Reps:            body.Reps,
+		RepsUnit:        body.RepsUnit,
+		Weight:          body.Weight,
+		WeightUnit:      body.WeightUnit,
+		CreatedAt:       time.Now(),
+	}
+
+	if err := h.db.Create(&history).Error; err != nil {
+		h.logger.Error("Failed to create workout action history", err)
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": nil})
 }
 
 // 获取健身动作历史记录
@@ -86,14 +129,19 @@ func (h *WorkoutActionHistoryHandler) FetchWorkoutActionHistoryListOfWorkoutActi
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
-	if body.WorkoutActionId == 0 || body.StudentId == 0 {
+	if body.WorkoutActionId == 0 {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
 		return
 	}
-	var relation models.CoachRelationship
-	if err := h.db.Where("coach_id = ? AND student_id = ?", uid, body.StudentId).First(&relation).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
-		return
+	if body.StudentId == 0 {
+		body.StudentId = uid
+	}
+	if uid != body.StudentId {
+		var relation models.CoachRelationship
+		if err := h.db.Where("coach_id = ? AND student_id = ?", uid, body.StudentId).First(&relation).Error; err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+			return
+		}
 	}
 	query := h.db.Preload("WorkoutAction")
 	query = query.Where("action_id = ? AND student_id = ?", body.WorkoutActionId, body.StudentId)

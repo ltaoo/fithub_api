@@ -111,6 +111,7 @@ type Subscription struct {
 	Id              int        `json:"id" db:"id"`
 	Step            int        `json:"step" db:"step"`
 	Count           int        `json:"count" db:"count"`
+	Reason          string     `json:"reason"`
 	ExpectExpiredAt *time.Time `json:"expect_expired_at" db:"expect_expired_at"`
 	CreatedAt       time.Time  `json:"created_at" db:"created_at"`
 	ActiveAt        *time.Time `json:"active_at" db:"active_at"`
@@ -122,7 +123,7 @@ type Subscription struct {
 	CoachId            int              `json:"coach_id" db:"coach_id"`
 	Coach              Coach            `json:"coach"`
 	SubscriptionPlanId int              `json:"subscription_plan_id" db:"subscription_plan_id"`
-	SubscriptionPlan   SubscriptionPlan `json:"SubscriptionPlan"`
+	SubscriptionPlan   SubscriptionPlan `json:"subscription_plan"`
 }
 
 func (Subscription) TableName() string {

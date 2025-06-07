@@ -154,7 +154,7 @@ CREATE TABLE WORKOUT_ACTION(
         alternative_action_ids TEXT(255) NOT NULL DEFAULT '', --替代动作;逗号分割
         advanced_action_ids TEXT(255) NOT NULL DEFAULT '', --进阶动作;逗号分割
         regressed_action_ids TEXT(255) NOT NULL DEFAULT '', --退阶动作;逗号分割
-        owner_id INTEGER NOT NULL DEFAULT 0, --教练id
+        owner_id INTEGER NOT NULL DEFAULT 0, --创建人id
         score REAL NOT NULL DEFAULT 0, -- 动作评分
         extra_config TEXT(1000) NOT NULL DEFAULT '{}', -- 额外配置
         sort_idx INTEGER NOT NULL DEFAULT 0, -- 排序

@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
 	"myapi/internal/models"
+	"myapi/internal/pkg/pagination"
 	"myapi/pkg/logger"
 )
 
@@ -35,38 +35,24 @@ func (h *QuizHandler) FetchPaperList(c *gin.Context) {
 		return
 	}
 	query := h.db
-	limit := 20
-	if body.PageSize != 0 {
-		limit = body.PageSize
-	}
-	if body.Page != 0 {
-		query = query.Offset((body.Page - 1) * limit)
-	}
-
+	pb := pagination.NewPaginationBuilder[models.Paper](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
 	var list []models.Paper
-	r := query.Find(&list)
-	if r.Error != nil {
+	if err := pb.Build().Find(&list).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch discount policies", "data": nil})
 		return
 	}
-
-	has_more := false
-	next_cursor := ""
-
-	if len(list) > limit {
-		has_more = true
-		list = list[:limit]                               // Remove the extra item we fetched
-		next_cursor = strconv.Itoa(int(list[limit-1].Id)) // Get the last item's ID as next cursor
-	}
-
+	list2, has_more, next_marker := pb.ProcessResults(list)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "",
 		"data": gin.H{
-			"list":        list,
-			"page_size":   limit,
+			"list":        list2,
+			"page_size":   pb.GetLimit(),
 			"has_more":    has_more,
-			"next_marker": next_cursor,
+			"next_marker": next_marker,
 		},
 	})
 }
@@ -80,39 +66,25 @@ func (h *QuizHandler) FetchQuizList(c *gin.Context) {
 		return
 	}
 	query := h.db
-	limit := 20
-	if body.PageSize != 0 {
-		limit = body.PageSize
-	}
-	if body.Page != 0 {
-		query = query.Offset((body.Page - 1) * limit)
-	}
-	query.Order("created_at DESC").Limit(limit + 1)
+	pb := pagination.NewPaginationBuilder[models.Quiz](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
 
 	var list []models.Quiz
-	if r := query.Find(&list); r.Error != nil {
+	if r := pb.Build().Find(&list); r.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch records", "data": nil})
 		return
 	}
-
-	has_more := false
-	next_cursor := ""
-
-	// Check if there are more results
-	if len(list) > limit {
-		has_more = true
-		list = list[:limit]                               // Remove the extra item we fetched
-		next_cursor = strconv.Itoa(int(list[limit-1].Id)) // Get the last item's ID as next cursor
-	}
-
+	list2, has_more, next_marker := pb.ProcessResults(list)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
 		"data": gin.H{
-			"list":        list,
-			"page_size":   limit,
+			"list":        list2,
+			"page_size":   pb.GetLimit(),
 			"has_more":    has_more,
-			"next_marker": next_cursor,
+			"next_marker": next_marker,
 		},
 	})
 }
@@ -587,16 +559,12 @@ func (h *QuizHandler) FetchExamList(c *gin.Context) {
 		return
 	}
 	query := h.db
-	limit := 20
-	if body.PageSize != 0 {
-		limit = body.PageSize
-	}
-	if body.Page != 0 {
-		query = query.Offset((body.Page - 1) * limit)
-	}
-	query.Order("created_at DESC").Limit(limit + 1)
+	pb := pagination.NewPaginationBuilder[models.Exam](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
 	var list []models.Exam
-	if err := query.Where("student_id = ?", uid).Preload("Paper").Find(&list).Error; err != nil {
+	if err := pb.Build().Where("student_id = ?", uid).Preload("Paper").Find(&list).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": nil})
 			return
@@ -605,21 +573,15 @@ func (h *QuizHandler) FetchExamList(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch exam", "data": nil})
 		return
 	}
-	has_more := false
-	next_cursor := ""
-	if len(list) > limit {
-		has_more = true
-		list = list[:limit]                               // Remove the extra item we fetched
-		next_cursor = strconv.Itoa(int(list[limit-1].Id)) // Get the last item's ID as next cursor
-	}
+	list2, has_more, next_marker := pb.ProcessResults(list)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "",
 		"data": gin.H{
-			"list":        list,
-			"page_size":   limit,
+			"list":        list2,
+			"page_size":   pb.GetLimit(),
 			"has_more":    has_more,
-			"next_marker": next_cursor,
+			"next_marker": next_marker,
 		},
 	})
 }

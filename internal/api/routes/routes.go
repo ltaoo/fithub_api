@@ -48,20 +48,21 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			api.POST("/auth/web_login", handler.LoginCoach)
 			// api.POST("/coach/send-verification-code", handler.SendVerificationCode)
 
-			authorized.POST("/auth/profile", handler.GetCoachProfile)
+			authorized.POST("/auth/profile", handler.FetchCoachProfile)
 			authorized.POST("/auth/update_profile", handler.UpdateCoachProfile)
 			authorized.POST("/auth/refresh_token", handler.RefreshToken)
 			authorized.POST("/student/create", handler.CreateStudent)
 			authorized.POST("/student/list", handler.FetchMyStudentList)
 			authorized.POST("/student/profile", handler.FetchMyStudentProfile)
+			authorized.POST("/student/update", handler.UpdateStudentProfile)
 		}
 
 		{
 			authorized := api.Group("/user")
 			authorized.Use(middlewares.AuthMiddleware(logger))
-			authorized.POST("/user/create", userHandler.CreateUser)
+			// authorized.POST("/user/create", userHandler.CreateUser)
 			authorized.POST("/user/update", userHandler.UpdateUser)
-			authorized.POST("/user/delete", userHandler.DeleteUser)
+			// authorized.POST("/user/delete", userHandler.DeleteUser)
 		}
 		{
 
@@ -92,9 +93,11 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/workout_day/profile", handler.FetchWorkoutDayProfile)
 			authorized.POST("/workout_day/has_started", handler.CheckHasStartedWorkoutDay)
 			authorized.POST("/workout_day/started_list", handler.FetchStartedWorkoutDay)
+			authorized.POST("/workout_day/finished_list", handler.FetchFinishedWorkoutDayList)
 			authorized.POST("/workout_day/start", handler.StartWorkoutDay)
 			authorized.POST("/workout_day/give_up", handler.GiveUpWorkoutDay)
 			authorized.POST("/workout_day/finish", handler.FinishWorkoutDay)
+			authorized.POST("/workout_day/continue", handler.ContinueWorkoutDay)
 			authorized.POST("/workout_day/update_steps", handler.UpdateWorkoutDayStepProgress)
 			authorized.POST("/workout_day/update_details", handler.UpdateWorkoutDayPlanDetails)
 			authorized.POST("/workout_day/delete", handler.DeleteWorkoutDay)
@@ -102,6 +105,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		}
 		{
 			handler := handlers.NewWorkoutActionHistoryHandler(db, logger)
+			authorized.POST("/workout_action_history/create", handler.CreateWorkoutHistory)
 			authorized.POST("/workout_action_history/list_of_workout_day", handler.FetchWorkoutActionHistoryListOfWorkoutDay)
 			authorized.POST("/workout_action_history/list_of_workout_action", handler.FetchWorkoutActionHistoryListOfWorkoutAction)
 		}
@@ -138,6 +142,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/subscription_plan/list", handler.FetchSubscriptionPlanList)
 			authorized.POST("/subscription_plan/create", handler.CreateSubscriptionPlan)
 			authorized.POST("/subscription_order/calc", handler.CalcSubscriptionOrderAmount)
+			authorized.POST("/subscription/list", handler.FetchSubscriptionList)
 		}
 		{
 			handler := handlers.NewQuizHandler(db, logger)
@@ -162,6 +167,22 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/report/profile", handler.FetchReportProfile)
 			authorized.POST("/report/list", handler.FetchReportList)
 			authorized.POST("/report/list_of_mine", handler.FetchMineReportList)
+		}
+		{
+			handler := handlers.NewGiftCardHandler(db, logger)
+			authorized.POST("/gift_card/create", handler.CreateGiftCard)
+			authorized.POST("/gift_card/create_reward", handler.CreateGiftCardReward)
+			authorized.POST("/gift_card/list", handler.FetchGiftCardList)
+			authorized.POST("/gift_card/reward_list", handler.FetchGiftCardRewardList)
+			authorized.POST("/gift_card/profile", handler.FetchGiftCardProfile)
+			authorized.POST("/gift_card/using", handler.UsingGiftCard)
+		}
+		{
+			handler := handlers.NewMediaResourceHandler(db, logger)
+			api.POST("/media/qiniu_token", handler.BuildQiniuToken)
+			authorized.POST("/media/create", handler.CreateMediaResource)
+			authorized.POST("/media/list", handler.FetchMediaResourceList)
+			authorized.POST("/media/delete", handler.DeleteMediaResource)
 		}
 	}
 
