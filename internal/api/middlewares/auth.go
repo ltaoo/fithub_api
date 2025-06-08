@@ -16,18 +16,17 @@ func AuthMiddleware(logger *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth_header := c.GetHeader("Authorization")
 		if auth_header == "" {
-			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Authorization header required", "data": nil})
+			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "缺少登录凭证", "data": nil})
 			c.Abort()
 			return
 		}
-
 		// fmt.Println("process in auth middleware")
 		// fmt.Println(auth_header)
 		// Extract the token from the Authorization header
 		// Format: "Bearer <token>"
 		parts := strings.Split(auth_header, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Invalid Authorization header format", "data": nil})
+			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "非法凭证请重新登录", "data": nil})
 			c.Abort()
 			return
 		}
@@ -35,13 +34,18 @@ func AuthMiddleware(logger *logger.Logger) gin.HandlerFunc {
 		token_str := strings.TrimPrefix(auth_header, "Bearer ")
 		claims, err := models.ParseJWT(token_str)
 		if err != nil {
-			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Invalid or expired token", "data": nil})
+			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "凭证失效请重新登录", "data": nil})
 			c.Abort()
 			return
 		}
 		// 检查过期时间
 		if claims.ExpiresAt < float64(time.Now().Unix()) {
-			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "Token has expired", "data": nil})
+			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "凭证过期请重新登录", "data": nil})
+			c.Abort()
+			return
+		}
+		if claims.Id == 0 {
+			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "请先登录", "data": nil})
 			c.Abort()
 			return
 		}

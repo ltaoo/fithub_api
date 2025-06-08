@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
+	"strings"
 	"time"
 
 	"myapi/internal/models"
@@ -11,6 +14,7 @@ import (
 	"myapi/pkg/logger"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -71,12 +75,11 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 	}()
 
 	nickname := func() string {
-		const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		b := make([]byte, 6)
-		for i := range b {
-			b[i] = charset[time.Now().UnixNano()%int64(len(charset))]
-		}
-		return string(b)
+		// Generate a random UUID and take first 6 characters
+		uuid := uuid.New().String()
+		// Remove hyphens and take first 6 characters
+		cleanUUID := strings.ReplaceAll(uuid, "-", "")
+		return cleanUUID[:6]
 	}()
 
 	now := time.Now()
@@ -334,7 +337,7 @@ func (h *CoachHandler) UpdateCoachProfile(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
 	var body struct {
-		Nickname  string `json:"nickname,omitempty" binding:"omitempty,min=3,max=10" label:"昵称"`
+		Nickname  string `json:"nickname,omitempty" binding:"omitempty,min=1,max=10" label:"昵称"`
 		AvatarURL string `json:"avatar_url" label:"头像"`
 		Config    string `json:"config"`
 	}
@@ -446,10 +449,248 @@ func (h *CoachHandler) SendVerificationCode(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Verification code sent", "data": response})
 }
 
+func (h *CoachHandler) RefreshCoachStats(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	if uid == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "请先登录", "data": nil})
+		return
+	}
+	var existing models.Coach
+	if err := h.db.Where("id = ?", uid).First(&existing).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "异常操作", "data": nil})
+		return
+	}
+
+	// 获取所有训练天数
+	var workout_days []models.WorkoutDay
+	if err := h.db.Where("student_id = ?", uid).Find(&workout_days).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	// 计算最近7天的训练情况
+	now := time.Now()
+	seven_days_ago := now.AddDate(0, 0, -7)
+	recent_workout_days := 0
+
+	// 使用map来统计不重复的训练天数
+	unique_workout_days := make(map[string]bool)
+	recent_unique_workout_days := make(map[string]bool)
+
+	for _, day := range workout_days {
+		// 将时间转换为日期字符串（去掉时分秒）
+		dateStr := day.CreatedAt.Format("2006-01-02")
+		unique_workout_days[dateStr] = true
+		if day.CreatedAt.After(seven_days_ago) {
+			recent_unique_workout_days[dateStr] = true
+		}
+	}
+
+	recent_workout_days = len(recent_unique_workout_days)
+
+	type WorkoutStats struct {
+		Version           string    `json:"v"`
+		TotalWorkoutDays  int       `json:"total_workout_days"`
+		TotalWorkoutTimes int       `json:"total_workout_times"`
+		RecentWorkoutDays int       `json:"recent_workout_days"`
+		CreatedAt         time.Time `json:"created_at"`
+	}
+
+	stats := WorkoutStats{
+		Version:           "250608",
+		TotalWorkoutDays:  len(unique_workout_days),
+		TotalWorkoutTimes: len(workout_days),
+		RecentWorkoutDays: recent_workout_days,
+		CreatedAt:         now,
+	}
+
+	statsJSON, err := json.Marshal(stats)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to marshal stats", "data": nil})
+		return
+	}
+
+	if err := h.db.Model(&existing).Update("workout_stats", string(statsJSON)).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update stats", "data": nil})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "统计数据获取成功",
+		"data": stats,
+	})
+}
+
+func (h *CoachHandler) RefreshWorkoutActionStats(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+
+	// 获取所有训练动作历史
+	var workout_action_histories []models.WorkoutActionHistory
+	if err := h.db.Where("student_id = ?", uid).Find(&workout_action_histories).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	// 获取所有训练动作
+	var workout_actions []models.WorkoutAction
+	if err := h.db.Find(&workout_actions).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	// 获取所有训练计划
+	var workout_plans []models.WorkoutPlan
+	if err := h.db.Where("student_id = ?", uid).Find(&workout_plans).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	recent_workout_actions := 0
+	now := time.Now()
+	seven_days_ago := now.AddDate(0, 0, -7)
+
+	// 用于排序的切片
+	type ActionStat struct {
+		ActionId    int
+		TotalCount  int
+		MaxWeight   int
+		MaxReps     int
+		TotalWeight int
+		TotalReps   int
+	}
+	var actionStatsList []ActionStat
+
+	// 统计每个动作的完成情况
+	action_stats := make(map[int]map[string]interface{})
+	for _, action := range workout_actions {
+		action_stats[action.Id] = map[string]interface{}{
+			"name":           action.Name,
+			"total_count":    0,
+			"recent_count":   0,
+			"last_completed": nil,
+			"max_weight":     0,
+			"max_reps":       0,
+			"total_weight":   0,
+			"total_reps":     0,
+			"avg_weight":     0.0,
+			"avg_reps":       0.0,
+		}
+	}
+
+	for _, history := range workout_action_histories {
+		if stats, exists := action_stats[history.WorkoutActionId]; exists {
+			// 更新总次数
+			totalCount := stats["total_count"].(int) + 1
+			stats["total_count"] = totalCount
+
+			// 更新最近7天次数
+			if history.CreatedAt.After(seven_days_ago) {
+				recentCount := stats["recent_count"].(int) + 1
+				stats["recent_count"] = recentCount
+			}
+
+			// 更新最后完成时间
+			if stats["last_completed"] == nil || history.CreatedAt.After(stats["last_completed"].(time.Time)) {
+				stats["last_completed"] = history.CreatedAt
+			}
+
+			// 更新重量相关统计
+			if history.Weight > stats["max_weight"].(int) {
+				stats["max_weight"] = history.Weight
+			}
+			totalWeight := stats["total_weight"].(int) + history.Weight
+			stats["total_weight"] = totalWeight
+			stats["avg_weight"] = float64(totalWeight) / float64(totalCount)
+
+			// 更新次数相关统计
+			if history.Reps > stats["max_reps"].(int) {
+				stats["max_reps"] = history.Reps
+			}
+			totalReps := stats["total_reps"].(int) + history.Reps
+			stats["total_reps"] = totalReps
+			stats["avg_reps"] = float64(totalReps) / float64(totalCount)
+
+			// 添加到排序列表
+			actionStatsList = append(actionStatsList, ActionStat{
+				ActionId:    history.WorkoutActionId,
+				TotalCount:  totalCount,
+				MaxWeight:   stats["max_weight"].(int),
+				MaxReps:     stats["max_reps"].(int),
+				TotalWeight: totalWeight,
+				TotalReps:   totalReps,
+			})
+		}
+	}
+
+	for _, history := range workout_action_histories {
+		if history.CreatedAt.After(seven_days_ago) {
+			recent_workout_actions++
+		}
+	}
+	// 按不同维度排序
+	type TopActions struct {
+		MostFrequent []map[string]interface{} `json:"most_frequent"` // 最常做的动作
+		MaxWeight    []map[string]interface{} `json:"max_weight"`    // 最大重量
+		MaxReps      []map[string]interface{} `json:"max_reps"`      // 最大次数
+		MostProgress []map[string]interface{} `json:"most_progress"` // 进步最大的动作
+	}
+
+	topActions := TopActions{
+		MostFrequent: make([]map[string]interface{}, 0, 3),
+		MaxWeight:    make([]map[string]interface{}, 0, 3),
+		MaxReps:      make([]map[string]interface{}, 0, 3),
+		MostProgress: make([]map[string]interface{}, 0, 3),
+	}
+
+	// 按总次数排序
+	sort.Slice(actionStatsList, func(i, j int) bool {
+		return actionStatsList[i].TotalCount > actionStatsList[j].TotalCount
+	})
+	for i := 0; i < 3 && i < len(actionStatsList); i++ {
+		actionId := actionStatsList[i].ActionId
+		topActions.MostFrequent = append(topActions.MostFrequent, map[string]interface{}{
+			"name":        action_stats[actionId]["name"],
+			"total_count": actionStatsList[i].TotalCount,
+			"max_weight":  actionStatsList[i].MaxWeight,
+			"max_reps":    actionStatsList[i].MaxReps,
+			"avg_weight":  action_stats[actionId]["avg_weight"],
+			"avg_reps":    action_stats[actionId]["avg_reps"],
+		})
+	}
+
+	// 按最大重量排序
+	sort.Slice(actionStatsList, func(i, j int) bool {
+		return actionStatsList[i].MaxWeight > actionStatsList[j].MaxWeight
+	})
+	for i := 0; i < 3 && i < len(actionStatsList); i++ {
+		actionId := actionStatsList[i].ActionId
+		topActions.MaxWeight = append(topActions.MaxWeight, map[string]interface{}{
+			"name":        action_stats[actionId]["name"],
+			"max_weight":  actionStatsList[i].MaxWeight,
+			"total_count": actionStatsList[i].TotalCount,
+		})
+	}
+
+	// 按最大次数排序
+	sort.Slice(actionStatsList, func(i, j int) bool {
+		return actionStatsList[i].MaxReps > actionStatsList[j].MaxReps
+	})
+	for i := 0; i < 3 && i < len(actionStatsList); i++ {
+		actionId := actionStatsList[i].ActionId
+		topActions.MaxReps = append(topActions.MaxReps, map[string]interface{}{
+			"name":        action_stats[actionId]["name"],
+			"max_reps":    actionStatsList[i].MaxReps,
+			"total_count": actionStatsList[i].TotalCount,
+		})
+	}
+
+}
+
 func (h *CoachHandler) CreateStudent(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var body struct {
-		Name   string `json:"name"`
+		Name   string `json:"name" binding:"required,min=1,max=10"`
 		Gender int    `json:"gender"`
 		Age    int    `json:"age"`
 	}
@@ -461,7 +702,10 @@ func (h *CoachHandler) CreateStudent(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Nickname are required", "data": nil})
 		return
 	}
-
+	if body.Name != "" && sensitive.ContainsSensitiveWord(body.Name) {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "名称包含敏感词", "data": nil})
+		return
+	}
 	tx := h.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -610,7 +854,7 @@ func (h *CoachHandler) UpdateStudentProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": nil})
 }
 
-func (h *CoachHandler) DeleteMyStudent(c *gin.Context) {
+func (h *CoachHandler) DeleteStudent(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var body struct {
 		Id int `json:"id"`
@@ -619,8 +863,14 @@ func (h *CoachHandler) DeleteMyStudent(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少id参数", "data": nil})
+		return
+	}
+	query := h.db.Where("d IS NULL OR d = 0")
+	query = query.Where("coach_id = ? AND student_id = ?", uid, body.Id)
 	var existing models.CoachRelationship
-	if err := h.db.Where("coach_id = ? AND student_id = ?", uid, body.Id).First(&existing).Error; err != nil {
+	if err := query.First(&existing).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
@@ -628,52 +878,56 @@ func (h *CoachHandler) DeleteMyStudent(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到记录", "data": nil})
 		return
 	}
-	if err := h.db.Delete(&existing).Error; err != nil {
+	if err := h.db.Model(&existing).Update("d", 1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "删除成功", "data": nil})
 }
 
-func (h *CoachHandler) FetchMyStudentList(c *gin.Context) {
+func (h *CoachHandler) FetchStudentList(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
-
 	var body struct {
 		models.Pagination
+		Keyword string `json:"keyword"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-	query := h.db
-	query = query.Where("coach_id = ?", uid)
-
+	query := h.db.Where("d IS NULL OR d = 0")
+	query = query.Where("coach_relationship.coach_id = ?", uid)
+	if body.Keyword != "" {
+		query = query.Joins("JOIN coach_profile1 ON coach_relationship.student_id = coach_profile1.coach_id").
+			Where("coach_profile1.nickname LIKE ?", "%"+body.Keyword+"%")
+	}
 	pb := pagination.NewPaginationBuilder[models.CoachRelationship](query).
 		SetLimit(body.PageSize).
 		SetPage(body.Page).
 		SetOrderBy("created_at DESC")
 
-	var list []models.CoachRelationship
-	if err := pb.Build().Preload("Student").Preload("Student.Profile1").Find(&list).Error; err != nil {
+	var list1 []models.CoachRelationship
+	if err := pb.Build().Preload("Student").Preload("Student.Profile1").Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	list2, has_more, next_marker := pb.ProcessResults(list)
-	data_list := []interface{}{}
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	list := make([]map[string]interface{}, 0, len(list2))
 	for _, v := range list2 {
-		data_list = append(data_list, map[string]interface{}{
+		list = append(list, map[string]interface{}{
 			"id":         v.StudentId,
 			"nickname":   v.Student.Profile1.Nickname,
 			"avatar_url": v.Student.Profile1.AvatarURL,
 			"age":        v.Student.Profile1.Age,
 			"gender":     v.Student.Profile1.Gender,
+			"created_at": v.CreatedAt,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
 		"data": gin.H{
-			"list":        data_list,
+			"list":        list,
 			"page_size":   pb.GetLimit(),
 			"has_more":    has_more,
 			"next_marker": next_marker,
@@ -681,7 +935,7 @@ func (h *CoachHandler) FetchMyStudentList(c *gin.Context) {
 	})
 }
 
-func (h *CoachHandler) FetchMyStudentProfile(c *gin.Context) {
+func (h *CoachHandler) FetchStudentProfile(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var body struct {
 		Id int `json:"id"`
@@ -690,11 +944,14 @@ func (h *CoachHandler) FetchMyStudentProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少id参数", "data": nil})
+		return
+	}
+	query := h.db.Where("d IS NULL OR d = 0")
+	query = query.Where("id = ?", body.Id)
 	var profile models.Coach
-	if err := h.db.
-		Where("id = ?", body.Id).
-		Preload("Profile1").
-		First(&profile).Error; err != nil {
+	if err := query.Preload("Profile1").First(&profile).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
@@ -702,19 +959,8 @@ func (h *CoachHandler) FetchMyStudentProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到该记录", "data": nil})
 		return
 	}
-	// var p models.CoachProfile1
-	// if err := h.db.
-	// 	Where("coach_id = ?", body.Id).
-	// 	First(&p).Error; err != nil {
-	// 	if err != gorm.ErrRecordNotFound {
-	// 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
-	// 		return
-	// 	}
-	// 	c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到该记录", "data": nil})
-	// 	return
-	// }
 	var relation models.CoachRelationship
-	if err := h.db.Where("coach_id = ? AND student_id = ?", uid, body.Id).First(&relation).Error; err != nil {
+	if err := h.db.Where("d IS NULL OR d = 0").Where("coach_id = ? AND student_id = ?", uid, body.Id).First(&relation).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
@@ -722,7 +968,6 @@ func (h *CoachHandler) FetchMyStudentProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 501, "msg": "没有找到该记录", "data": nil})
 		return
 	}
-
 	data := map[string]interface{}{
 		"id":         profile.Id,
 		"nickname":   profile.Profile1.Nickname,
@@ -730,10 +975,6 @@ func (h *CoachHandler) FetchMyStudentProfile(c *gin.Context) {
 		"gender":     profile.Profile1.Gender,
 		"age":        profile.Profile1.Age,
 	}
-	// if profile.Profile1.Nickname == "" {
-	// 	data["nickname"] = profile.Nickname
-	// }
-
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan retrieved successfully", "data": data})
 }
 

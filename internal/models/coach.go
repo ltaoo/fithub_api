@@ -11,14 +11,16 @@ import (
 
 // Coach 教练模型
 type Coach struct {
-	Id        int        `json:"id" gorm:"primaryKey"`
-	Nickname  string     `json:"nickname"`
-	Bio       string     `json:"bio" gorm:"default:''"`       // 个人简介
-	CoachType int        `json:"coach_type" gorm:"default:1"` // 教练类型
-	Status    int        `json:"status" gorm:"default:1"`     // 状态
-	Config    string     `json:"config" gorm:"default:'{}'"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at"`
+	Id           int        `json:"id" gorm:"primaryKey"`
+	D            int        `json:"d"`
+	Nickname     string     `json:"nickname"`
+	Bio          string     `json:"bio" gorm:"default:''"`       // 个人简介
+	CoachType    int        `json:"coach_type" gorm:"default:1"` // 教练类型
+	Status       int        `json:"status" gorm:"default:1"`     // 状态
+	Config       string     `json:"config" gorm:"default:'{}'"`
+	WorkoutStats string     `json:"workout_stats"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    *time.Time `json:"updated_at"`
 
 	Profile1Id int                 `json:"profile1_id"`
 	Profile1   CoachProfile1       `json:"profile1" gorm:"foreignKey:Profile1Id"`

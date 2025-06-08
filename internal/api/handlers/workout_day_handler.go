@@ -60,7 +60,7 @@ func (h *WorkoutDayHandler) CreateWorkoutDay(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "该功能必须订阅才能使用", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 101, "msg": "该功能必须订阅才能使用", "data": nil})
 		return
 	}
 	now := time.Now().UTC()
@@ -597,7 +597,7 @@ func (h *WorkoutDayHandler) FetchWorkoutDayList(c *gin.Context) {
 		return
 	}
 
-	query := h.db
+	query := h.db.Where("d IS NULL OR d = 0")
 	// student_id 表示是自己训练的记录
 	query = query.Where("student_id = ?", uid)
 	pb := pagination.NewPaginationBuilder[models.WorkoutDay](query).
@@ -605,15 +605,15 @@ func (h *WorkoutDayHandler) FetchWorkoutDayList(c *gin.Context) {
 		SetPage(body.Page).
 		SetNextMarker(body.NextMarker).
 		SetOrderBy("created_at DESC")
-	var list []models.WorkoutDay
-	if err := pb.Build().Preload("WorkoutPlan").Find(&list).Error; err != nil {
+	var list1 []models.WorkoutDay
+	if err := pb.Build().Preload("WorkoutPlan").Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	list2, has_more, next_marker := pb.ProcessResults(list)
-	data := []map[string]interface{}{}
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	list := make([]map[string]interface{}, 0, len(list2))
 	for _, v := range list2 {
-		data = append(data, map[string]interface{}{
+		list = append(list, map[string]interface{}{
 			"id":          v.Id,
 			"status":      v.Status,
 			"started_at":  v.StartedAt,
@@ -631,7 +631,7 @@ func (h *WorkoutDayHandler) FetchWorkoutDayList(c *gin.Context) {
 		"code": 200,
 		"msg":  "Success",
 		"data": gin.H{
-			"list":        data,
+			"list":        list,
 			"page_size":   pb.GetLimit(),
 			"has_more":    has_more,
 			"next_marker": next_marker,
@@ -653,7 +653,7 @@ func (h *WorkoutDayHandler) FetchFinishedWorkoutDayList(c *gin.Context) {
 
 	var list []models.WorkoutDay
 
-	query := h.db
+	query := h.db.Where("d IS NULL OR d = 0")
 	// student_id 表示是自己训练的记录
 	query = query.Where("student_id = ?", uid)
 

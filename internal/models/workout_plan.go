@@ -5,6 +5,7 @@ import "time"
 // WorkoutPlan 表示一个训练计划
 type WorkoutPlan struct {
 	Id                int        `json:"id"`
+	D                 int        `json:"d"`
 	Status            int        `json:"status" gorm:"default:2"` // 2仅自己可见
 	Title             string     `json:"title"`
 	Overview          string     `json:"overview"`
@@ -28,10 +29,25 @@ func (WorkoutPlan) TableName() string {
 	return "WORKOUT_PLAN"
 }
 
+type WorkoutPlanStatus int
+
+const (
+	// 0等待进行
+	WorkoutPublishStatusPending WorkoutPlanStatus = iota
+	// 1公开
+	WorkoutPublishStatusPublic
+	// 2仅自己可见
+	WorkoutPublishStatusPrivate
+	// 3禁用
+	WorkoutPublishStatusDisabled
+)
+
 type WorkoutSchedule struct {
 	Id        int        `json:"id"`
+	D         int        `json:"d"`
 	Title     string     `json:"title"`
 	Overview  string     `json:"overview"`
+	Status    int        `json:"status"`
 	Level     int        `json:"level"`
 	Type      int        `json:"type"`
 	CreatedAt time.Time  `json:"created_at"`
@@ -63,6 +79,7 @@ func (WorkoutPlanInSchedule) TableName() string {
 
 type CoachWorkoutSchedule struct {
 	Id          int        `json:"id"`
+	D           int        `json:"d"`
 	Interval    int        `json:"interval"`
 	Status      int        `json:"status"`
 	AppliedAt   time.Time  `json:"applied_at"`

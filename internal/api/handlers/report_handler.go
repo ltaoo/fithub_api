@@ -37,12 +37,12 @@ func (h *ReportHandler) FetchReportList(c *gin.Context) {
 		SetLimit(body.PageSize).
 		SetPage(body.Page).
 		SetOrderBy("created_at DESC")
-	var list []models.CoachReport
-	if err := pb.Build().Find(&list).Error; err != nil {
+	var list1 []models.CoachReport
+	if err := pb.Build().Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch discount policies", "data": nil})
 		return
 	}
-	list2, has_more, next_marker := pb.ProcessResults(list)
+	list2, has_more, next_marker := pb.ProcessResults(list1)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "",
@@ -70,12 +70,12 @@ func (h *ReportHandler) FetchMineReportList(c *gin.Context) {
 		SetLimit(body.PageSize).
 		SetPage(body.Page).
 		SetOrderBy("created_at DESC")
-	var list []models.CoachReport
-	if err := pb.Build().Where("d != 0 AND coach_id = ?", uid).Find(&list).Error; err != nil {
+	var list1 []models.CoachReport
+	if err := pb.Build().Where("d != 0 AND coach_id = ?", uid).Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch discount policies", "data": nil})
 		return
 	}
-	list2, has_more, next_marker := pb.ProcessResults(list)
+	list2, has_more, next_marker := pb.ProcessResults(list1)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "",
@@ -109,6 +109,12 @@ func (h *ReportHandler) CreateReport(c *gin.Context) {
 
 	// 开始事务
 	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
 	if tx.Error != nil {
 		h.logger.Error("Failed to start transaction", tx.Error)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})

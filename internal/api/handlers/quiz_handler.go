@@ -39,12 +39,12 @@ func (h *QuizHandler) FetchPaperList(c *gin.Context) {
 		SetLimit(body.PageSize).
 		SetPage(body.Page).
 		SetOrderBy("created_at DESC")
-	var list []models.Paper
-	if err := pb.Build().Find(&list).Error; err != nil {
+	var list1 []models.Paper
+	if err := pb.Build().Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch discount policies", "data": nil})
 		return
 	}
-	list2, has_more, next_marker := pb.ProcessResults(list)
+	list2, has_more, next_marker := pb.ProcessResults(list1)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "",
@@ -71,12 +71,12 @@ func (h *QuizHandler) FetchQuizList(c *gin.Context) {
 		SetPage(body.Page).
 		SetOrderBy("created_at DESC")
 
-	var list []models.Quiz
-	if r := pb.Build().Find(&list); r.Error != nil {
+	var list1 []models.Quiz
+	if err := pb.Build().Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch records", "data": nil})
 		return
 	}
-	list2, has_more, next_marker := pb.ProcessResults(list)
+	list2, has_more, next_marker := pb.ProcessResults(list1)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
@@ -110,6 +110,12 @@ func (h *QuizHandler) CreateQuiz(c *gin.Context) {
 
 	// 开始事务
 	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
 	if tx.Error != nil {
 		h.logger.Error("Failed to start transaction", tx.Error)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
@@ -175,6 +181,12 @@ func (h *QuizHandler) CreatePaper(c *gin.Context) {
 
 	// 开始事务
 	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
 	if tx.Error != nil {
 		h.logger.Error("Failed to start transaction", tx.Error)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
@@ -255,6 +267,12 @@ func (h *QuizHandler) UpdatePaper(c *gin.Context) {
 
 	// 开始事务
 	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
 	if tx.Error != nil {
 		h.logger.Error("Failed to start transaction", tx.Error)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
@@ -431,6 +449,12 @@ func (h *QuizHandler) StartExamWithPaper(c *gin.Context) {
 
 	// 开始事务
 	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
 	if tx.Error != nil {
 		h.logger.Error("Failed to start transaction", tx.Error)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
@@ -558,22 +582,18 @@ func (h *QuizHandler) FetchExamList(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-	query := h.db
+	query := h.db.Where("student_id = ?", uid)
 	pb := pagination.NewPaginationBuilder[models.Exam](query).
 		SetLimit(body.PageSize).
 		SetPage(body.Page).
 		SetOrderBy("created_at DESC")
-	var list []models.Exam
-	if err := pb.Build().Where("student_id = ?", uid).Preload("Paper").Find(&list).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": nil})
-			return
-		}
+	var list1 []models.Exam
+	if err := pb.Build().Preload("Paper").Find(&list1).Error; err != nil {
 		h.logger.Error("Failed to fetch exam list", err)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch exam", "data": nil})
 		return
 	}
-	list2, has_more, next_marker := pb.ProcessResults(list)
+	list2, has_more, next_marker := pb.ProcessResults(list1)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "",
@@ -658,6 +678,12 @@ func (h *QuizHandler) UpdateQuizAnswer(c *gin.Context) {
 
 	// 开始事务
 	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
 	if tx.Error != nil {
 		h.logger.Error("Failed to start transaction", tx.Error)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
@@ -883,6 +909,12 @@ func (h *QuizHandler) CompleteExam(c *gin.Context) {
 
 	// 开始事务
 	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
 	if tx.Error != nil {
 		h.logger.Error("Failed to start transaction", tx.Error)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
@@ -994,6 +1026,12 @@ func (h *QuizHandler) GiveUpExam(c *gin.Context) {
 
 	// 开始事务
 	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
 	if tx.Error != nil {
 		h.logger.Error("Failed to start transaction", tx.Error)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})

@@ -7,6 +7,7 @@ import (
 // WorkoutAction represents a fitness exercise or movement
 type WorkoutAction struct {
 	Id                   int        `json:"id" gorm:"primaryKey"`
+	D                    int        `json:"d" gorm:"column:d;default:0"`
 	Status               int        `json:"status" gorm:"column:status;default:1"`
 	Name                 string     `json:"name" gorm:"column:name;not null"`
 	ZhName               string     `json:"zh_name" gorm:"column:zh_name;not null"`

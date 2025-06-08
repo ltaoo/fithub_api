@@ -1,397 +1,375 @@
 
 CREATE TABLE LLM_AGENT(
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        name TEXT(255) NOT NULL, --名称
-        desc TEXT(255), --描述信息
-        avatar_uri TEXT(255), --头像地址
-        prompt TEXT(255) NOT NULL, --提示词
-        tags TEXT(255), --标签
-        agent_type INTEGER NOT NULL, --类型
-        llm_config TEXT(1000) NOT NULL DEFAULT '{}', --LLM 配置
-        llm_provider_id TEXT(255) NOT NULL, --使用厂商ID
-        llm_model_id TEXT(255) NOT NULL, --使用厂商指定模型id
-        builtin INTEGER NOT NULL, --是否系统内置，不能删除
-        config TEXT(1000) NOT NULL DEFAULT '{}', --agent 的配置
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    name TEXT(255) NOT NULL, --名称
+    desc TEXT(255), --描述信息
+    avatar_uri TEXT(255), --头像地址
+    prompt TEXT(255) NOT NULL, --提示词
+    tags TEXT(255), --标签
+    agent_type INTEGER NOT NULL, --类型
+    llm_config TEXT(1000) NOT NULL DEFAULT '{}', --LLM 配置
+    llm_provider_id TEXT(255) NOT NULL, --使用厂商ID
+    llm_model_id TEXT(255) NOT NULL, --使用厂商指定模型id
+    builtin INTEGER NOT NULL, --是否系统内置，不能删除
+    config TEXT(1000) NOT NULL DEFAULT '{}', --agent 的配置
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --
+);
+
 CREATE TABLE LLM_PROVIDER_MODEL_PROFILE(
-    
-        llm_provider_model_id TEXT(255) NOT NULL, --关联 model id
-        desc TEXT(255) NOT NULL DEFAULT '', --描述
-        tags TEXT(255) NOT NULL DEFAULT '', --标签
-        model_type INTEGER NOT NULL DEFAULT 1, --模型类型
-        version TEXT(255) NOT NULL DEFAULT '', --模型版本，也算一个额外标签吧
-        architecture_type TEXT(255) NOT NULL DEFAULT '', --架构类型
-        parameter_count TEXT(255) NOT NULL DEFAULT '', --参数量
-        training_data TEXT(255) NOT NULL DEFAULT '', --训练数据
-        training_method TEXT(255) NOT NULL DEFAULT '', --训练方式
-        evaluation_metrics TEXT(255) NOT NULL DEFAULT '', --评估指标
-        usage_restrictions TEXT(255) NOT NULL DEFAULT '', --使用限制
-        cost_information TEXT(255) NOT NULL DEFAULT '' --费用信息
-    
-    );
+    llm_provider_model_id TEXT(255) NOT NULL, --关联 model id
+    desc TEXT(255) NOT NULL DEFAULT '', --描述
+    tags TEXT(255) NOT NULL DEFAULT '', --标签
+    model_type INTEGER NOT NULL DEFAULT 1, --模型类型
+    version TEXT(255) NOT NULL DEFAULT '', --模型版本，也算一个额外标签吧
+    architecture_type TEXT(255) NOT NULL DEFAULT '', --架构类型
+    parameter_count TEXT(255) NOT NULL DEFAULT '', --参数量
+    training_data TEXT(255) NOT NULL DEFAULT '', --训练数据
+    training_method TEXT(255) NOT NULL DEFAULT '', --训练方式
+    evaluation_metrics TEXT(255) NOT NULL DEFAULT '', --评估指标
+    usage_restrictions TEXT(255) NOT NULL DEFAULT '', --使用限制
+    cost_information TEXT(255) NOT NULL DEFAULT '' --费用信息
+);
+
 CREATE TABLE LLM_PROVIDER_MODEL(
-    
-        id TEXT(255) NOT NULL PRIMARY KEY, --id
-        name TEXT(255) NOT NULL, --模型名称
-        enabled INTEGER NOT NULL, --是否启用
-        llm_provider_id TEXT(255) NOT NULL, --所属厂商id
-        builtin INTEGER NOT NULL --是否厂商自带
-    
-    );
+    id TEXT(255) NOT NULL PRIMARY KEY, --id
+    name TEXT(255) NOT NULL, --模型名称
+    enabled INTEGER NOT NULL, --是否启用
+    llm_provider_id TEXT(255) NOT NULL, --所属厂商id
+    builtin INTEGER NOT NULL --是否厂商自带
+);
+
 CREATE TABLE LLM_PROVIDER(
-    
-        id TEXT(255) NOT NULL PRIMARY KEY, --id
-        name TEXT(90) NOT NULL, --厂商名称
-        logo_uri TEXT(255) NOT NULL, --厂商logo
-        api_address TEXT(255) NOT NULL, --请求地址
-        configure TEXT(1000) NOT NULL DEFAULT '{}', --允许的配置项
-        api_proxy_address TEXT(255), --用户输入的配置项
-        api_key TEXT(255), --用户输入的api key
-        enabled INTEGER NOT NULL DEFAULT 0 --该厂商是否启用
-    
-    );
+    id TEXT(255) NOT NULL PRIMARY KEY, --id
+    name TEXT(90) NOT NULL, --厂商名称
+    logo_uri TEXT(255) NOT NULL, --厂商logo
+    api_address TEXT(255) NOT NULL, --请求地址
+    configure TEXT(1000) NOT NULL DEFAULT '{}', --允许的配置项
+    api_proxy_address TEXT(255), --用户输入的配置项
+    api_key TEXT(255), --用户输入的api key
+    enabled INTEGER NOT NULL DEFAULT 0 --该厂商是否启用
+);
+
 CREATE TABLE LLM_RESPONSE(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        llm_provider_id TEXT(255) NOT NULL, --该次调用使用的厂商id
-        llm_provider_model_id TEXT(255) NOT NULL, --该次调用使用的厂商模型id
-        llm_agent_id INTEGER NOT NULL, --该次调用的发起者
-        body TEXT(1000) NOT NULL DEFAULT '{}', --该次调用的请求体
-        response TEXT(1000), --该次调用的响应体
-        error TEXT(1000), --该次调用是否发生错误
-        prompt_tokens INTEGER NOT NULL, --输入提示所消耗的 token
-        completion_tokens INTEGER NOT NULL, --生成回复内容所消耗的 token
-        total_tokens INTEGER NOT NULL, --次对话请求和响应总共消耗
-        response_id TEXT(255), --厂商返回的对话完成的唯一标识符
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --响应时间
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    llm_provider_id TEXT(255) NOT NULL, --该次调用使用的厂商id
+    llm_provider_model_id TEXT(255) NOT NULL, --该次调用使用的厂商模型id
+    llm_agent_id INTEGER NOT NULL, --该次调用的发起者
+    body TEXT(1000) NOT NULL DEFAULT '{}', --该次调用的请求体
+    response TEXT(1000), --该次调用的响应体
+    error TEXT(1000), --该次调用是否发生错误
+    prompt_tokens INTEGER NOT NULL, --输入提示所消耗的 token
+    completion_tokens INTEGER NOT NULL, --生成回复内容所消耗的 token
+    total_tokens INTEGER NOT NULL, --次对话请求和响应总共消耗
+    response_id TEXT(255), --厂商返回的对话完成的唯一标识符
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --响应时间
+);
+
 CREATE TABLE CONFIG(
-    
-        file_rootpath TEXT(255) NOT NULL DEFAULT '' --笔记保存根路径
-    
-    );
+    file_rootpath TEXT(255) NOT NULL DEFAULT '' --笔记保存根路径
+);
+
 CREATE TABLE CHAT_BOX(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        sender_id INTEGER NOT NULL, --所属 agent id
-        chat_session_id INTEGER NOT NULL, --所属对话 id
-        payload TEXT(1000) NOT NULL DEFAULT '{}', --具体内容
-        box_type INTEGER NOT NULL, --类型
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --创建时间
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    sender_id INTEGER NOT NULL, --所属 agent id
+    chat_session_id INTEGER NOT NULL, --所属对话 id
+    payload TEXT(1000) NOT NULL DEFAULT '{}', --具体内容
+    box_type INTEGER NOT NULL, --类型
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --创建时间
+);
+
 CREATE TABLE CHAT_SESSION(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        title TEXT(255) NOT NULL, --对话概述
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --创建时间
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    title TEXT(255) NOT NULL, --对话概述
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --创建时间
+);
+
 CREATE TABLE CHAT_MEMBER(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        llm_agent_id INTEGER NOT NULL, --对应 agent
-        chat_session_id INTEGER NOT NULL --所属 session
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    llm_agent_id INTEGER NOT NULL, --对应 agent
+    chat_session_id INTEGER NOT NULL --所属 session
+);
+
 CREATE TABLE MEDIA_RESOURCE(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        key TEXT(255) NOT NULL, --资源 key
-        media_type INTEGER NOT NULL, --资源类型
-        width INTEGER NOT NULL DEFAULT 0, --宽度
-        height INTEGER NOT NULL DEFAULT 0, --高度
-        size INTEGER NOT NULL DEFAULT 0, --资源大小
-        resolution TEXT(255) NOT NULL DEFAULT '', --分辨率
-        duration TEXT NOT NULL DEFAULT '', --视频时长
-        title TEXT(255) NOT NULL DEFAULT '', --
-        attachments TEXT(255) NOT NULL DEFAULT '', --
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    key TEXT(255) NOT NULL, --资源 key
+    media_type INTEGER NOT NULL, --资源类型
+    width INTEGER NOT NULL DEFAULT 0, --宽度
+    height INTEGER NOT NULL DEFAULT 0, --高度
+    size INTEGER NOT NULL DEFAULT 0, --资源大小
+    resolution TEXT(255) NOT NULL DEFAULT '', --分辨率
+    duration TEXT NOT NULL DEFAULT '', --视频时长
+    title TEXT(255) NOT NULL DEFAULT '', --
+    attachments TEXT(255) NOT NULL DEFAULT '', --
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP --
+);
+
 CREATE TABLE MUSCLE(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    name TEXT NOT NULL DEFAULT '', --肌肉名称
+    zh_name TEXT NOT NULL DEFAULT '', --肌肉名称
+    overview TEXT NOT NULL DEFAULT '', --简要说明
+    tags TEXT NOT NULL DEFAULT '', --标签;逗号分割
+    features TEXT NOT NULL DEFAULT '{}' --功能
+);
     
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        name TEXT NOT NULL DEFAULT '', --肌肉名称
-        zh_name TEXT NOT NULL DEFAULT '', --肌肉名称
-        overview TEXT NOT NULL DEFAULT '', --简要说明
-        tags TEXT NOT NULL DEFAULT '', --标签;逗号分割
-        features TEXT NOT NULL DEFAULT '{}' --功能
-    
-    );
-    
-    CREATE TABLE EQUIPMENT(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        name TEXT NOT NULL DEFAULT '', --器械名称
-        zh_name TEXT NOT NULL DEFAULT '', --器械名称
-        alias TEXT NOT NULL DEFAULT '', --别名
-        overview TEXT NOT NULL DEFAULT '', --简要说明
-        medias TEXT NOT NULL DEFAULT '{}' --图片、视频等
-    );
+CREATE TABLE EQUIPMENT(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    name TEXT NOT NULL DEFAULT '', --器械名称
+    zh_name TEXT NOT NULL DEFAULT '', --器械名称
+    alias TEXT NOT NULL DEFAULT '', --别名
+    overview TEXT NOT NULL DEFAULT '', --简要说明
+    medias TEXT NOT NULL DEFAULT '{}' --图片、视频等
+);
+
 CREATE TABLE WORKOUT_ACTION(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    status INTEGER NOT NULL DEFAULT 1, --状态;1公开 2仅自己可见 3公开审核中 4公开审核失败
+    name TEXT(255) NOT NULL DEFAULT '', --动作名称
+    zh_name TEXT(255) NOT NULL DEFAULT '', --中文名称
+    alias TEXT(255) NOT NULL DEFAULT '', --别名
+    overview TEXT NOT NULL DEFAULT '', --简要说明
+    type TEXT NOT NULL DEFAULT "resistance", --动作类型;resistance、cardio、balance、flexibility、strength
+    level INTEGER NOT NULL DEFAULT 1, --难度等级;1-10
+    tags1 TEXT(255) NOT NULL DEFAULT '', --标签;逗号分割
+    tags2 TEXT(255) NOT NULL DEFAULT '', --标签;逗号分割
+    details TEXT(900) NOT NULL DEFAULT '{}', -- 详情 JSON
+    points TEXT(255) NOT NULL DEFAULT '{}', --动作要点;逗号分割
+    problems TEXT(255) NOT NULL DEFAULT '{}', --常见错误;逗号分割
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+    updated_at DATETIME, --更新时间
+    equipment_ids TEXT(255) NOT NULL DEFAULT '', --器械;逗号分割
+    muscle_ids TEXT(255) NOT NULL DEFAULT '', --肌肉;逗号分割
+    alternative_action_ids TEXT(255) NOT NULL DEFAULT '', --替代动作;逗号分割
+    advanced_action_ids TEXT(255) NOT NULL DEFAULT '', --进阶动作;逗号分割
+    regressed_action_ids TEXT(255) NOT NULL DEFAULT '', --退阶动作;逗号分割
+    owner_id INTEGER NOT NULL DEFAULT 0, --创建人id
+    score REAL NOT NULL DEFAULT 0, -- 动作评分
+    extra_config TEXT(1000) NOT NULL DEFAULT '{}', -- 额外配置
+    sort_idx INTEGER NOT NULL DEFAULT 0, -- 排序
+    pattern TEXT(255) NOT NULL DEFAULT '', -- 动作模式标签
+    primary_muscle_ids TEXT(255) NOT NULL DEFAULT '', -- 主要锻炼肌肉
+    secondary_muscle_ids TEXT(255) NOT NULL DEFAULT '' -- 次要锻炼肌肉
+);
     
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        status INTEGER NOT NULL DEFAULT 1, --状态;1公开 2仅自己可见 3公开审核中 4公开审核失败
-        name TEXT(255) NOT NULL DEFAULT '', --动作名称
-        zh_name TEXT(255) NOT NULL DEFAULT '', --中文名称
-        alias TEXT(255) NOT NULL DEFAULT '', --别名
-        overview TEXT NOT NULL DEFAULT '', --简要说明
-        type TEXT NOT NULL DEFAULT "resistance", --动作类型;resistance、cardio、balance、flexibility、strength
-        level INTEGER NOT NULL DEFAULT 1, --难度等级;1-10
-        tags1 TEXT(255) NOT NULL DEFAULT '', --标签;逗号分割
-        tags2 TEXT(255) NOT NULL DEFAULT '', --标签;逗号分割
-        details TEXT(900) NOT NULL DEFAULT '{}', -- 详情 JSON
-        points TEXT(255) NOT NULL DEFAULT '{}', --动作要点;逗号分割
-        problems TEXT(255) NOT NULL DEFAULT '{}', --常见错误;逗号分割
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        updated_at DATETIME, --更新时间
-        equipment_ids TEXT(255) NOT NULL DEFAULT '', --器械;逗号分割
-        muscle_ids TEXT(255) NOT NULL DEFAULT '', --肌肉;逗号分割
-        alternative_action_ids TEXT(255) NOT NULL DEFAULT '', --替代动作;逗号分割
-        advanced_action_ids TEXT(255) NOT NULL DEFAULT '', --进阶动作;逗号分割
-        regressed_action_ids TEXT(255) NOT NULL DEFAULT '', --退阶动作;逗号分割
-        owner_id INTEGER NOT NULL DEFAULT 0, --创建人id
-        score REAL NOT NULL DEFAULT 0, -- 动作评分
-        extra_config TEXT(1000) NOT NULL DEFAULT '{}', -- 额外配置
-        sort_idx INTEGER NOT NULL DEFAULT 0, -- 排序
-        pattern TEXT(255) NOT NULL DEFAULT '', -- 动作模式标签
-        primary_muscle_ids TEXT(255) NOT NULL DEFAULT '', -- 主要锻炼肌肉
-        secondary_muscle_ids TEXT(255) NOT NULL DEFAULT '' -- 次要锻炼肌肉
-    );
-    
-    CREATE TABLE WORKOUT_ACTION_MISTAKE(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        name TEXT(255) NOT NULL DEFAULT '', --错误名称
-        reason TEXT(255) NOT NULL DEFAULT '', --常见错误原因
-        solution_direction TEXT(255) NOT NULL DEFAULT '', --解决方案
-        solution_action_ids TEXT(255) NOT NULL DEFAULT '', --解决动作
-        solution_action_text TEXT(255) NOT NULL DEFAULT '' --解决动作描述
-    
-    );
+CREATE TABLE WORKOUT_ACTION_MISTAKE(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    name TEXT(255) NOT NULL DEFAULT '', --错误名称
+    reason TEXT(255) NOT NULL DEFAULT '', --常见错误原因
+    solution_direction TEXT(255) NOT NULL DEFAULT '', --解决方案
+    solution_action_ids TEXT(255) NOT NULL DEFAULT '', --解决动作
+    solution_action_text TEXT(255) NOT NULL DEFAULT '' --解决动作描述
+
+);
+
 CREATE TABLE WORKOUT_PLAN(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        status INTEGER NOT NULL DEFAULT 1, --状态;1公开 2仅自己可见 3禁用
-        title TEXT(255) NOT NULL DEFAULT '', --计划名称
-        overview TEXT(255) NOT NULL DEFAULT '', --训练计划描述
-        level INTEGER NOT NULL DEFAULT 1, --适宜什么水平的人群;1-10
-        tags TEXT(255) NOT NULL DEFAULT '', --部位标签
-        details TEXT(1000) NOT NULL DEFAULT '{}', --内容详情 JSON;在创建、更新 plan 时，根据内容统计出的动作列表 JSON
-        points TEXT(255) NOT NULL DEFAULT '', --注意事项
-        suggestions TEXT(255) NOT NULL DEFAULT '', --训练计划建议
-        estimated_duration INTEGER NOT NULL DEFAULT 0, --预计耗时;单位 min
-        equipment_ids TEXT(255) NOT NULL DEFAULT '', --所需器械 id 列表
-        muscle_ids TEXT(255) NOT NULL DEFAULT '', --该计划练到的肌肉 id 列表
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        updated_at DATETIME, --更新时间
-        owner_id INTEGER NOT NULL DEFAULT 0 --创建人id
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    status INTEGER NOT NULL DEFAULT 1, --状态;1公开 2仅自己可见 3禁用
+    title TEXT(255) NOT NULL DEFAULT '', --计划名称
+    overview TEXT(255) NOT NULL DEFAULT '', --训练计划描述
+    level INTEGER NOT NULL DEFAULT 1, --适宜什么水平的人群;1-10
+    tags TEXT(255) NOT NULL DEFAULT '', --部位标签
+    details TEXT(1000) NOT NULL DEFAULT '{}', --内容详情 JSON;在创建、更新 plan 时，根据内容统计出的动作列表 JSON
+    points TEXT(255) NOT NULL DEFAULT '', --注意事项
+    suggestions TEXT(255) NOT NULL DEFAULT '', --训练计划建议
+    estimated_duration INTEGER NOT NULL DEFAULT 0, --预计耗时;单位 min
+    equipment_ids TEXT(255) NOT NULL DEFAULT '', --所需器械 id 列表
+    muscle_ids TEXT(255) NOT NULL DEFAULT '', --该计划练到的肌肉 id 列表
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+    updated_at DATETIME, --更新时间
+    owner_id INTEGER NOT NULL DEFAULT 0 --创建人id
+);
 
 CREATE TABLE WORKOUT_PLAN_STEP(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        title TEXT(255) NOT NULL DEFAULT '', --动作(阶段)名称
-        type TEXT(255) NOT NULL DEFAULT 'strength', --动作(阶段)类型;warmup、strength、stretch、cool_down、cardio、heart、performance
-        idx INTEGER NOT NULL DEFAULT 1, --第几个动作(阶段)
-        set_count INTEGER NOT NULL DEFAULT 1, --组数
-        set_type TEXT(255) NOT NULL DEFAULT 'normal', --组数类型; normal combo free
-        set_rest_duration INTEGER NOT NULL DEFAULT 0, --组间休息时间
-        note TEXT(255) NOT NULL DEFAULT '', --该组额外信息说明
-        workout_plan_id INTEGER NOT NULL DEFAULT 0, --所属训练计划id
-        set_weight INTEGER NOT NULL DEFAULT '' --组负荷
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    title TEXT(255) NOT NULL DEFAULT '', --动作(阶段)名称
+    type TEXT(255) NOT NULL DEFAULT 'strength', --动作(阶段)类型;warmup、strength、stretch、cool_down、cardio、heart、performance
+    idx INTEGER NOT NULL DEFAULT 1, --第几个动作(阶段)
+    set_count INTEGER NOT NULL DEFAULT 1, --组数
+    set_type TEXT(255) NOT NULL DEFAULT 'normal', --组数类型; normal combo free
+    set_rest_duration INTEGER NOT NULL DEFAULT 0, --组间休息时间
+    note TEXT(255) NOT NULL DEFAULT '', --该组额外信息说明
+    workout_plan_id INTEGER NOT NULL DEFAULT 0, --所属训练计划id
+    set_weight INTEGER NOT NULL DEFAULT '' --组负荷
+);
+
 CREATE TABLE WORKOUT_PLAN_ACTION(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        idx INTEGER NOT NULL DEFAULT 1, --动作顺序;超级组、循环组会需要该字段
-        action_id INTEGER NOT NULL DEFAULT 0, --要做的动作id
-        set_idx INTEGER NOT NULL DEFAULT 1, --第几组
-        reps INTEGER NOT NULL DEFAULT 0, --数量
-        reps_unit TEXT(255) NOT NULL DEFAULT '次', --单位
-        weight TEXT(255) NOT NULL DEFAULT '', --阻力;字符串，直接写成 60%1RM 或 12RM 或 自重、无负重等等？
-        tempo TEXT(255) NOT NULL DEFAULT '4/1/2', --节奏;4/1/2 表示离心4s，停顿1s，向心2s
-        rest_duration INTEGER NOT NULL DEFAULT 0, --间歇时间
-        note TEXT(255) NOT NULL DEFAULT '', --该组备注信息
-        workout_plan_step_id INTEGER NOT NULL DEFAULT 0 --关联的训练计划中组id
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    idx INTEGER NOT NULL DEFAULT 1, --动作顺序;超级组、循环组会需要该字段
+    action_id INTEGER NOT NULL DEFAULT 0, --要做的动作id
+    set_idx INTEGER NOT NULL DEFAULT 1, --第几组
+    reps INTEGER NOT NULL DEFAULT 0, --数量
+    reps_unit TEXT(255) NOT NULL DEFAULT '次', --单位
+    weight TEXT(255) NOT NULL DEFAULT '', --阻力;字符串，直接写成 60%1RM 或 12RM 或 自重、无负重等等？
+    tempo TEXT(255) NOT NULL DEFAULT '4/1/2', --节奏;4/1/2 表示离心4s，停顿1s，向心2s
+    rest_duration INTEGER NOT NULL DEFAULT 0, --间歇时间
+    note TEXT(255) NOT NULL DEFAULT '', --该组备注信息
+    workout_plan_step_id INTEGER NOT NULL DEFAULT 0 --关联的训练计划中组id
+);
 
 CREATE TABLE WORKOUT_PLAN_COLLECTION(
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        title TEXT NOT NULL DEFAULT '', --标题
-        overview TEXT NOT NULL DEFAULT '', --简要描述
-        level INTEGER NOT NULL DEFAULT 1, --难度
-        type INTEGER NOT NULL DEFAULT 1, -- 1周循环 2月循环
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-        updated_at DATETIME, -- 更新时间
-        owner_id INTEGER NOT NULL DEFAULT 0 --创建者
-    ); -- 周期计划
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    title TEXT NOT NULL DEFAULT '', --标题
+    overview TEXT NOT NULL DEFAULT '', --简要描述
+    level INTEGER NOT NULL DEFAULT 1, --难度
+    type INTEGER NOT NULL DEFAULT 1, -- 1周循环 2月循环
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at DATETIME, -- 更新时间
+    owner_id INTEGER NOT NULL DEFAULT 0 --创建者
+); -- 周期计划
 
 CREATE TABLE WORKOUT_PLAN_IN_COLLECTION(
 	weekday INTEGER NOT NULL DEFAULT 0, --训练计划处于周几
 	day INTEGER NOT NULL DEFAULT 0, --训练计划处于几号
-        workout_plan_collection_id INTEGER NOT NULL, --集合id
+    workout_plan_collection_id INTEGER NOT NULL, --集合id
 	workout_plan_id INTEGER NOT NULL --训练计划id
-    );
-
+);
 
 CREATE TABLE COACH(
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        profile1_id INTEGER, --详情
-        profile2_id INTEGER, --详情
-        nickname TEXT(255) NOT NULL DEFAULT '', --昵称
-        bio TEXT(1000) NOT NULL DEFAULT '', --个人简介
-        coach_type INTEGER NOT NULL DEFAULT 1, --教练类型;1普通 2私教 3团课 4在线
-        status INTEGER NOT NULL DEFAULT 1, --状态;1正常 2暂停服务 3封禁
-        config TEXT(1000) NOT NULL DEFAULT '{}', --配置信息
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        updated_at DATETIME --更新时间
-    
-    );
-CREATE TABLE COACH_ACCOUNT(
-        provider_type int NOT NULL, --帐号授权方式;email、phone、wxapp 等等
-        provider_id TEXT(255) NOT NULL, --帐号唯一标志;如果 email，这里就是 email 帐号，可以发送验证码来验证
-        provider_arg1 TEXT(255) NOT NULL DEFAULT '', --帐号授权参数
-        provider_arg2 TEXT(255) NOT NULL DEFAULT '', --授权参数2
-        provider_arg3 TEXT(255) NOT NULL DEFAULT '', --授权参数3;可以放很多额外信息，比如 expires
-        coach_id INTEGER NOT NULL DEFAULT 0, --帐号关联的用户id
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --帐号创建时间
-
-        PRIMARY KEY (provider_type, provider_id)
-    );
-CREATE TABLE COACH_RELATIONSHIP(
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        coach_id INTEGER NOT NULL, --教练id
-        student_id INTEGER NOT NULL, --学员id（也是教练id）
-        status INTEGER NOT NULL DEFAULT 1, --关系状态;1待确认 2已确认 3已拒绝 4已解除
-        role INTEGER NOT NULL DEFAULT 1, --关系角色;1教练-学员 2合作教练
-        note TEXT(255) NOT NULL DEFAULT '', --备注信息
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        updated_at DATETIME --更新时间
-    );
-CREATE TABLE COACH_PROFILE1(
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        coach_id INTEGER NOT NULL, --教练id
-        nickname TEXT NOT NULL DEFAULT '', --名称
-        avatar_url TEXT NOT NULL DEFAULT '', --头像
-        age INTEGER NOT NULL DEFAULT 0, --年龄
-        gender INTEGER NOT NULL DEFAULT 1, --性别
-        body_type INTEGER NOT NULL DEFAULT 2, --体型;1偏瘦 2中等 3偏胖 4肌肉 5匀称
-        height INTEGER NOT NULL DEFAULT 0, --身高，单位 cm
-        weight REAL NOT NULL DEFAULT 0, --体重，单位 kg
-        body_fat_percent INTEGER NOT NULL DEFAULT 0, --体脂率，12 就是 12%
-        risk_screenings TEXT(1000) NOT NULL DEFAULT '{}', --健康风险评估
-        training_goals TEXT(1000) NOT NULL DEFAULT '{}', --训练目标
-        training_frequency INTEGER NOT NULL DEFAULT 1, --训练频率;一周几次
-        training_preferences TEXT(1000) NOT NULL DEFAULT '{}', --训练偏好
-        diet_preferences TEXT(1000) NOT NULL DEFAULT '{}' --饮食偏好
-    );
-CREATE TABLE COACH_PROFILE2(
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        coach_id INTEGER NOT NULL, --教练id
-        specialties TEXT(255) NOT NULL DEFAULT '', --专长领域，逗号分隔
-        certification TEXT(1000) NOT NULL DEFAULT '{}', --认证信息，JSON格式
-        experience_years INTEGER NOT NULL DEFAULT 0 --从业年限
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    profile1_id INTEGER, --详情
+    profile2_id INTEGER, --详情
+    nickname TEXT(255) NOT NULL DEFAULT '', --昵称
+    bio TEXT(1000) NOT NULL DEFAULT '', --个人简介
+    coach_type INTEGER NOT NULL DEFAULT 1, --教练类型;1普通 2私教 3团课 4在线
+    status INTEGER NOT NULL DEFAULT 1, --状态;1正常 2暂停服务 3封禁
+    config TEXT(1000) NOT NULL DEFAULT '{}', --配置信息
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+    updated_at DATETIME --更新时间
 );
+
+CREATE TABLE COACH_ACCOUNT(
+    provider_type int NOT NULL, --帐号授权方式;email、phone、wxapp 等等
+    provider_id TEXT(255) NOT NULL, --帐号唯一标志;如果 email，这里就是 email 帐号，可以发送验证码来验证
+    provider_arg1 TEXT(255) NOT NULL DEFAULT '', --帐号授权参数
+    provider_arg2 TEXT(255) NOT NULL DEFAULT '', --授权参数2
+    provider_arg3 TEXT(255) NOT NULL DEFAULT '', --授权参数3;可以放很多额外信息，比如 expires
+    coach_id INTEGER NOT NULL DEFAULT 0, --帐号关联的用户id
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --帐号创建时间
+    PRIMARY KEY (provider_type, provider_id)
+);
+
+-- 教练和学员的多对多
+CREATE TABLE COACH_RELATIONSHIP(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    coach_id INTEGER NOT NULL, --教练id
+    student_id INTEGER NOT NULL, --学员id（也是教练id）
+    status INTEGER NOT NULL DEFAULT 1, --关系状态;1待确认 2已确认 3已拒绝 4已解除
+    role INTEGER NOT NULL DEFAULT 1, --关系角色;1教练-学员 2合作教练
+    note TEXT(255) NOT NULL DEFAULT '', --备注信息
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+    updated_at DATETIME --更新时间
+);
+
+CREATE TABLE COACH_PROFILE1(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    coach_id INTEGER NOT NULL, --教练id
+    nickname TEXT NOT NULL DEFAULT '', --名称
+    avatar_url TEXT NOT NULL DEFAULT '', --头像
+    age INTEGER NOT NULL DEFAULT 0, --年龄
+    gender INTEGER NOT NULL DEFAULT 1, --性别
+    body_type INTEGER NOT NULL DEFAULT 2, --体型;1偏瘦 2中等 3偏胖 4肌肉 5匀称
+    height INTEGER NOT NULL DEFAULT 0, --身高，单位 cm
+    weight REAL NOT NULL DEFAULT 0, --体重，单位 kg
+    body_fat_percent INTEGER NOT NULL DEFAULT 0, --体脂率，12 就是 12%
+    risk_screenings TEXT(1000) NOT NULL DEFAULT '{}', --健康风险评估
+    training_goals TEXT(1000) NOT NULL DEFAULT '{}', --训练目标
+    training_frequency INTEGER NOT NULL DEFAULT 1, --训练频率;一周几次
+    training_preferences TEXT(1000) NOT NULL DEFAULT '{}', --训练偏好
+    diet_preferences TEXT(1000) NOT NULL DEFAULT '{}' --饮食偏好
+);
+
+CREATE TABLE COACH_PROFILE2(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    coach_id INTEGER NOT NULL, --教练id
+    specialties TEXT(255) NOT NULL DEFAULT '', --专长领域，逗号分隔
+    certification TEXT(1000) NOT NULL DEFAULT '{}', --认证信息，JSON格式
+    experience_years INTEGER NOT NULL DEFAULT 0 --从业年限
+);
+
 CREATE TABLE COACH_PHYSICAL_TEST(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        action_ids TEXT(255) NOT NULL DEFAULT '', --包含的动作
-        result TEXT(255) NOT NULL DEFAULT '', --评估结果
-        details TEXT(1000) NOT NULL DEFAULT '{}', --评估详情
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        coach_id INTEGER NOT NULL DEFAULT 0 --学员id
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    action_ids TEXT(255) NOT NULL DEFAULT '', --包含的动作
+    result TEXT(255) NOT NULL DEFAULT '', --评估结果
+    details TEXT(1000) NOT NULL DEFAULT '{}', --评估详情
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+    coach_id INTEGER NOT NULL DEFAULT 0 --学员id
+);
+
 CREATE TABLE COACH_BODY_MEASUREMENT(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        height INTEGER NOT NULL DEFAULT 0, --身高;单位厘米
-        weight REAL NOT NULL DEFAULT 0, --体重;单位kg
-        body_fat_percentage REAL NOT NULL DEFAULT 0, --体脂率
-        heart_rate INTEGER NOT NULL DEFAULT 0, --静息心率;次每分钟
-        chest REAL NOT NULL DEFAULT 0, --胸围
-        waist REAL NOT NULL DEFAULT 0, --腰围
-        hip REAL NOT NULL DEFAULT 0, --臀围
-        arm REAL NOT NULL DEFAULT 0, --臂围
-        thigh REAL NOT NULL DEFAULT 0, --大腿围度
-        notes TEXT(255) NOT NULL DEFAULT '', --额外备注信息
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --体测时间
-        coach_id INTEGER NOT NULL DEFAULT 0 --学员id
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    height INTEGER NOT NULL DEFAULT 0, --身高;单位厘米
+    weight REAL NOT NULL DEFAULT 0, --体重;单位kg
+    body_fat_percentage REAL NOT NULL DEFAULT 0, --体脂率
+    heart_rate INTEGER NOT NULL DEFAULT 0, --静息心率;次每分钟
+    chest REAL NOT NULL DEFAULT 0, --胸围
+    waist REAL NOT NULL DEFAULT 0, --腰围
+    hip REAL NOT NULL DEFAULT 0, --臀围
+    arm REAL NOT NULL DEFAULT 0, --臂围
+    thigh REAL NOT NULL DEFAULT 0, --大腿围度
+    notes TEXT(255) NOT NULL DEFAULT '', --额外备注信息
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --体测时间
+    coach_id INTEGER NOT NULL DEFAULT 0 --学员id
+);
+
 CREATE TABLE WORKOUT_DAY(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        time TEXT NOT NULL DEFAULT '', --训练时间;年月日时分秒
-        status INTEGER NOT NULL DEFAULT 1, --训练日状态; 1等待进行 2进行中 3已完成 4已过期 5手动作废
-        estimated_duration INTEGER NOT NULL DEFAULT 0, --预计时间
-        pending_steps TEXT(1000) NOT NULL DEFAULT '{}', --执行记录;JSON 数组
-        updated_details TEXT(1000) NOT NULL DEFAULT '', --执行记录;JSON 数组
-        stats TEXT(1000) NOT NULL DEFAULT '{}', --统计信息;JSON 数组
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
-        started_at DATETIME, --开始时间
-        updated_at DATETIME, --更新时间
-        finished_at DATETIME, --结束时间
-        coach_id INTEGER NOT NULL DEFAULT 0, --教练id
-        student_id INTEGER NOT NULL DEFAULT 0, --学员id
-        workout_plan_id INTEGER NOT NULL DEFAULT 0 --关联的训练计划id
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    time TEXT NOT NULL DEFAULT '', --训练时间;年月日时分秒
+    status INTEGER NOT NULL DEFAULT 1, --训练日状态; 1等待进行 2进行中 3已完成 4已过期 5手动作废
+    estimated_duration INTEGER NOT NULL DEFAULT 0, --预计时间
+    pending_steps TEXT(1000) NOT NULL DEFAULT '{}', --执行记录;JSON 数组
+    updated_details TEXT(1000) NOT NULL DEFAULT '', --执行记录;JSON 数组
+    stats TEXT(1000) NOT NULL DEFAULT '{}', --统计信息;JSON 数组
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
+    started_at DATETIME, --开始时间
+    updated_at DATETIME, --更新时间
+    finished_at DATETIME, --结束时间
+    coach_id INTEGER NOT NULL DEFAULT 0, --教练id
+    student_id INTEGER NOT NULL DEFAULT 0, --学员id
+    workout_plan_id INTEGER NOT NULL DEFAULT 0 --关联的训练计划id
+);
+
 CREATE TABLE WORKOUT_DAY_STEP(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        idx INTEGER NOT NULL, --第几阶段
-        set_idx INTEGER NOT NULL, --第几组
-        remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
-        feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
-        set_details TEXT(1000) NOT NULL DEFAULT '{}', --组详情;JSON 数组
-        completed INTEGER NOT NULL, --是否完成;1完成 2未完成
-        workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日id
-        workout_plan_step_id INTEGER NOT NULL DEFAULT 0 --训练计划组id
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    idx INTEGER NOT NULL, --第几阶段
+    set_idx INTEGER NOT NULL, --第几组
+    remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
+    feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
+    set_details TEXT(1000) NOT NULL DEFAULT '{}', --组详情;JSON 数组
+    completed INTEGER NOT NULL, --是否完成;1完成 2未完成
+    workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日id
+    workout_plan_step_id INTEGER NOT NULL DEFAULT 0 --训练计划组id
+);
+
 CREATE TABLE WORKOUT_DAY_ACTION(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        action_id INTEGER NOT NULL DEFAULT 0, --做的动作id
-        set_idx INTEGER NOT NULL DEFAULT 0, --第几组
-        reps INTEGER NOT NULL DEFAULT 0, --实际数量
-        unit TEXT(255) NOT NULL DEFAULT '次', --单位
-        weight TEXT(255) NOT NULL DEFAULT '', --实际阻力;字符串 12kg 24lbs
-        remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
-        feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
-        extra_medias TEXT(1000) NOT NULL DEFAULT '{}', --拍照、录像记录;存 字符串列表
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间;CURRENT_TIMESTAMP
-        workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日 id
-        workout_day_step_id INTEGER NOT NULL DEFAULT 0, --训练日哪个组
-        workout_plan_action_id INTEGER NOT NULL DEFAULT 0 --
-    
-    );
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    action_id INTEGER NOT NULL DEFAULT 0, --做的动作id
+    set_idx INTEGER NOT NULL DEFAULT 0, --第几组
+    reps INTEGER NOT NULL DEFAULT 0, --实际数量
+    unit TEXT(255) NOT NULL DEFAULT '次', --单位
+    weight TEXT(255) NOT NULL DEFAULT '', --实际阻力;字符串 12kg 24lbs
+    remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
+    feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
+    extra_medias TEXT(1000) NOT NULL DEFAULT '{}', --拍照、录像记录;存 字符串列表
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间;CURRENT_TIMESTAMP
+    workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日 id
+    workout_day_step_id INTEGER NOT NULL DEFAULT 0, --训练日哪个组
+    workout_plan_action_id INTEGER NOT NULL DEFAULT 0 --
+);
 
 CREATE TABLE WORKOUT_ACTION_HISTORY(
-    
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
-        action_id INTEGER NOT NULL DEFAULT 0, --做的动作id
-        reps INTEGER NOT NULL DEFAULT 0, --实际数量
-        reps_unit TEXT(255) NOT NULL DEFAULT '次', --单位
-        weight INTEGER NOT NULL DEFAULT 0, --实际阻力;12kg 24lbs
-        weight_unit TEXT(255) NOT NULL DEFAULT '', --实际阻力单位;kg 24lbs
-        remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
-        feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
-        extra_medias TEXT(1000) NOT NULL DEFAULT '{}', --拍照、录像记录;存 字符串列表
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间;CURRENT_TIMESTAMP
-        workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日 id
-        student_id INTEGER NOT NULL DEFAULT 0
-    );
-
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
+    action_id INTEGER NOT NULL DEFAULT 0, --做的动作id
+    reps INTEGER NOT NULL DEFAULT 0, --实际数量
+    reps_unit TEXT(255) NOT NULL DEFAULT '次', --单位
+    weight INTEGER NOT NULL DEFAULT 0, --实际阻力;12kg 24lbs
+    weight_unit TEXT(255) NOT NULL DEFAULT '', --实际阻力单位;kg 24lbs
+    remark TEXT(255) NOT NULL DEFAULT '', --教练评价、备注。比如动作不标准之类
+    feedback TEXT(255) NOT NULL DEFAULT '', --学员反馈，自感疲劳度，动作感受，等等
+    extra_medias TEXT(1000) NOT NULL DEFAULT '{}', --拍照、录像记录;存 字符串列表
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间;CURRENT_TIMESTAMP
+    workout_day_id INTEGER NOT NULL DEFAULT 0, --训练日 id
+    student_id INTEGER NOT NULL DEFAULT 0
+);
 
 
 INSERT INTO EQUIPMENT VALUES(1,'dumbbell','哑铃','','哑铃是一种用于增强肌肉力量训练的简单器材，可进行多种部位的力量练习。','{}');
