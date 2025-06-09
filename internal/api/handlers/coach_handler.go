@@ -324,7 +324,11 @@ func (h *CoachHandler) FetchCoachProfile(c *gin.Context) {
 			}
 		}
 	}
-
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan retrieved successfully", "data": gin.H{
 		"id":           coach.Id,
 		"nickname":     coach.Profile1.Nickname,

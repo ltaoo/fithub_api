@@ -55,12 +55,12 @@ func (h *WorkoutDayHandler) CreateWorkoutDay(c *gin.Context) {
 		}
 	}()
 	var subscription models.Subscription
-	if err := tx.Where("coach_id = ? AND step = 1", uid).First(&subscription).Error; err != nil {
+	if err := tx.Where("coach_id = ? AND step = 2", uid).First(&subscription).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"code": 101, "msg": "该功能必须订阅才能使用", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 101, "msg": "该功能需订阅后才能使用", "data": nil})
 		return
 	}
 	now := time.Now().UTC()

@@ -114,12 +114,13 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		{
 			handler := handlers.NewWorkoutActionHandler(db, logger)
 			authorized.POST("/workout_action/list", handler.FetchWorkoutActionList)
-			authorized.POST("/workout_action/list_by_ids", handler.GetWorkoutActionListByIds)
+			authorized.POST("/workout_action/list_by_ids", handler.FetchWorkoutActionListByIds)
 			authorized.POST("/workout_action/profile", handler.GetWorkoutAction)
 			authorized.POST("/workout_action/list/by_muscle", handler.GetActionsByMuscle)
 			authorized.POST("/workout_action/list/by_level", handler.FetchWorkoutActionsByLevel)
 			authorized.POST("/workout_action/list/related", handler.FetchRelatedWorkoutActions)
 
+			authorized.POST("/workout_action/update_idx", handler.UpdateWorkoutActionIdx)
 			authorized.POST("/workout_action/create", handler.CreateWorkoutAction)
 			authorized.POST("/workout_action/update", handler.UpdateWorkoutActionProfile)
 			authorized.POST("/workout_action/delete", handler.DeleteWorkoutAction)

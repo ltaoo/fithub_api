@@ -28,20 +28,24 @@ func NewWorkoutPlanHandler(db *gorm.DB, logger *logger.Logger) *WorkoutPlanHandl
 	}
 }
 
+type WorkoutPlanBody struct {
+	Title             string `json:"title" binding:"required"`
+	Overview          string `json:"overview"`
+	Level             int    `json:"level"`
+	Status            int    `json:"status" binding:"required,oneof=1 2"`
+	Details           string `json:"details" binding:"required"`
+	Points            string `json:"points"`
+	Suggestions       string `json:"suggestions"`
+	EstimatedDuration int    `json:"estimated_duration"`
+	Tags              string `json:"tags"`
+	MuscleIds         string `json:"muscle_ids"`
+	EquipmentIds      string `json:"equipment_ids"`
+}
+
 func (h *WorkoutPlanHandler) CreateWorkoutPlan(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var body struct {
-		Title             string `json:"title" binding:"required"`
-		Overview          string `json:"overview"`
-		Level             int    `json:"level"`
-		Status            int    `json:"status" binding:"required,oneof=1 2"`
-		Details           string `json:"details" binding:"required"`
-		Points            string `json:"points"`
-		Suggestions       string `json:"suggestions"`
-		EstimatedDuration int    `json:"estimated_duration"`
-		Tags              string `json:"tags"`
-		MuscleIds         string `json:"muscle_ids"`
-		EquipmentIds      string `json:"equipment_ids"`
+		WorkoutPlanBody
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
@@ -68,6 +72,65 @@ func (h *WorkoutPlanHandler) CreateWorkoutPlan(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": gin.H{"id": record.Id}})
+}
+
+func (h *WorkoutPlanHandler) UpdateWorkoutPlan(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		WorkoutPlanBody
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少id参数", "data": nil})
+		return
+	}
+	var existing models.WorkoutPlan
+	if err := h.db.Where("id = ? AND owner_id = ?", body.Id, uid).First(&existing).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
+		return
+	}
+	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
+
+	existing.Title = body.Title
+	existing.Overview = body.Overview
+	existing.Level = body.Level
+	existing.Tags = body.Tags
+	existing.Details = body.Details
+	// existing.Points = body.Points
+	existing.Suggestions = body.Suggestions
+	existing.EquipmentIds = body.EquipmentIds
+	existing.MuscleIds = body.MuscleIds
+	existing.EstimatedDuration = body.EstimatedDuration
+	// existing.Status = body.Status
+	now := time.Now().UTC()
+	existing.UpdatedAt = &now
+
+	if err := tx.Save(&existing).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update plan: " + err.Error(), "data": nil})
+		return
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		h.logger.Error("Failed to commit transaction", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "提交事务失败", "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": gin.H{"id": existing.Id}})
 }
 
 func (h *WorkoutPlanHandler) FetchWorkoutPlanProfile(c *gin.Context) {
@@ -156,58 +219,6 @@ func (h *WorkoutPlanHandler) FetchWorkoutPlanProfile(c *gin.Context) {
 		"created_at": record.CreatedAt,
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "请求成功", "data": data})
-}
-
-func (h *WorkoutPlanHandler) UpdateWorkoutPlan(c *gin.Context) {
-	// 绑定更新的数据
-	var body models.WorkoutPlan
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
-		return
-	}
-
-	// 先获取现有的计划
-	var existing_plan models.WorkoutPlan
-	if result := h.db.First(&existing_plan, body.Id); result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout plan not found", "data": nil})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": result.Error.Error(), "data": nil})
-		return
-	}
-
-	tx := h.db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
-		}
-	}()
-
-	// 更新基本字段
-	existing_plan.Title = body.Title
-	existing_plan.Overview = body.Overview
-	existing_plan.Level = body.Level
-	existing_plan.Tags = body.Tags
-	existing_plan.Details = body.Details
-	existing_plan.Points = body.Points
-	existing_plan.Suggestions = body.Suggestions
-	existing_plan.EquipmentIds = body.EquipmentIds
-	existing_plan.MuscleIds = body.MuscleIds
-	existing_plan.EstimatedDuration = body.EstimatedDuration
-	existing_plan.Status = body.Status
-	now := time.Now().UTC()
-	existing_plan.UpdatedAt = &now
-
-	// 保存主记录
-	if err := tx.Save(&existing_plan).Error; err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update plan: " + err.Error(), "data": nil})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan updated successfully", "data": gin.H{"id": existing_plan.Id}})
 }
 
 func (h *WorkoutPlanHandler) DeleteWorkoutPlan(c *gin.Context) {
@@ -450,7 +461,6 @@ func (h *WorkoutPlanHandler) CreateWorkoutSchedule(c *gin.Context) {
 			return
 		}
 	}
-	// 提交事务
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		h.logger.Error("Failed to commit transaction", err)
@@ -1005,6 +1015,11 @@ func (h *WorkoutPlanHandler) UpdateWorkoutPlanSet(c *gin.Context) {
 	if err := tx.Save(&existing_plan).Error; err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update plan: " + err.Error(), "data": nil})
+		return
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 

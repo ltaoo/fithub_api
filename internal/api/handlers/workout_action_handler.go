@@ -78,6 +78,8 @@ func (h *WorkoutActionHandler) FetchWorkoutActionList(c *gin.Context) {
 			"id":            v.Id,
 			"name":          v.Name,
 			"zh_name":       v.ZhName,
+			"idx":           v.SortIdx,
+			"tags":          v.Tags1,
 			"muscle_ids":    v.MuscleIds,
 			"equipment_ids": v.EquipmentIds,
 			"created_at":    v.CreatedAt,
@@ -95,41 +97,42 @@ func (h *WorkoutActionHandler) FetchWorkoutActionList(c *gin.Context) {
 	})
 }
 
-// GetWorkoutActionList retrieves all workout actions
-func (h *WorkoutActionHandler) GetWorkoutActionListByIds(c *gin.Context) {
-	var actions []models.WorkoutAction
+func (h *WorkoutActionHandler) FetchWorkoutActionListByIds(c *gin.Context) {
 
-	type WorkoutActionListRequest struct {
+	var body struct {
 		Ids []int `json:"ids"`
 	}
-
-	var request WorkoutActionListRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-	// Start with base query
-	query := h.db
-
-	// 按创建时间排序
-	query = query.Order("created_at DESC")
-
-	// Apply filters if provided
-	if len(request.Ids) > 0 {
-		query = query.Where("id IN (?)", request.Ids)
+	if len(body.Ids) == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "ids 不能为空", "data": nil})
+		return
 	}
-	// Execute the query
-	result := query.Find(&actions)
-	if result.Error != nil {
+	query := h.db.Where("d IS NULL OR d = 0")
+	query = query.Where("id IN (?)", body.Ids)
+	var list1 []models.WorkoutAction
+	if err := query.Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout actions", "data": nil})
 		return
 	}
-
+	list := make([]map[string]interface{}, 0, len(list1))
+	for _, v := range list1 {
+		list = append(list, map[string]interface{}{
+			"id":            v.Id,
+			"name":          v.Name,
+			"zh_name":       v.ZhName,
+			"muscle_ids":    v.MuscleIds,
+			"equipment_ids": v.EquipmentIds,
+			"created_at":    v.CreatedAt,
+		})
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
 		"data": gin.H{
-			"list": actions,
+			"list": list,
 		},
 	})
 }
@@ -359,7 +362,37 @@ func (h *WorkoutActionHandler) UpdateWorkoutActionProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update", "data": nil})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "updated successfully", "data": body})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": body})
+}
+
+func (h *WorkoutActionHandler) UpdateWorkoutActionIdx(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	if uid == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "请先登录", "data": nil})
+		return
+	}
+	var body struct {
+		Id  int `json:"id"`
+		Idx int `json:"idx"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	var existing models.WorkoutAction
+	if err := h.db.First(&existing, body.Id).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "the record not found", "data": nil})
+		return
+	}
+	now := time.Now().UTC()
+	if err := h.db.Model(&existing).Updates(map[string]interface{}{
+		"sort_idx":   body.Idx,
+		"updated_at": now,
+	}).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": body})
 }
 
 func (h *WorkoutActionHandler) DeleteWorkoutAction(c *gin.Context) {
