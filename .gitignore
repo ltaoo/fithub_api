@@ -5,6 +5,8 @@
 *.so
 *.dylib
 *.db
+*.db-shm
+*.db-wal
 
 # 测试文件
 *.test
@@ -32,3 +34,6 @@
 # 操作系统文件
 .DS_Store
 Thumbs.db 
+
+# 特定文件
+fithub_api 
