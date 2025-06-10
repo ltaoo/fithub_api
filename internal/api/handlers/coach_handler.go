@@ -32,6 +32,12 @@ func NewCoachHandler(db *gorm.DB, logger *logger.Logger) *CoachHandler {
 	}
 }
 
+func (h *CoachHandler) FetchVersion(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
+		"version": "2506102221",
+	}})
+}
+
 var AvatarPrefix = "//static.fithub.top/avatars/"
 var DefaultAvatarURL = AvatarPrefix + "default1.jpeg"
 

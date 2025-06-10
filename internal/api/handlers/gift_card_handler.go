@@ -195,6 +195,7 @@ func (h *GiftCardHandler) CreateGiftCardReward(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
 		return
 	}
+	// @todo 验证 Details 的有效性
 	// 开始事务
 	tx := h.db.Begin()
 	defer func() {

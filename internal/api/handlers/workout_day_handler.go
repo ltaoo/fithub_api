@@ -68,10 +68,11 @@ func (h *WorkoutDayHandler) CreateWorkoutDay(c *gin.Context) {
 	var workout_day_ids []int
 	if len(body.StudentIds) != 0 {
 		for _, student_id := range body.StudentIds {
-			if student_id == uid {
+			is_coach_self := student_id == uid || student_id == 0
+			if is_coach_self {
 				workout_day := models.WorkoutDay{
 					Status: int(models.WorkoutDayStatusPending),
-					// 只有同时选了多人
+					// 只有选了多人才有该字段
 					GroupNo:       group_no,
 					CreatedAt:     now,
 					WorkoutPlanId: body.WorkoutPlanId,
@@ -102,7 +103,7 @@ func (h *WorkoutDayHandler) CreateWorkoutDay(c *gin.Context) {
 			}
 			workout_day := models.WorkoutDay{
 				Status: int(models.WorkoutDayStatusPending),
-				// 只有同时选了多人
+				// 只有选了多人才有该字段
 				GroupNo:       group_no,
 				CreatedAt:     now,
 				WorkoutPlanId: body.WorkoutPlanId,
@@ -206,6 +207,7 @@ func (h *WorkoutDayHandler) FetchStartedWorkoutDay(c *gin.Context) {
 			"created_at": v.CreatedAt,
 			"started_at": v.StartedAt,
 			"coach_id":   v.CoachId,
+			"group_no":   v.GroupNo,
 			"student": map[string]interface{}{
 				"id":         v.StudentId,
 				"nickname":   v.Student.Profile1.Nickname,
@@ -616,6 +618,7 @@ func (h *WorkoutDayHandler) FetchWorkoutDayList(c *gin.Context) {
 		list = append(list, map[string]interface{}{
 			"id":          v.Id,
 			"status":      v.Status,
+			"group_no":    v.GroupNo,
 			"started_at":  v.StartedAt,
 			"finished_at": v.FinishedAt,
 			"workout_plan": map[string]interface{}{

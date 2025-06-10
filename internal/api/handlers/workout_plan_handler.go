@@ -640,7 +640,6 @@ func (h *WorkoutPlanHandler) FetchWorkoutScheduleList(c *gin.Context) {
 	} else {
 		query = query.Where("status = 1")
 	}
-	query = query.Where("owner_id = ?", uid)
 	if body.Level != 0 {
 		query = query.Where("level = ?", body.Level)
 	}

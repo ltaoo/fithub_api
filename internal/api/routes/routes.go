@@ -46,6 +46,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			handler := handlers.NewCoachHandler(db, logger)
 			api.POST("/auth/web_register", handler.RegisterCoach)
 			api.POST("/auth/web_login", handler.LoginCoach)
+			api.POST("/ping", handler.FetchVersion)
 			// api.POST("/coach/send-verification-code", handler.SendVerificationCode)
 
 			authorized.POST("/auth/profile", handler.FetchCoachProfile)
