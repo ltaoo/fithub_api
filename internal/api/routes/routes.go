@@ -46,7 +46,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			handler := handlers.NewCoachHandler(db, logger)
 			api.POST("/auth/web_register", handler.RegisterCoach)
 			api.POST("/auth/web_login", handler.LoginCoach)
-			api.POST("/ping", handler.FetchVersion)
+			api.GET("/ping", handler.FetchVersion)
 			// api.POST("/coach/send-verification-code", handler.SendVerificationCode)
 
 			authorized.POST("/auth/profile", handler.FetchCoachProfile)
@@ -58,6 +58,16 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/student/profile", handler.FetchStudentProfile)
 			authorized.POST("/student/update", handler.UpdateStudentProfile)
 			authorized.POST("/student/delete", handler.DeleteStudent)
+			authorized.POST("/student/url_with_token", handler.DeleteStudent)
+			authorized.POST("/coach/list", handler.FetchCoachList)
+			authorized.POST("/coach/create", handler.CreateCoach)
+			authorized.POST("/coach/profile", handler.FetchCoachProfileInWechat)
+			authorized.POST("/coach/content/create", handler.CreateCoachContent)
+			authorized.POST("/follow", handler.FollowCoach)
+			authorized.POST("/my/follower/list", handler.FetchMyFollowerList)
+			authorized.POST("/my/following/list", handler.FetchMyFollowingList)
+			authorized.POST("/admin/coach/auth_url", handler.BuildCoachAuthURLInAdmin)
+			authorized.POST("/admin/coach/profile", handler.FetchCoachProfileInAdmin)
 		}
 
 		{
@@ -115,6 +125,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		{
 			handler := handlers.NewWorkoutActionHandler(db, logger)
 			authorized.POST("/workout_action/list", handler.FetchWorkoutActionList)
+			authorized.POST("/workout_action/content/list", handler.FetchWorkoutActionMediaList)
 			authorized.POST("/workout_action/list_by_ids", handler.FetchWorkoutActionListByIds)
 			authorized.POST("/workout_action/profile", handler.GetWorkoutAction)
 			authorized.POST("/workout_action/list/by_muscle", handler.GetActionsByMuscle)
@@ -129,7 +140,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		{
 			handler := handlers.NewMuscleHandler(db, logger)
 			authorized.POST("/muscle/list", handler.FetchMuscleList)
-			authorized.POST("/muscle/profile", handler.GetMuscleProfile)
+			authorized.POST("/muscle/profile", handler.FetchMuscleProfile)
 			authorized.POST("/muscle/create", handler.CreateMuscle)
 			authorized.POST("/muscle/update", handler.UpdateMuscle)
 			authorized.POST("/muscle/delete", handler.DeleteMuscle)
@@ -137,7 +148,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		{
 			handler := handlers.NewEquipmentHandler(db, logger)
 			authorized.POST("/equipment/list", handler.FetchEquipmentList)
-			authorized.POST("/equipment/profile", handler.GetEquipment)
+			authorized.POST("/equipment/profile", handler.FetchEquipment)
 			authorized.POST("/equipment/create", handler.CreateEquipment)
 		}
 		{

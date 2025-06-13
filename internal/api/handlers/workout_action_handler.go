@@ -425,3 +425,62 @@ func (h *WorkoutActionHandler) DeleteWorkoutAction(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "the record deleted successfully", "data": nil})
 }
+
+// 获取健身动作历史记录
+func (h *WorkoutActionHandler) FetchWorkoutActionMediaList(c *gin.Context) {
+	// uid := int(c.GetFloat64("id"))
+
+	var body struct {
+		models.Pagination
+		WorkoutActionId int `json:"workout_action_id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.WorkoutActionId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
+		return
+	}
+	query := h.db.Where("d IS NULL OR d = 0")
+	query = query.Where("workout_action_id = ?", body.WorkoutActionId)
+	pb := pagination.NewPaginationBuilder[models.CoachContentWithWorkoutAction](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC").
+		SetOrderBy("sort_idx DESC")
+
+	var list1 []models.CoachContentWithWorkoutAction
+	if err := pb.Build().Preload("Content").Preload("Content.Coach").Preload("Content.Coach.Profile1").Find(&list1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+
+	list := make([]map[string]interface{}, 0, len(list2))
+	for _, v := range list2 {
+		list = append(list, map[string]interface{}{
+			"id":          v.Content.Id,
+			"title":       v.Content.Title,
+			"description": v.Content.Description,
+			"video_url":   v.Content.VideoKey,
+			"like_count":  v.Content.LikeCount,
+			"creator": map[string]interface{}{
+				"nickname":   v.Content.Coach.Profile1.Nickname,
+				"avatar_url": v.Content.Coach.Profile1.AvatarURL,
+			},
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "Success",
+		"data": gin.H{
+			"list":        list,
+			"page":        pb.GetLimit(),
+			"page_size":   body.PageSize,
+			"has_more":    has_more,
+			"next_marker": next_marker,
+		},
+	})
+}

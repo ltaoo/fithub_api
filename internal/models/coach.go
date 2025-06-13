@@ -104,6 +104,99 @@ func (CoachRelationship) TableName() string {
 	return "COACH_RELATIONSHIP"
 }
 
+type CoachContent struct {
+	Id            int        `json:"id" gorm:"primaryKey"`
+	ContentType   int        `json:"content_type" gorm:"default:0"` //
+	Title         string     `json:"title"`
+	Description   string     `json:"description"`
+	ContentURL    string     `json:"content_url"`
+	CoverImageURL string     `json:"cover_image_url"`
+	VideoKey      string     `json:"video_key"`
+	ImageKeys     string     `json:"image_keys"`
+	LikeCount     int        `json:"like_count"`
+	Status        int        `json:"status"`  // 1审核通过
+	Publish       int        `json:"publish"` // 1公开 2私有
+	PublishedAt   *time.Time `json:"published_at"`
+	D             int        `json:"d"`
+	CreatedAt     time.Time  `json:"created_at"`
+
+	CoachId int   `json:"coach_id"`
+	Coach   Coach `json:"coach"  gorm:"foreignKey:CoachId"`
+}
+
+func (CoachContent) TableName() string {
+	return "COACH_CONTENT"
+}
+
+type CoachContentWithWorkoutAction struct {
+	Id              int       `json:"id" gorm:"primaryKey"`
+	SortIdx         int       `json:"sort_idx"`
+	StartPoint      int       `json:"start_point"`
+	D               int       `json:"d"`
+	WorkoutActionId int       `json:"workout_action_id"`
+	CreatedAt       time.Time `json:"created_at"`
+
+	CoachContentId int          `json:"coach_content_id"`
+	Content        CoachContent `json:"content" gorm:"foreignKey:CoachContentId"`
+}
+
+func (CoachContentWithWorkoutAction) TableName() string {
+	return "COACH_CONTENT_WITH_WORKOUT_ACTION"
+}
+
+type CoachFollow struct {
+	Id        int        `json:"id" gorm:"primaryKey"`
+	Status    int        `json:"status"` // 1关注中 2取消关注
+	UpdatedAt *time.Time `json:"updated_at"`
+	CreatedAt time.Time  `json:"created_at"`
+
+	FollowingId int   `json:"following_id"`
+	Following   Coach `json:"following" gorm:"foreignKey:FollowingId"`
+	FollowerId  int   `json:"follower_id"`
+	Follower    Coach `json:"follower" gorm:"foreignKey:FollowingId"`
+}
+
+func (CoachFollow) TableName() string {
+	return "COACH_FOLLOW"
+}
+
+type MediaSocialPlatform struct {
+	Id          int       `json:"id" gorm:"primaryKey"`
+	Name        string    `json:"image_keys"`
+	LogoURL     string    `json:"logo_url"`
+	HomepageURL string    `json:"homepage_url"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+func (MediaSocialPlatform) TableName() string {
+	return "INFLUENCER_PLATFORM"
+}
+
+type CoachMediaSocialAccount struct {
+	Id             int        `json:"id" gorm:"primaryKey"`
+	D              int        `json:"d"`
+	Status         int        `json:"status"`
+	Nickname       string     `json:"nickname"`
+	NicknameUsed   string     `json:"nickname_used"`
+	AvatarURL      string     `json:"avatar_url"`
+	Handle         string     `json:"handle"`
+	AccountURL     string     `json:"account_url"`
+	FollowersCount int        `json:"followers_count"`
+	LogoURL        string     `json:"logo_url"`
+	HomepageURL    string     `json:"homepage_url"`
+	UpdatedAt      *time.Time `json:"updated_at"`
+	CreatedAt      time.Time  `json:"created_at"`
+
+	CoachId    int                 `json:"coach_id"`
+	Coach      Coach               `json:"coach"  gorm:"foreignKey:CoachId"`
+	PlatformId int                 `json:"platform_id"`
+	Platform   MediaSocialPlatform `json:"platform"  gorm:"foreignKey:PlatformId"`
+}
+
+func (CoachMediaSocialAccount) TableName() string {
+	return "INFLUENCER_ACCOUNT_IN_PLATFORM"
+}
+
 // 常量定义
 const (
 	AccountProviderTypeEmailWithPwd = 1
@@ -131,8 +224,9 @@ const (
 
 // AuthResponse represents the response for authentication operations
 type AuthResponse struct {
-	Token  string `json:"token"`
-	Status string `json:"status"`
+	Token     string    `json:"token"`
+	ExpiresAt time.Time `json:"expires_at"`
+	Status    string    `json:"status"`
 }
 
 // JWTConfig holds JWT configuration
@@ -151,15 +245,14 @@ type Claims struct {
 // Default JWT configuration
 var DefaultJWTConfig = JWTConfig{
 	SecretKey:     []byte("your-secret-key-change-in-production"), // Should be loaded from environment variables
-	TokenDuration: 24 * time.Hour,                                 // 24 hours
+	TokenDuration: 48 * time.Hour,                                 // 24 hours
+	// TokenDuration: 30 * time.Second, // 24 hours
 }
 
 // Helper function to generate JWT token
-func GenerateJWT(coach_id int) (string, error) {
+func GenerateJWT(coach_id int) (string, time.Time, error) {
 	expiration_time := time.Now().Add(DefaultJWTConfig.TokenDuration)
 
-	fmt.Println("before generate claims")
-	fmt.Println(coach_id)
 	claims := jwt.MapClaims{
 		"id":         coach_id,
 		"expires_at": jwt.NewNumericDate(expiration_time),
@@ -170,10 +263,10 @@ func GenerateJWT(coach_id int) (string, error) {
 	str, err := token.SignedString(DefaultJWTConfig.SecretKey)
 
 	if err != nil {
-		return "", err
+		return "", time.Now(), err
 	}
 
-	return str, nil
+	return str, expiration_time, nil
 }
 
 // ParseJWT parses and validates a JWT token

@@ -7,10 +7,13 @@ import (
 	"gorm.io/gorm"
 
 	"myapi/internal/models"
+	"myapi/internal/pkg/pagination"
 	"myapi/pkg/logger"
 )
 
-// MuscleHandler handles HTTP requests for muscles
+// 设备列表，可以参考这个
+// https://repfitness.com/collections/best-sellers?page=2
+
 type EquipmentHandler struct {
 	db     *gorm.DB
 	logger *logger.Logger
@@ -24,108 +27,149 @@ func NewEquipmentHandler(db *gorm.DB, logger *logger.Logger) *EquipmentHandler {
 	}
 }
 
-// GetMuscles retrieves all muscles
 func (h *EquipmentHandler) FetchEquipmentList(c *gin.Context) {
-
-	// Get query parameters for filtering
 	var body struct {
+		models.Pagination
 		Ids []int `json:"ids"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-
-	// Start with base query
 	query := h.db
-
 	if len(body.Ids) != 0 {
 		query = query.Where("id IN (?)", body.Ids)
 	}
-
-	var equipments []models.Equipment
-	if err := query.Find(&equipments).Error; err != nil {
+	pb := pagination.NewPaginationBuilder[models.Equipment](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("sort_idx DESC")
+	var list1 []models.Equipment
+	if err := query.Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch equipments" + err.Error(), "data": nil})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Success", "data": gin.H{"list": equipments, "total": len(equipments)}})
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "Success",
+		"data": gin.H{
+			"list":        list2,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_marker,
+		},
+	})
 }
 
-// GetEquipment retrieves a specific equipment by ID
-func (h *EquipmentHandler) GetEquipment(c *gin.Context) {
-	id := c.Param("id")
-
-	var equipment models.Equipment
-	result := h.db.First(&equipment, id)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Equipment not found", "data": nil})
+func (h *EquipmentHandler) FetchEquipment(c *gin.Context) {
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-
+	var equipment models.Equipment
+	if err := h.db.First(&equipment, body.Id).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Success", "data": equipment})
 }
 
-// CreateEquipment creates a new equipment
 func (h *EquipmentHandler) CreateEquipment(c *gin.Context) {
-	var equipment models.Equipment
-
-	if err := c.ShouldBindJSON(&equipment); err != nil {
+	var body struct {
+		ZhName   string `json:"zh_name"`
+		Name     string `json:"name"`
+		Alias    string `json:"alias"`
+		Overview string `json:"overview"`
+		Tags     string `json:"tags"`
+		SortIdx  int    `json:"sort_idx"`
+		Medias   string `json:"medias"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-
-	result := h.db.Create(&equipment)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create equipment", "data": nil})
+	record := models.Equipment{
+		Name:     body.Name,
+		ZhName:   body.ZhName,
+		Alias:    body.Alias,
+		Overview: body.Overview,
+		// Tags:     body.Tags,
+		// SortIdx:  body.SortIdx,
+		Medias: body.Medias,
+	}
+	if err := h.db.Create(&record).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Equipment created successfully", "data": equipment})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": nil})
 }
 
-// UpdateEquipment updates an existing equipment
 func (h *EquipmentHandler) UpdateEquipment(c *gin.Context) {
-	id := c.Param("id")
-
-	var existingEquipment models.Equipment
-	result := h.db.First(&existingEquipment, id)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Equipment not found", "data": nil})
-		return
+	var body struct {
+		Id       int    `json:"id"`
+		ZhName   string `json:"zh_name"`
+		Name     string `json:"name"`
+		Alias    string `json:"alias"`
+		Overview string `json:"overview"`
+		Tags     string `json:"tags"`
+		SortIdx  int    `json:"sort_idx"`
+		Medias   string `json:"medias"`
 	}
-
-	var updatedEquipment models.Equipment
-	if err := c.ShouldBindJSON(&updatedEquipment); err != nil {
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-
-	// Ensure ID remains the same
-	updatedEquipment.Id = existingEquipment.Id
-
-	result = h.db.Save(&updatedEquipment)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update equipment", "data": nil})
+	var existing models.Equipment
+	if err := h.db.First(&existing, body.Id).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Equipment updated successfully", "data": updatedEquipment})
+	updates := map[string]interface{}{}
+	if body.ZhName != "" {
+		updates["zh_name"] = body.ZhName
+	}
+	if body.Name != "" {
+		updates["name"] = body.Name
+	}
+	if body.Alias != "" {
+		updates["alias"] = body.Alias
+	}
+	if body.Overview != "" {
+		updates["overview"] = body.Overview
+	}
+	if body.SortIdx != 0 {
+		updates["sort_idx"] = body.SortIdx
+	}
+	if body.Medias != "" {
+		updates["medias"] = body.Medias
+	}
+	if err := h.db.Model(&existing).Updates(&updates).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": nil})
 }
 
-// DeleteEquipment deletes an existing equipment
 func (h *EquipmentHandler) DeleteEquipment(c *gin.Context) {
-	id := c.Param("id")
-
-	var equipment models.Equipment
-	if err := h.db.First(&equipment, id).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Equipment not found", "data": nil})
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
 		return
 	}
-	if err := h.db.Delete(&equipment).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete equipment", "data": nil})
+	var existing models.Equipment
+	if err := h.db.First(&existing, body.Id).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Equipment deleted successfully", "data": nil})
+	if err := h.db.Model(&existing).Update("d", 1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "删除成功", "data": nil})
 }
