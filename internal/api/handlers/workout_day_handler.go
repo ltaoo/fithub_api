@@ -150,7 +150,7 @@ func (h *WorkoutDayHandler) CreateWorkoutDay(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day created successfully", "data": gin.H{"ids": workout_day_ids}})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": gin.H{"ids": workout_day_ids}})
 }
 
 // 查看是否有进行中的训练，仅获取少量数据
@@ -178,7 +178,7 @@ func (h *WorkoutDayHandler) CheckHasStartedWorkoutDay(c *gin.Context) {
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day retrieved successfully", "data": gin.H{
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "请求成功", "data": gin.H{
 		"list": data,
 	}})
 }
@@ -221,12 +221,12 @@ func (h *WorkoutDayHandler) FetchStartedWorkoutDay(c *gin.Context) {
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day retrieved successfully", "data": gin.H{
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "请求成功", "data": gin.H{
 		"list": data,
 	}})
 }
 
-// 获取训练日详情，可以获取自己和自己学员的
+// 获取训练计划记录 只能获取自己和自己学员的
 func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var body struct {
@@ -236,12 +236,15 @@ func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
-
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 id 参数", "data": nil})
+		return
+	}
 	var workout_day models.WorkoutDay
 	if err := h.db.
+		Where("id = ? AND coach_id = ?", body.Id, uid).
 		Preload("WorkoutPlan").
-		Where("id = ?", body.Id).
-		Where("coach_id = ?", uid).
+		Preload("WorkoutPlan.Creator.Profile1").
 		First(&workout_day).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
@@ -252,22 +255,35 @@ func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 	}
 
 	// Calculate the day number based on unique dates
-	var day_number int64
-	h.db.Model(&models.WorkoutDay{}).
-		Select("COUNT(DISTINCT DATE(created_at))").
-		Where("student_id = ? AND DATE(created_at) <= DATE(?)", uid, workout_day.CreatedAt).
-		Count(&day_number)
+	// var day_number int64
+	// h.db.Model(&models.WorkoutDay{}).
+	// 	Select("COUNT(DISTINCT DATE(created_at))").
+	// 	Where("student_id = ? AND DATE(created_at) <= DATE(?)", uid, workout_day.CreatedAt).
+	// 	Count(&day_number)
 
 	data := gin.H{
-		"id":              workout_day.Id,
-		"status":          workout_day.Status,
-		"started_at":      workout_day.StartedAt,
-		"finished_at":     workout_day.FinishedAt,
-		"pending_steps":   workout_day.PendingSteps,
+		"id":     workout_day.Id,
+		"status": workout_day.Status,
+		// 训练记录
+		"pending_steps": workout_day.PendingSteps,
+		// 训练内容
 		"updated_details": workout_day.UpdatedDetails,
 		"student_id":      workout_day.StudentId,
-		"workout_plan":    workout_day.WorkoutPlan,
-		"day_number":      day_number,
+		"is_self":         workout_day.StudentId == uid,
+		"workout_plan": gin.H{
+			"id":       workout_day.WorkoutPlan.Id,
+			"title":    workout_day.WorkoutPlan.Title,
+			"overview": workout_day.WorkoutPlan.Overview,
+			"tags":     workout_day.WorkoutPlan.Tags,
+			"details":  workout_day.WorkoutPlan.Details,
+			"creator": gin.H{
+				"nickname":   workout_day.WorkoutPlan.Creator.Profile1.Nickname,
+				"avatar_url": workout_day.WorkoutPlan.Creator.Profile1.AvatarURL,
+			},
+		},
+		// "day_number":  day_number,
+		"started_at":  workout_day.StartedAt,
+		"finished_at": workout_day.FinishedAt,
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": data})
 }
@@ -286,10 +302,6 @@ func (h *WorkoutDayHandler) UpdateWorkoutDayPlanDetails(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少id参数", "data": nil})
 		return
 	}
-	if body.Data == "" {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少更新内容", "data": nil})
-		return
-	}
 	var existing models.WorkoutDay
 	if err := h.db.Where("id = ? AND coach_id = ?", body.Id, uid).First(&existing).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
@@ -299,11 +311,14 @@ func (h *WorkoutDayHandler) UpdateWorkoutDayPlanDetails(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
 		return
 	}
-	existing.UpdatedDetails = body.Data
-	now := time.Now().UTC()
-	existing.UpdatedAt = &now
-	h.db.Save(&existing)
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day started successfully", "data": gin.H{"id": existing.Id}})
+	// existing.UpdatedDetails = body.Data
+	// now := time.Now().UTC()
+	// existing.UpdatedAt = &now
+	if err := h.db.Model(&existing).Update("updated_details", body.Data).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": gin.H{"id": existing.Id}})
 }
 
 // 暂存的训练内容记录
@@ -343,11 +358,7 @@ func (h *WorkoutDayHandler) UpdateWorkoutDayStepProgress(c *gin.Context) {
 		}
 	}()
 
-	existing.PendingSteps = body.Data
-	now := time.Now().UTC()
-	existing.UpdatedAt = &now
-
-	if err := tx.Save(&existing).Error; err != nil {
+	if err := tx.Model(&existing).Update("pending_steps", body.Data).Error; err != nil {
 		tx.Rollback()
 		h.logger.Error("Failed to update day", err)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
@@ -573,19 +584,16 @@ func (h *WorkoutDayHandler) DeleteWorkoutDay(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
-
-	result := h.db.Where("student_id = ?", uid).Where("id = ?", body.Id).Delete(&models.WorkoutDay{})
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete workout day", "data": nil})
+	var existing models.WorkoutDay
+	if err := h.db.Where("id = ? AND student_id = ?", body.Id, uid).First(&existing).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout day not found", "data": nil})
+	if err := h.db.Where("id = ?", body.Id).Update("d", 1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout day deleted successfully", "data": nil})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "操作成功", "data": nil})
 }
 
 func (h *WorkoutDayHandler) FetchWorkoutDayList(c *gin.Context) {

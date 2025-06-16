@@ -83,12 +83,13 @@ func (h *GiftCardHandler) FetchGiftCardRewardList(c *gin.Context) {
 		return
 	}
 	query := h.db
+	query = query.Where("d != 1 AND creator_id = ?", uid)
 	pb := pagination.NewPaginationBuilder[models.GiftCardReward](query).
 		SetLimit(body.PageSize).
 		SetPage(body.Page).
 		SetOrderBy("created_at DESC")
 	var list1 []models.GiftCardReward
-	if err := pb.Build().Where("d != 1 AND creator_id = ?", uid).Find(&list1).Error; err != nil {
+	if err := pb.Build().Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}

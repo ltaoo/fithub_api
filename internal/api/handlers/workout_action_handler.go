@@ -309,7 +309,7 @@ func (h *WorkoutActionHandler) CreateWorkoutAction(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create", "data": nil})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "the record created successfully", "data": body})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": body})
 }
 
 func (h *WorkoutActionHandler) UpdateWorkoutActionProfile(c *gin.Context) {
@@ -417,17 +417,46 @@ func (h *WorkoutActionHandler) DeleteWorkoutAction(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "the record not found", "data": nil})
 		return
 	}
-	if err := h.db.Model(&record).Updates(map[string]interface{}{
-		"d": 1,
-	}).Error; err != nil {
+	if err := h.db.Model(&record).Update("d", 1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete the record", "data": nil})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "the record deleted successfully", "data": nil})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "操作成功", "data": nil})
 }
 
-// 获取健身动作历史记录
-func (h *WorkoutActionHandler) FetchWorkoutActionMediaList(c *gin.Context) {
+func (h *WorkoutActionHandler) CreateContentWithWorkoutAction(c *gin.Context) {
+	var body struct {
+		ContentId       int `json:"content_id"`
+		WorkoutActionId int `json:"workout_action_id"`
+		StartPoint      int `json:"start_point"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	if body.ContentId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 Content id 参数", "data": nil})
+		return
+	}
+	if body.WorkoutActionId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 WorkoutAction id 参数", "data": nil})
+		return
+	}
+	content_with_act := models.CoachContentWithWorkoutAction{
+		SortIdx:         0,
+		WorkoutActionId: body.WorkoutActionId,
+		CoachContentId:  body.ContentId,
+		CreatedAt:       time.Now(),
+	}
+	if err := h.db.Create(&content_with_act).Error; err != nil {
+		h.logger.Error("Failed to create CoachContentWithWorkoutAction", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "关联成功", "data": nil})
+}
+
+func (h *WorkoutActionHandler) FetchContentListOfWorkoutAction(c *gin.Context) {
 	// uid := int(c.GetFloat64("id"))
 
 	var body struct {
@@ -439,7 +468,7 @@ func (h *WorkoutActionHandler) FetchWorkoutActionMediaList(c *gin.Context) {
 		return
 	}
 	if body.WorkoutActionId == 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 WorkoutActionId 参数", "data": nil})
 		return
 	}
 	query := h.db.Where("d IS NULL OR d = 0")

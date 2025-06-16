@@ -34,7 +34,7 @@ func NewCoachHandler(db *gorm.DB, logger *logger.Logger) *CoachHandler {
 
 func (h *CoachHandler) FetchVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
-		"version": "2506102221",
+		"version": "2506161021",
 	}})
 }
 
@@ -157,7 +157,6 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 			h.logger.Error("Failed to create subscription", err)
 		}
 	}
-
 	// Generate JWT token
 	token, expires_at, err := models.GenerateJWT(the_coach.Id)
 	if err != nil {
@@ -172,13 +171,11 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-
 	response := models.AuthResponse{
 		Token:     "Bearer " + token,
-		ExpiresAt: expires_at,
+		ExpiresAt: expires_at.Unix(),
 		Status:    "success",
 	}
-
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "注册成功", "data": response})
 }
 
@@ -193,48 +190,39 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 		return
 	}
 	if body.Email == "" {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Email is required", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "请输入邮箱", "data": nil})
 		return
 	}
 	if body.Password == "" {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Password is required", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "请输入密码", "data": nil})
 		return
 	}
-
 	var account models.CoachAccount
-
-	result := h.db.Where("provider_type = ? AND provider_id = ?", models.AccountProviderTypeEmailWithPwd, body.Email).First(&account)
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "There no matched record", "data": nil})
+	if err := h.db.Where("provider_type = ? AND provider_id = ?", models.AccountProviderTypeEmailWithPwd, body.Email).First(&account).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "帐号不存在", "data": nil})
 		return
 	}
-	if account.CoachId == 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "There no matched record", "data": nil})
-		return
-	}
-
-	// Verify password
 	err := bcrypt.CompareHashAndPassword([]byte(account.ProviderArg1), []byte(body.Password))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Invalid email or password", "data": nil})
 		return
 	}
-
 	// Generate JWT token
 	token, expires_at, err := models.GenerateJWT(account.CoachId)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to generate token", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "登录失败", "data": nil})
 		return
 	}
-
-	// Return response
 	response := models.AuthResponse{
 		Token:     "Bearer " + token,
-		ExpiresAt: expires_at,
+		ExpiresAt: expires_at.Unix(),
 		Status:    "success",
 	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Login successful", "data": response})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "登录成功", "data": response})
 }
 
 func (h *CoachHandler) FetchCoachProfile(c *gin.Context) {
@@ -769,7 +757,7 @@ func (h *CoachHandler) CreateStudent(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan created successfully", "data": gin.H{"id": student.Id}})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": gin.H{"id": student.Id}})
 }
 
 func (h *CoachHandler) UpdateStudentProfile(c *gin.Context) {
@@ -1170,7 +1158,7 @@ func (h *CoachHandler) FetchStudentProfile(c *gin.Context) {
 		"gender":     profile.Profile1.Gender,
 		"age":        profile.Profile1.Age,
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan retrieved successfully", "data": data})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "请求成功", "data": data})
 }
 
 func (h *CoachHandler) RefreshToken(c *gin.Context) {
@@ -1186,11 +1174,11 @@ func (h *CoachHandler) RefreshToken(c *gin.Context) {
 	// Return response
 	response := models.AuthResponse{
 		Token:     "Bearer " + token,
-		ExpiresAt: expires_at,
+		ExpiresAt: expires_at.Unix(),
 		Status:    "success",
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Token refreshed successfully", "data": response})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "请求成功", "data": response})
 }
 
 type PersonAvatar struct {
@@ -1212,15 +1200,13 @@ func (h *CoachHandler) CreateCoachContent(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "没有权限", "data": nil})
 	}
 	var body struct {
-		ContentType     int    `json:"content_type"`
-		Title           string `json:"title"`
-		Description     string `json:"description"`
-		CoverImageURL   string `json:"cover_image_url"`
-		ContentURL      string `json:"content_url"`
-		VideoKey        string `json:"video_key"`
-		WorkoutActionId int    `json:"workout_action_id"`
-		StartPoint      int    `json:"StartPoint"`
-		CoachId         int    `json:"coach_id"`
+		ContentType   int    `json:"content_type"`
+		Title         string `json:"title"`
+		Description   string `json:"description"`
+		CoverImageURL string `json:"cover_image_url"`
+		ContentURL    string `json:"content_url"`
+		VideoKey      string `json:"video_key"`
+		CoachId       int    `json:"coach_id"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
@@ -1261,20 +1247,6 @@ func (h *CoachHandler) CreateCoachContent(c *gin.Context) {
 		h.logger.Error("Failed to create coach", err)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
-	}
-	if body.WorkoutActionId != 0 {
-		content_with_act := models.CoachContentWithWorkoutAction{
-			SortIdx:         0,
-			WorkoutActionId: body.WorkoutActionId,
-			CoachContentId:  the_content.Id,
-			CreatedAt:       now,
-		}
-		if err := tx.Create(&content_with_act).Error; err != nil {
-			tx.Rollback()
-			h.logger.Error("Failed to create CoachContentWithWorkoutAction", err)
-			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
-			return
-		}
 	}
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
@@ -1521,4 +1493,44 @@ func (h *CoachHandler) FetchCoachProfileInAdmin(c *gin.Context) {
 		"nickname":   coach.Profile1.Nickname,
 		"avatar_url": coach.Profile1.AvatarURL,
 	}})
+}
+
+func (h *CoachHandler) FetchCoachContentList(c *gin.Context) {
+	// uid := int(c.GetFloat64("id"))
+	var body struct {
+		models.Pagination
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	query := h.db
+	pb := pagination.NewPaginationBuilder[models.CoachContent](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
+	var list1 []models.CoachContent
+	if err := pb.Build().Find(&list1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch discount policies", "data": nil})
+		return
+	}
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	// list := make([]map[string]interface{}, 0, len(list2))
+	// for _, v := range list2 {
+	// 	list = append(list, map[string]interface{}{
+	// 		"id":         v.FollowingId,
+	// 		"nickname":   v.Following.Profile1.Nickname,
+	// 		"avatar_url": v.Following.Profile1.AvatarURL,
+	// 	})
+	// }
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "",
+		"data": gin.H{
+			"list":        list2,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_marker,
+		},
+	})
 }

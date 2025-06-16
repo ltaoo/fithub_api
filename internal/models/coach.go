@@ -129,19 +129,38 @@ func (CoachContent) TableName() string {
 }
 
 type CoachContentWithWorkoutAction struct {
-	Id              int       `json:"id" gorm:"primaryKey"`
-	SortIdx         int       `json:"sort_idx"`
-	StartPoint      int       `json:"start_point"`
-	D               int       `json:"d"`
-	WorkoutActionId int       `json:"workout_action_id"`
-	CreatedAt       time.Time `json:"created_at"`
+	Id         int       `json:"id" gorm:"primaryKey"`
+	SortIdx    int       `json:"sort_idx"`
+	StartPoint int       `json:"start_point"`
+	D          int       `json:"d"`
+	Details    string    `json:"details"`
+	CreatedAt  time.Time `json:"created_at"`
 
-	CoachContentId int          `json:"coach_content_id"`
-	Content        CoachContent `json:"content" gorm:"foreignKey:CoachContentId"`
+	CoachContentId  int           `json:"coach_content_id"`
+	Content         CoachContent  `json:"content" gorm:"foreignKey:CoachContentId"`
+	WorkoutActionId int           `json:"workout_action_id"`
+	WorkoutAction   WorkoutAction `json:"workout_action" gorm:"foreignKey:WorkoutActionId"`
 }
 
 func (CoachContentWithWorkoutAction) TableName() string {
 	return "COACH_CONTENT_WITH_WORKOUT_ACTION"
+}
+
+type CoachContentWithWorkoutPlan struct {
+	Id        int       `json:"id" gorm:"primaryKey"`
+	SortIdx   int       `json:"sort_idx"`
+	D         int       `json:"d"`
+	Details   string    `json:"details"`
+	CreatedAt time.Time `json:"created_at"`
+
+	CoachContentId int          `json:"coach_content_id"`
+	Content        CoachContent `json:"content" gorm:"foreignKey:CoachContentId"`
+	WorkoutPlanId  int          `json:"workout_plan_id"`
+	WorkoutPlan    WorkoutPlan  `json:"workout_plan" gorm:"foreignKey:WorkoutPlanId"`
+}
+
+func (CoachContentWithWorkoutPlan) TableName() string {
+	return "COACH_CONTENT_WITH_WORKOUT_PLAN"
 }
 
 type CoachFollow struct {
@@ -224,9 +243,9 @@ const (
 
 // AuthResponse represents the response for authentication operations
 type AuthResponse struct {
-	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expires_at"`
-	Status    string    `json:"status"`
+	Token     string `json:"token"`
+	ExpiresAt int64  `json:"expires_at"`
+	Status    string `json:"status"`
 }
 
 // JWTConfig holds JWT configuration
@@ -246,7 +265,7 @@ type Claims struct {
 var DefaultJWTConfig = JWTConfig{
 	SecretKey:     []byte("your-secret-key-change-in-production"), // Should be loaded from environment variables
 	TokenDuration: 48 * time.Hour,                                 // 24 hours
-	// TokenDuration: 30 * time.Second, // 24 hours
+	// TokenDuration: 5 * time.Minute, // 5分钟，测试用
 }
 
 // Helper function to generate JWT token

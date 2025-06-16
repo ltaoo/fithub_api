@@ -45,7 +45,7 @@ func (h *EquipmentHandler) FetchEquipmentList(c *gin.Context) {
 		SetPage(body.Page).
 		SetOrderBy("sort_idx DESC")
 	var list1 []models.Equipment
-	if err := query.Find(&list1).Error; err != nil {
+	if err := pb.Build().Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch equipments" + err.Error(), "data": nil})
 		return
 	}
@@ -97,9 +97,9 @@ func (h *EquipmentHandler) CreateEquipment(c *gin.Context) {
 		ZhName:   body.ZhName,
 		Alias:    body.Alias,
 		Overview: body.Overview,
-		// Tags:     body.Tags,
-		// SortIdx:  body.SortIdx,
-		Medias: body.Medias,
+		Tags:     body.Tags,
+		SortIdx:  body.SortIdx,
+		Medias:   body.Medias,
 	}
 	if err := h.db.Create(&record).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})

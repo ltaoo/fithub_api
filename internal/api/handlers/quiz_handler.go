@@ -70,7 +70,6 @@ func (h *QuizHandler) FetchQuizList(c *gin.Context) {
 		SetLimit(body.PageSize).
 		SetPage(body.Page).
 		SetOrderBy("created_at DESC")
-
 	var list1 []models.Quiz
 	if err := pb.Build().Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch records", "data": nil})

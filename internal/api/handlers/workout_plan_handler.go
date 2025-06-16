@@ -222,32 +222,34 @@ func (h *WorkoutPlanHandler) FetchWorkoutPlanProfile(c *gin.Context) {
 }
 
 func (h *WorkoutPlanHandler) DeleteWorkoutPlan(c *gin.Context) {
-	var id struct {
+	var body struct {
 		Id int `json:"id"`
 	}
-	if err := c.ShouldBindJSON(&id); err != nil {
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
-
-	result := h.db.Where("id = ?", id.Id).Delete(&models.WorkoutPlan{})
-	if result.Error != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete workout plan", "data": nil})
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 id 参数", "data": nil})
 		return
 	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout plan not found", "data": nil})
+	var existing models.WorkoutPlan
+	if err := h.db.Where("id = ?", body.Id).First(&existing).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan deleted successfully", "data": nil})
+	if err := h.db.Model(&existing).Update("d", 1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "删除成功", "data": nil})
 }
 
 func (h *WorkoutPlanHandler) FetchWorkoutPlanList(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var body struct {
 		models.Pagination
+		Ids     []int  `json:"ids"`
 		Keyword string `json:"keyword"`
 		Level   int    `json:"level"`
 		Tag     string `json:"tag"`
@@ -275,6 +277,9 @@ func (h *WorkoutPlanHandler) FetchWorkoutPlanList(c *gin.Context) {
 	}
 	if body.Muscle != "" {
 		query = query.Where("target_muscle_ids LIKE ?", "%"+body.Muscle+"%")
+	}
+	if len(body.Ids) != 0 {
+		query = query.Where("id IN (?)", body.Ids)
 	}
 	pb := pagination.NewPaginationBuilder[models.WorkoutPlan](query).
 		SetLimit(body.PageSize).
@@ -396,20 +401,162 @@ func (h *WorkoutPlanHandler) FetchMyWorkoutPlanList(c *gin.Context) {
 	})
 }
 
+func (h *WorkoutPlanHandler) FetchContentListOfWorkoutPlan(c *gin.Context) {
+	// uid := int(c.GetFloat64("id"))
+
+	var body struct {
+		models.Pagination
+		WorkoutPlanId int    `json:"workout_plan_id"`
+		Level         int    `json:"level"`
+		Tag           string `json:"tag"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.WorkoutPlanId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少 WorkoutPlanId 参数", "data": nil})
+		return
+	}
+	query := h.db.Where("d IS NULL OR d = 0")
+	query = query.Where("workout_plan_id = ?", body.WorkoutPlanId)
+	if body.Level != 0 {
+		query = query.Where("level = ?", body.Level)
+	}
+	if body.Tag != "" {
+		query = query.Where("tags LIKE ?", "%"+body.Tag+"%")
+	}
+	pb := pagination.NewPaginationBuilder[models.CoachContentWithWorkoutPlan](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
+
+	var list1 []models.CoachContentWithWorkoutPlan
+	if err := pb.Build().Preload("Content").Preload("Content.Coach.Profile1").Find(&list1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	list := make([]map[string]interface{}, 0, len(list2))
+	for _, v := range list2 {
+		list = append(list, map[string]interface{}{
+			"id":       v.Id,
+			"title":    v.Content.Title,
+			"overview": v.Content.Description,
+			"creator": map[string]interface{}{
+				"nickname":   v.Content.Coach.Profile1.Nickname,
+				"avatar_url": v.Content.Coach.Profile1.AvatarURL,
+			},
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "Success",
+		"data": gin.H{
+			"list":        list,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_marker,
+		},
+	})
+}
+
+func (h *WorkoutPlanHandler) CreateContentWithWorkoutPlan(c *gin.Context) {
+	var body struct {
+		Details       string `json:"details"`
+		ContentId     int    `json:"content_id"`
+		WorkoutPlanId int    `json:"workout_plan_id"`
+		// Points        []struct {
+		// 	Time              int    `json:"time"`
+		// 	TimeText          string `json:"time_text"`
+		// 	WorkoutActionId   int    `json:"workout_action_id"`
+		// 	WorkoutActionName string `json:"workout_action_name"`
+		// } `json:"points"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	if body.ContentId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 Content id 参数", "data": nil})
+		return
+	}
+	if body.WorkoutPlanId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 WorkoutPlan id 参数", "data": nil})
+		return
+	}
+	content_with_plan := models.CoachContentWithWorkoutPlan{
+		SortIdx:        0,
+		Details:        body.Details,
+		CreatedAt:      time.Now(),
+		CoachContentId: body.ContentId,
+		WorkoutPlanId:  body.WorkoutPlanId,
+	}
+	if err := h.db.Create(&content_with_plan).Error; err != nil {
+		h.logger.Error("Failed to create CoachContentWithWorkoutPlan", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "关联成功", "data": nil})
+}
+
+func (h *WorkoutPlanHandler) FetchContentProfileOfWorkoutPlan(c *gin.Context) {
+	// uid := int(c.GetFloat64("id"))
+
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少 id 参数", "data": nil})
+		return
+	}
+	var record models.CoachContentWithWorkoutPlan
+	if err := h.db.Where("id = ?", body.Id).Preload("Content").Preload("Content.Coach.Profile1").First(&record).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到记录", "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "Success",
+		"data": gin.H{
+			"id":           record.Id,
+			"content_type": record.Content.ContentType,
+			"title":        record.Content.Title,
+			"overview":     record.Content.Description,
+			"details":      record.Details,
+			"video_url":    record.Content.VideoKey,
+			"creator": map[string]interface{}{
+				"nickname":   record.Content.Coach.Profile1.Nickname,
+				"avatar_url": record.Content.Coach.Profile1.AvatarURL,
+			},
+		},
+	})
+}
+
 func (h *WorkoutPlanHandler) CreateWorkoutSchedule(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
 	var body struct {
-		Title        string `json:"title" binding:"required"`
-		Overview     string `json:"overview"`
-		Status       int    `json:"status" binding:"required,oneof=1 2"`
-		Level        int    `json:"level"`
-		Type         int    `json:"type"`
-		WorkoutPlans []struct {
-			Weekday       int `json:"weekday"`
-			Day           int `json:"day"`
-			WorkoutPlanId int `json:"workout_plan_id"`
-		} `json:"workout_plans"`
+		Title    string `json:"title" binding:"required"`
+		Overview string `json:"overview"`
+		Status   int    `json:"status" binding:"required,oneof=1 2"`
+		Level    int    `json:"level"`
+		Type     int    `json:"type"`
+		// Details []struct {
+		// 	Weekday        int   `json:"weekday"`
+		// 	Day            int   `json:"day"`
+		// 	Idx            int   `json:"idx"`
+		// 	WorkoutPlanIds []int `json:"workout_plan_ids"`
+		// } `json:"schedules"`
+		Details string `json:"details"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
@@ -419,11 +566,10 @@ func (h *WorkoutPlanHandler) CreateWorkoutSchedule(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少标题", "data": nil})
 		return
 	}
-	if len(body.WorkoutPlans) == 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "至少选择一天配置训练计划", "data": nil})
-		return
-	}
-
+	// if len(body.Schedules) == 0 {
+	// 	c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "至少选择一天配置训练计划", "data": nil})
+	// 	return
+	// }
 	// 开始事务
 	tx := h.db.Begin()
 	defer func() {
@@ -439,6 +585,7 @@ func (h *WorkoutPlanHandler) CreateWorkoutSchedule(c *gin.Context) {
 		Status:    body.Status,
 		Level:     body.Level,
 		Type:      body.Type,
+		Details:   body.Details,
 		CreatedAt: time.Now().UTC(),
 		OwnerId:   uid,
 	}
@@ -448,26 +595,29 @@ func (h *WorkoutPlanHandler) CreateWorkoutSchedule(c *gin.Context) {
 		return
 	}
 	// 创建训练计划集合中的训练计划
-	for _, plan := range body.WorkoutPlans {
-		plan_in_collection := models.WorkoutPlanInSchedule{
-			WorkoutPlanCollectionId: record.Id,
-			WorkoutPlanId:           plan.WorkoutPlanId,
-			Weekday:                 plan.Weekday,
-			Day:                     plan.Day,
-		}
-		if err := tx.Create(&plan_in_collection).Error; err != nil {
-			tx.Rollback()
-			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "创建训练计划关联失败: " + err.Error(), "data": nil})
-			return
-		}
-	}
+	// for _, plan := range body.Schedules {
+	// 	for _, vv := range plan.WorkoutPlanIds {
+	// 		plan_in_collection := models.WorkoutPlanInSchedule{
+	// 			WorkoutPlanCollectionId: record.Id,
+	// 			WorkoutPlanId:           vv,
+	// 			Weekday:                 plan.Weekday,
+	// 			Day:                     plan.Day,
+	// 			Idx:                     plan.Idx,
+	// 		}
+	// 		if err := tx.Create(&plan_in_collection).Error; err != nil {
+	// 			tx.Rollback()
+	// 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+	// 			return
+	// 		}
+	// 	}
+	// }
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		h.logger.Error("Failed to commit transaction", err)
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "提交事务失败", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建训练计划集合成功", "data": gin.H{"id": record.Id}})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": gin.H{"id": record.Id}})
 }
 
 func (h *WorkoutPlanHandler) UpdateWorkoutSchedule(c *gin.Context) {
@@ -480,9 +630,9 @@ func (h *WorkoutPlanHandler) UpdateWorkoutSchedule(c *gin.Context) {
 		Level        int    `json:"level"`
 		Type         int    `json:"type"`
 		WorkoutPlans []struct {
-			Weekday       int `json:"weekday"`
-			Day           int `json:"day"`
-			WorkoutPlanId int `json:"workout_plan_id"`
+			Weekday        int   `json:"weekday"`
+			Day            int   `json:"day"`
+			WorkoutPlanIds []int `json:"workout_plan_ids"`
 		} `json:"workout_plans"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -534,24 +684,26 @@ func (h *WorkoutPlanHandler) UpdateWorkoutSchedule(c *gin.Context) {
 	}
 	// Create new workout plans in collection
 	for _, plan := range body.WorkoutPlans {
-		plan_in_collection := models.WorkoutPlanInSchedule{
-			WorkoutPlanCollectionId: body.Id,
-			WorkoutPlanId:           plan.WorkoutPlanId,
-			Weekday:                 plan.Weekday,
-			Day:                     plan.Day,
-		}
-		if err := tx.Create(&plan_in_collection).Error; err != nil {
-			tx.Rollback()
-			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "创建训练计划关联失败，" + err.Error(), "data": nil})
-			return
+		for _, vv := range plan.WorkoutPlanIds {
+			plan_in_collection := models.WorkoutPlanInSchedule{
+				WorkoutPlanCollectionId: body.Id,
+				WorkoutPlanId:           vv,
+				Weekday:                 plan.Weekday,
+				Day:                     plan.Day,
+			}
+			if err := tx.Create(&plan_in_collection).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
 		}
 	}
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "提交事务失败，" + err.Error(), "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新周期计划成功", "data": nil})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": nil})
 }
 
 func (h *WorkoutPlanHandler) FetchWorkoutScheduleProfile(c *gin.Context) {
@@ -590,10 +742,12 @@ func (h *WorkoutPlanHandler) FetchWorkoutScheduleProfile(c *gin.Context) {
 		}
 	}
 	data := map[string]interface{}{
+		"id":       record.Id,
 		"title":    record.Title,
 		"overview": record.Overview,
 		"level":    record.Level,
 		"type":     record.Type,
+		"details":  record.Details,
 		"creator": map[string]interface{}{
 			"nickname":   record.Creator.Profile1.Nickname,
 			"avatar_url": record.Creator.Profile1.AvatarURL,
@@ -604,9 +758,16 @@ func (h *WorkoutPlanHandler) FetchWorkoutScheduleProfile(c *gin.Context) {
 	schedules := []interface{}{}
 	for _, schedule := range record.WorkoutPlans {
 		schedules = append(schedules, map[string]interface{}{
-			"day":          schedule.Day,
-			"weekday":      schedule.Weekday,
-			"workout_plan": schedule.WorkoutPlan,
+			"idx":     schedule.Idx,
+			"day":     schedule.Day,
+			"weekday": schedule.Weekday,
+			"workout_plan": gin.H{
+				"id":                 schedule.WorkoutPlan.Id,
+				"title":              schedule.WorkoutPlan.Title,
+				"overview":           schedule.WorkoutPlan.Overview,
+				"tags":               schedule.WorkoutPlan.Tags,
+				"estimated_duration": schedule.WorkoutPlan.EstimatedDuration,
+			},
 		})
 	}
 	data["schedules"] = schedules
@@ -619,7 +780,7 @@ func (h *WorkoutPlanHandler) FetchWorkoutScheduleProfile(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan retrieved successfully", "data": data})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "获取成功", "data": data})
 }
 
 func (h *WorkoutPlanHandler) FetchWorkoutScheduleList(c *gin.Context) {
@@ -694,6 +855,8 @@ func (h *WorkoutPlanHandler) ApplyWorkoutSchedule(c *gin.Context) {
 	var body struct {
 		Id       int `json:"id"`
 		Interval int `json:"interval"`
+		// 只有 天循环 会需要？
+		StartDate time.Time `json:"start_date"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
@@ -714,6 +877,7 @@ func (h *WorkoutPlanHandler) ApplyWorkoutSchedule(c *gin.Context) {
 		record := models.CoachWorkoutSchedule{
 			WorkoutPlanCollectionId: body.Id,
 			CoachId:                 uid,
+			StartDate:               body.StartDate,
 			Status:                  1,
 			AppliedAt:               time.Now(),
 		}
@@ -733,6 +897,7 @@ func (h *WorkoutPlanHandler) ApplyWorkoutSchedule(c *gin.Context) {
 	// 更新
 	updates := map[string]interface{}{
 		"status":     1,
+		"start_date": body.StartDate,
 		"applied_at": time.Now(),
 	}
 	if err := h.db.Model(&existing).Updates(updates).Error; err != nil {
@@ -788,43 +953,29 @@ func (h *WorkoutPlanHandler) CancelWorkoutSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "取消周期计划成功", "data": nil})
 }
 
-func (h *WorkoutPlanHandler) FetchMyWorkoutScheduleList(c *gin.Context) {
+// 获取当前应用中的周期计划
+func (h *WorkoutPlanHandler) FetchAppliedWorkoutScheduleList(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
-
 	var list []models.CoachWorkoutSchedule
-
-	if err := h.db.Where("status = 1 AND coach_id = ?", uid).Preload("WorkoutPlanCollection.WorkoutPlans.WorkoutPlan").Find(&list).Error; err != nil {
+	if err := h.db.Where("status = 1 AND coach_id = ?", uid).Preload("WorkoutPlanCollection").Find(&list).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-
 	data := []interface{}{}
-
 	for _, relation := range list {
-
-		schedules := []interface{}{}
-		for _, schedule := range relation.WorkoutPlanCollection.WorkoutPlans {
-			schedules = append(schedules, map[string]interface{}{
-				"day":             schedule.Day,
-				"weekday":         schedule.Weekday,
-				"workout_plan_id": schedule.WorkoutPlanId,
-				"title":           schedule.WorkoutPlan.Title,
-				"overview":        schedule.WorkoutPlan.Overview,
-				"tags":            schedule.WorkoutPlan.Tags,
-			})
-		}
-
 		data = append(data, map[string]interface{}{
+			"id":                  relation.Id,
 			"status":              relation.Status,
+			"start_date":          relation.StartDate,
 			"workout_schedule_id": relation.WorkoutPlanCollection.Id,
 			"title":               relation.WorkoutPlanCollection.Title,
 			"overview":            relation.WorkoutPlanCollection.Overview,
 			"type":                relation.WorkoutPlanCollection.Type,
 			"level":               relation.WorkoutPlanCollection.Level,
-			"schedules":           schedules,
+			"details":             relation.WorkoutPlanCollection.Details,
+			"schedules":           []map[string]interface{}{},
 		})
 	}
-
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
 		"list": data,
 	}})
@@ -1022,5 +1173,5 @@ func (h *WorkoutPlanHandler) UpdateWorkoutPlanSet(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Workout plan updated successfully", "data": gin.H{"id": existing_plan.Id}})
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": gin.H{"id": existing_plan.Id}})
 }

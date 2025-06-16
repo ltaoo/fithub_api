@@ -62,6 +62,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/coach/list", handler.FetchCoachList)
 			authorized.POST("/coach/create", handler.CreateCoach)
 			authorized.POST("/coach/profile", handler.FetchCoachProfileInWechat)
+			authorized.POST("/coach/content/list", handler.FetchCoachContentList)
 			authorized.POST("/coach/content/create", handler.CreateCoachContent)
 			authorized.POST("/follow", handler.FollowCoach)
 			authorized.POST("/my/follower/list", handler.FetchMyFollowerList)
@@ -86,6 +87,9 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/workout_plan/delete", handler.DeleteWorkoutPlan)
 			authorized.POST("/workout_plan/create", handler.CreateWorkoutPlan)
 			authorized.POST("/workout_plan/mine", handler.FetchMyWorkoutPlanList)
+			authorized.POST("/workout_plan/content/list", handler.FetchContentListOfWorkoutPlan)
+			authorized.POST("/workout_plan/content/profile", handler.FetchContentProfileOfWorkoutPlan)
+			authorized.POST("/workout_plan/content/create", handler.CreateContentWithWorkoutPlan)
 			// 周期计划
 			authorized.POST("/workout_schedule/list", handler.FetchWorkoutScheduleList)
 			authorized.POST("/workout_schedule/create", handler.CreateWorkoutSchedule)
@@ -93,7 +97,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/workout_schedule/profile", handler.FetchWorkoutScheduleProfile)
 			authorized.POST("/workout_schedule/apply", handler.ApplyWorkoutSchedule)
 			authorized.POST("/workout_schedule/cancel", handler.CancelWorkoutSchedule)
-			authorized.POST("/workout_schedule/enabled", handler.FetchMyWorkoutScheduleList)
+			authorized.POST("/workout_schedule/enabled", handler.FetchAppliedWorkoutScheduleList)
 			// 计划合集
 			authorized.POST("/workout_plan_set/list", handler.FetchWorkoutPlanSetList)
 			authorized.POST("/workout_plan_set/create", handler.CreateWorkoutPlanSet)
@@ -125,17 +129,17 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		{
 			handler := handlers.NewWorkoutActionHandler(db, logger)
 			authorized.POST("/workout_action/list", handler.FetchWorkoutActionList)
-			authorized.POST("/workout_action/content/list", handler.FetchWorkoutActionMediaList)
 			authorized.POST("/workout_action/list_by_ids", handler.FetchWorkoutActionListByIds)
 			authorized.POST("/workout_action/profile", handler.GetWorkoutAction)
 			authorized.POST("/workout_action/list/by_muscle", handler.GetActionsByMuscle)
 			authorized.POST("/workout_action/list/by_level", handler.FetchWorkoutActionsByLevel)
 			authorized.POST("/workout_action/list/related", handler.FetchRelatedWorkoutActions)
-
 			authorized.POST("/workout_action/update_idx", handler.UpdateWorkoutActionIdx)
 			authorized.POST("/workout_action/create", handler.CreateWorkoutAction)
 			authorized.POST("/workout_action/update", handler.UpdateWorkoutActionProfile)
 			authorized.POST("/workout_action/delete", handler.DeleteWorkoutAction)
+			authorized.POST("/workout_action/content/create", handler.CreateContentWithWorkoutAction)
+			authorized.POST("/workout_action/content/list", handler.FetchContentListOfWorkoutAction)
 		}
 		{
 			handler := handlers.NewMuscleHandler(db, logger)
@@ -150,6 +154,8 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/equipment/list", handler.FetchEquipmentList)
 			authorized.POST("/equipment/profile", handler.FetchEquipment)
 			authorized.POST("/equipment/create", handler.CreateEquipment)
+			authorized.POST("/equipment/update", handler.UpdateEquipment)
+			authorized.POST("/equipment/delete", handler.DeleteEquipment)
 		}
 		{
 			handler := handlers.NewSubscriptionHandler(db, logger)

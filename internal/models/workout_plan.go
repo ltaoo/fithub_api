@@ -50,6 +50,7 @@ type WorkoutSchedule struct {
 	Status    int        `json:"status"`
 	Level     int        `json:"level"`
 	Type      int        `json:"type"`
+	Details   string     `json:"details"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
 
@@ -66,6 +67,7 @@ func (WorkoutSchedule) TableName() string {
 type WorkoutPlanInSchedule struct {
 	Weekday int `json:"weekday"`
 	Day     int `json:"day"`
+	Idx     int `json:"idx"`
 
 	WorkoutPlanId           int         `json:"workout_plan_id"`
 	WorkoutPlan             WorkoutPlan `json:"workout_plan"`
@@ -82,6 +84,7 @@ type CoachWorkoutSchedule struct {
 	D           int        `json:"d"`
 	Interval    int        `json:"interval"`
 	Status      int        `json:"status"`
+	StartDate   time.Time  `json:"start_date"`
 	AppliedAt   time.Time  `json:"applied_at"`
 	CancelledAt *time.Time `json:"cancelled_at"`
 

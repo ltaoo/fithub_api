@@ -41,7 +41,7 @@ func (h *MuscleHandler) FetchMuscleList(c *gin.Context) {
 		SetPage(body.Page).
 		SetOrderBy("sort_idx DESC")
 	var list1 []models.Muscle
-	if err := query.Find(&list1).Error; err != nil {
+	if err := pb.Build().Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch equipments" + err.Error(), "data": nil})
 		return
 	}
@@ -78,7 +78,6 @@ func (h *MuscleHandler) CreateMuscle(c *gin.Context) {
 	var body struct {
 		ZhName   string `json:"zh_name"`
 		Name     string `json:"name"`
-		Alias    string `json:"alias"`
 		Overview string `json:"overview"`
 		Tags     string `json:"tags"`
 		SortIdx  int    `json:"sort_idx"`
@@ -89,13 +88,12 @@ func (h *MuscleHandler) CreateMuscle(c *gin.Context) {
 		return
 	}
 	record := models.Muscle{
-		Name:   body.Name,
-		ZhName: body.ZhName,
-		// Alias:    body.Alias,
+		Name:     body.Name,
+		ZhName:   body.ZhName,
 		Overview: body.Overview,
-		// Tags:     body.Tags,
-		// SortIdx:  body.SortIdx,
-		// Medias: body.Medias,
+		Tags:     body.Tags,
+		SortIdx:  body.SortIdx,
+		Medias:   body.Medias,
 	}
 	if err := h.db.Create(&record).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
@@ -111,7 +109,6 @@ func (h *MuscleHandler) UpdateMuscle(c *gin.Context) {
 		Id       int    `json:"id"`
 		ZhName   string `json:"zh_name"`
 		Name     string `json:"name"`
-		Alias    string `json:"alias"`
 		Overview string `json:"overview"`
 		Tags     string `json:"tags"`
 		SortIdx  int    `json:"sort_idx"`
@@ -132,9 +129,6 @@ func (h *MuscleHandler) UpdateMuscle(c *gin.Context) {
 	}
 	if body.Name != "" {
 		updates["name"] = body.Name
-	}
-	if body.Alias != "" {
-		updates["alias"] = body.Alias
 	}
 	if body.Overview != "" {
 		updates["overview"] = body.Overview
