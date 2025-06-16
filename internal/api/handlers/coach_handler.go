@@ -34,7 +34,7 @@ func NewCoachHandler(db *gorm.DB, logger *logger.Logger) *CoachHandler {
 
 func (h *CoachHandler) FetchVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
-		"version": "2506161021",
+		"version": "2506170258",
 	}})
 }
 
@@ -139,24 +139,24 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create coach account", "data": nil})
 		return
 	}
-	var subscription_plan models.SubscriptionPlan
-	if err := tx.First(&subscription_plan).Error; err == nil {
-		day_count := 30
-		expired_at := now.AddDate(0, 0, day_count)
-		subscription := models.Subscription{
-			Step:               2,
-			Count:              30,
-			ExpectExpiredAt:    &expired_at,
-			Reason:             "注册赠送",
-			SubscriptionPlanId: subscription_plan.Id,
-			CoachId:            the_coach.Id,
-			ActiveAt:           &now,
-			CreatedAt:          now,
-		}
-		if err := tx.Create(&subscription).Error; err != nil {
-			h.logger.Error("Failed to create subscription", err)
-		}
-	}
+	// var subscription_plan models.SubscriptionPlan
+	// if err := tx.First(&subscription_plan).Error; err == nil {
+	// 	day_count := 30
+	// 	expired_at := now.AddDate(0, 0, day_count)
+	// 	subscription := models.Subscription{
+	// 		Step:               2,
+	// 		Count:              30,
+	// 		ExpectExpiredAt:    &expired_at,
+	// 		Reason:             "注册赠送",
+	// 		SubscriptionPlanId: subscription_plan.Id,
+	// 		CoachId:            the_coach.Id,
+	// 		ActiveAt:           &now,
+	// 		CreatedAt:          now,
+	// 	}
+	// 	if err := tx.Create(&subscription).Error; err != nil {
+	// 		h.logger.Error("Failed to create subscription", err)
+	// 	}
+	// }
 	// Generate JWT token
 	token, expires_at, err := models.GenerateJWT(the_coach.Id)
 	if err != nil {

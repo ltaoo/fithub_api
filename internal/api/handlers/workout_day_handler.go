@@ -601,7 +601,9 @@ func (h *WorkoutDayHandler) FetchWorkoutDayList(c *gin.Context) {
 
 	var body struct {
 		models.Pagination
-		Status int `json:"status"`
+		Status          int        `json:"status"`
+		FinishedAtStart *time.Time `json:"finished_at_start"`
+		FinishedAtEnd   *time.Time `json:"finished_at_end"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
@@ -611,6 +613,13 @@ func (h *WorkoutDayHandler) FetchWorkoutDayList(c *gin.Context) {
 	query := h.db.Where("d IS NULL OR d = 0")
 	if body.Status != 0 {
 		query = query.Where("status = ?", body.Status)
+	}
+	// Add finished time range filter
+	if body.FinishedAtStart != nil {
+		query = query.Where("finished_at >= ?", body.FinishedAtStart)
+	}
+	if body.FinishedAtEnd != nil {
+		query = query.Where("finished_at <= ?", body.FinishedAtEnd)
 	}
 	// student_id 表示是自己训练的记录
 	query = query.Where("student_id = ?", uid)

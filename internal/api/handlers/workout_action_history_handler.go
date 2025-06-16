@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"myapi/internal/models"
+	"myapi/internal/pkg/pagination"
 	"myapi/pkg/logger"
 )
 
@@ -122,8 +123,9 @@ func (h *WorkoutActionHistoryHandler) FetchWorkoutActionHistoryListOfWorkoutActi
 
 	var body struct {
 		models.Pagination
-		WorkoutActionId int `json:"workout_action_id"`
-		StudentId       int `json:"student_id"`
+		WorkoutActionId int    `json:"workout_action_id"`
+		StudentId       int    `json:"student_id"`
+		OrderBy         string `json:"order_by"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
@@ -143,25 +145,29 @@ func (h *WorkoutActionHistoryHandler) FetchWorkoutActionHistoryListOfWorkoutActi
 			return
 		}
 	}
-	query := h.db.Preload("WorkoutAction")
+	query := h.db
 	query = query.Where("action_id = ? AND student_id = ?", body.WorkoutActionId, body.StudentId)
-	query = query.Order("weight desc")
-	offset := (body.Page - 1) * body.PageSize
-	query = query.Offset(offset).Limit(body.PageSize)
-
-	var list []models.WorkoutActionHistory
-	if err := query.Find(&list).Error; err != nil {
+	pb := pagination.NewPaginationBuilder[models.WorkoutActionHistory](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
+	if body.OrderBy != "" {
+		pb.SetOrderBy(body.OrderBy)
+	}
+	var list1 []models.WorkoutActionHistory
+	if err := pb.Build().Preload("WorkoutAction").Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout history: " + err.Error(), "data": nil})
 		return
 	}
+	list2, has_more, next_marker := pb.ProcessResults(list1)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"msg":  "Success",
 		"data": gin.H{
-			"list":      list,
-			"page":      body.Page,
-			"page_size": body.PageSize,
-			"has_more":  len(list) >= body.PageSize,
+			"list":        list2,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_marker,
 		},
 	})
 }

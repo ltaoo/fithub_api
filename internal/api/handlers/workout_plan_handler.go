@@ -188,7 +188,7 @@ func (h *WorkoutPlanHandler) FetchWorkoutPlanProfile(c *gin.Context) {
 			RestDuration int    `json:"rest_duration"`
 			Note         string `json:"note"`
 		} `json:"actions"`
-		Note string `json:"note"`
+		SetNote string `json:"set_note"`
 	}
 	type WorkoutPlanProfileJSON250607 struct {
 		Version string                      `json:"v"`
@@ -440,9 +440,11 @@ func (h *WorkoutPlanHandler) FetchContentListOfWorkoutPlan(c *gin.Context) {
 	list := make([]map[string]interface{}, 0, len(list2))
 	for _, v := range list2 {
 		list = append(list, map[string]interface{}{
-			"id":       v.Id,
-			"title":    v.Content.Title,
-			"overview": v.Content.Description,
+			"id":        v.Id,
+			"title":     v.Content.Title,
+			"overview":  v.Content.Description,
+			"video_key": v.Content.VideoKey,
+			"details":   v.Details,
 			"creator": map[string]interface{}{
 				"nickname":   v.Content.Coach.Profile1.Nickname,
 				"avatar_url": v.Content.Coach.Profile1.AvatarURL,
@@ -957,12 +959,24 @@ func (h *WorkoutPlanHandler) CancelWorkoutSchedule(c *gin.Context) {
 func (h *WorkoutPlanHandler) FetchAppliedWorkoutScheduleList(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var list []models.CoachWorkoutSchedule
-	if err := h.db.Where("status = 1 AND coach_id = ?", uid).Preload("WorkoutPlanCollection").Find(&list).Error; err != nil {
+	// @todo 周期计划，历史数据处理完了后，这里就改成 Preload("WorkoutPlanCollection")
+	if err := h.db.Where("status = 1 AND coach_id = ?", uid).Preload("WorkoutPlanCollection.WorkoutPlans.WorkoutPlan").Find(&list).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 	data := []interface{}{}
 	for _, relation := range list {
+		schedules := []interface{}{}
+		for _, schedule := range relation.WorkoutPlanCollection.WorkoutPlans {
+			schedules = append(schedules, map[string]interface{}{
+				"day":             schedule.Day,
+				"weekday":         schedule.Weekday,
+				"workout_plan_id": schedule.WorkoutPlanId,
+				"title":           schedule.WorkoutPlan.Title,
+				"overview":        schedule.WorkoutPlan.Overview,
+				"tags":            schedule.WorkoutPlan.Tags,
+			})
+		}
 		data = append(data, map[string]interface{}{
 			"id":                  relation.Id,
 			"status":              relation.Status,
@@ -973,7 +987,7 @@ func (h *WorkoutPlanHandler) FetchAppliedWorkoutScheduleList(c *gin.Context) {
 			"type":                relation.WorkoutPlanCollection.Type,
 			"level":               relation.WorkoutPlanCollection.Level,
 			"details":             relation.WorkoutPlanCollection.Details,
-			"schedules":           []map[string]interface{}{},
+			"schedules":           schedules,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
