@@ -68,7 +68,6 @@ func (h *WorkoutActionHistoryHandler) CreateWorkoutHistory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": nil})
 }
 
-// 获取健身动作历史记录
 func (h *WorkoutActionHistoryHandler) FetchWorkoutActionHistoryListOfWorkoutDay(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
@@ -86,33 +85,33 @@ func (h *WorkoutActionHistoryHandler) FetchWorkoutActionHistoryListOfWorkoutDay(
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
 		return
 	}
-
-	query := h.db.Preload("WorkoutAction")
-	query = query.Where("workout_day_id = ?", body.WorkoutDayId)
 	var d models.WorkoutDay
-	if err := h.db.Where("id = ? AND coach_id = ?", body.WorkoutDayId, uid).First(&d).Error; err != nil {
+	if err := h.db.Where("id = ? AND student_id = ?", body.WorkoutDayId, uid).First(&d).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	query = query.Where("student_id = ?", d.StudentId)
-	query = query.Order("created_at desc")
-	offset := (body.Page - 1) * body.PageSize
-	query = query.Offset(offset).Limit(body.PageSize)
 
-	var list []models.WorkoutActionHistory
-	if err := query.Find(&list).Error; err != nil {
+	query := h.db
+	query = query.Where("workout_day_id = ?", body.WorkoutDayId)
+	pb := pagination.NewPaginationBuilder[models.WorkoutActionHistory](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
+
+	var list1 []models.WorkoutActionHistory
+	if err := pb.Build().Preload("WorkoutAction").Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout history: " + err.Error(), "data": nil})
 		return
 	}
-
+	list2, has_more, next_marker := pb.ProcessResults(list1)
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
-		"msg":  "Success",
+		"msg":  "",
 		"data": gin.H{
-			"list":      list,
-			"page":      body.Page,
-			"page_size": body.PageSize,
-			"has_more":  len(list) >= body.PageSize,
+			"list":        list2,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_marker,
 		},
 	})
 }

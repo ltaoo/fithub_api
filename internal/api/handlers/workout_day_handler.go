@@ -226,7 +226,7 @@ func (h *WorkoutDayHandler) FetchStartedWorkoutDay(c *gin.Context) {
 	}})
 }
 
-// 获取训练计划记录 只能获取自己和自己学员的
+// 获取训练计划记录 只能获取自己的
 func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var body struct {
@@ -242,7 +242,75 @@ func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 	}
 	var workout_day models.WorkoutDay
 	if err := h.db.
+		// 这里要 coach_id，是为了获取「自己带学员的训练日」
 		Where("id = ? AND coach_id = ?", body.Id, uid).
+		Preload("WorkoutPlan").
+		Preload("WorkoutPlan.Creator.Profile1").
+		First(&workout_day).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到该记录", "data": nil})
+		return
+	}
+
+	// Calculate the day number based on unique dates
+	// var day_number int64
+	// h.db.Model(&models.WorkoutDay{}).
+	// 	Select("COUNT(DISTINCT DATE(created_at))").
+	// 	Where("student_id = ? AND DATE(created_at) <= DATE(?)", uid, workout_day.CreatedAt).
+	// 	Count(&day_number)
+
+	data := gin.H{
+		"id":     workout_day.Id,
+		"status": workout_day.Status,
+		// 训练记录
+		"pending_steps": workout_day.PendingSteps,
+		// 训练内容
+		"updated_details": workout_day.UpdatedDetails,
+		"student_id":      workout_day.StudentId,
+		"is_self":         workout_day.StudentId == uid,
+		"workout_plan": gin.H{
+			"id":       workout_day.WorkoutPlan.Id,
+			"title":    workout_day.WorkoutPlan.Title,
+			"overview": workout_day.WorkoutPlan.Overview,
+			"tags":     workout_day.WorkoutPlan.Tags,
+			"details":  workout_day.WorkoutPlan.Details,
+			"creator": gin.H{
+				"nickname":   workout_day.WorkoutPlan.Creator.Profile1.Nickname,
+				"avatar_url": workout_day.WorkoutPlan.Creator.Profile1.AvatarURL,
+			},
+		},
+		// "day_number":  day_number,
+		"started_at":  workout_day.StartedAt,
+		"finished_at": workout_day.FinishedAt,
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": data})
+}
+
+// 获取训练计划记录 只能获取自己的
+func (h *WorkoutDayHandler) FetchStudentWorkoutDayProfile(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		Id        int `json:"id"`
+		StudentId int `json:"student_id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 id 参数", "data": nil})
+		return
+	}
+	if body.StudentId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 student_id 参数", "data": nil})
+		return
+	}
+	var workout_day models.WorkoutDay
+	if err := h.db.
+		Where("id = ? AND coach_id = ? AND student_id = ?", body.Id, uid, body.StudentId).
 		Preload("WorkoutPlan").
 		Preload("WorkoutPlan.Creator.Profile1").
 		First(&workout_day).Error; err != nil {
@@ -783,6 +851,59 @@ func (h *WorkoutDayHandler) FetchMyStudentWorkoutDayList(c *gin.Context) {
 		"msg":  "Success",
 		"data": gin.H{
 			"list":        data,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_marker,
+		},
+	})
+}
+
+func (h *WorkoutActionHistoryHandler) FetchStudentWorkoutActionHistoryListOfWorkoutDay(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+
+	var body struct {
+		models.Pagination
+		WorkoutDayId int    `json:"workout_day_id"`
+		StudentId    int    `json:"student_id"`
+		OrderBy      string `json:"order_by"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	if body.WorkoutDayId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
+		return
+	}
+	if body.StudentId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
+		return
+	}
+	var d models.WorkoutDay
+	if err := h.db.Where("id = ? AND student_id = ? AND coach_id = ?", body.WorkoutDayId, body.StudentId, uid).First(&d).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	query := h.db
+	query = query.Where("workout_day_id = ?", body.WorkoutDayId)
+	pb := pagination.NewPaginationBuilder[models.WorkoutActionHistory](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
+
+	var list1 []models.WorkoutActionHistory
+	if err := pb.Build().Preload("WorkoutAction").Find(&list1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout history: " + err.Error(), "data": nil})
+		return
+	}
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "",
+		"data": gin.H{
+			"list":        list2,
 			"page_size":   pb.GetLimit(),
 			"has_more":    has_more,
 			"next_marker": next_marker,

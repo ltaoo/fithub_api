@@ -34,12 +34,13 @@ func NewCoachHandler(db *gorm.DB, logger *logger.Logger) *CoachHandler {
 
 func (h *CoachHandler) FetchVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
-		"version": "2506170258",
+		"version": "2506180938",
 	}})
 }
 
 var AvatarPrefix = "//static.fithub.top/avatars/"
 var DefaultAvatarURL = AvatarPrefix + "default1.jpeg"
+var MobileSiteHostname = "https://h5.fithub.top"
 
 func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 
@@ -336,7 +337,7 @@ func (h *CoachHandler) UpdateCoachProfile(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
 	var body struct {
-		Nickname  string `json:"nickname,omitempty" binding:"omitempty,min=1,max=10" label:"昵称"`
+		Nickname  string `json:"nickname,omitempty" binding:"omitempty,min=1,max=18" label:"昵称"`
 		AvatarURL string `json:"avatar_url" label:"头像"`
 		Config    string `json:"config"`
 	}
@@ -914,7 +915,7 @@ func (h *CoachHandler) BuildStudentAuthURL(c *gin.Context) {
 		return
 	}
 	data := gin.H{
-		"url": "https://h5.fithub.top/home/index?token=" + token,
+		"url": "/home/index?token=" + token,
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": data})
 }
@@ -947,7 +948,7 @@ func (h *CoachHandler) BuildCoachAuthURLInAdmin(c *gin.Context) {
 		return
 	}
 	data := gin.H{
-		"url": "https://h5.fithub.top/home/index?token=" + token,
+		"url": MobileSiteHostname + "/home/index?token=" + token,
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": data})
 }

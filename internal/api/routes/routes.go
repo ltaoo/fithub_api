@@ -58,6 +58,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/student/profile", handler.FetchStudentProfile)
 			authorized.POST("/student/update", handler.UpdateStudentProfile)
 			authorized.POST("/student/delete", handler.DeleteStudent)
+			authorized.POST("/student/auth_url", handler.BuildStudentAuthURL)
 			authorized.POST("/student/url_with_token", handler.DeleteStudent)
 			authorized.POST("/coach/list", handler.FetchCoachList)
 			authorized.POST("/coach/create", handler.CreateCoach)
@@ -118,13 +119,15 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/workout_day/update_steps", handler.UpdateWorkoutDayStepProgress)
 			authorized.POST("/workout_day/update_details", handler.UpdateWorkoutDayPlanDetails)
 			authorized.POST("/workout_day/delete", handler.DeleteWorkoutDay)
-			authorized.POST("/student/workout_day_list", handler.FetchMyStudentWorkoutDayList)
+			authorized.POST("/student/workout_day/list", handler.FetchMyStudentWorkoutDayList)
+			authorized.POST("/student/workout_day/profile", handler.FetchStudentWorkoutDayProfile)
 		}
 		{
 			handler := handlers.NewWorkoutActionHistoryHandler(db, logger)
 			authorized.POST("/workout_action_history/create", handler.CreateWorkoutHistory)
 			authorized.POST("/workout_action_history/list_of_workout_day", handler.FetchWorkoutActionHistoryListOfWorkoutDay)
 			authorized.POST("/workout_action_history/list_of_workout_action", handler.FetchWorkoutActionHistoryListOfWorkoutAction)
+			authorized.POST("/student/workout_action_history/list", handler.FetchStudentWorkoutActionHistoryListOfWorkoutDay)
 		}
 		{
 			handler := handlers.NewWorkoutActionHandler(db, logger)
