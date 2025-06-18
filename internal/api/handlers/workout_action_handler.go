@@ -328,7 +328,7 @@ func (h *WorkoutActionHandler) UpdateWorkoutActionProfile(c *gin.Context) {
 	}
 	var existing models.WorkoutAction
 	if err := h.db.First(&existing, body.Id).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "the record not found", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
 		return
 	}
 	now := time.Now().UTC()
@@ -381,7 +381,7 @@ func (h *WorkoutActionHandler) UpdateWorkoutActionIdx(c *gin.Context) {
 	}
 	var existing models.WorkoutAction
 	if err := h.db.First(&existing, body.Id).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "the record not found", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
 		return
 	}
 	now := time.Now().UTC()
@@ -414,11 +414,11 @@ func (h *WorkoutActionHandler) DeleteWorkoutAction(c *gin.Context) {
 	}
 	var record models.WorkoutAction
 	if err := h.db.Where("id = ?", body.Id).First(&record).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "the record not found", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
 		return
 	}
 	if err := h.db.Model(&record).Update("d", 1).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to delete the record", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "操作成功", "data": nil})

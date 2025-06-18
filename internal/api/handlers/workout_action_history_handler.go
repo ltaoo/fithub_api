@@ -80,14 +80,17 @@ func (h *WorkoutActionHistoryHandler) FetchWorkoutActionHistoryListOfWorkoutDay(
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
-
 	if body.WorkoutDayId == 0 {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
 		return
 	}
 	var d models.WorkoutDay
 	if err := h.db.Where("id = ? AND student_id = ?", body.WorkoutDayId, uid).First(&d).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到记录", "data": nil})
 		return
 	}
 

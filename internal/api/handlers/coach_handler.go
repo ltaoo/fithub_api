@@ -34,7 +34,7 @@ func NewCoachHandler(db *gorm.DB, logger *logger.Logger) *CoachHandler {
 
 func (h *CoachHandler) FetchVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
-		"version": "2506180938",
+		"version": "2506181310",
 	}})
 }
 

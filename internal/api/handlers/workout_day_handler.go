@@ -242,8 +242,7 @@ func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 	}
 	var workout_day models.WorkoutDay
 	if err := h.db.
-		// 这里要 coach_id，是为了获取「自己带学员的训练日」
-		Where("id = ? AND coach_id = ?", body.Id, uid).
+		Where("id = ? AND student_id = ?", body.Id, uid).
 		Preload("WorkoutPlan").
 		Preload("WorkoutPlan.Creator.Profile1").
 		First(&workout_day).Error; err != nil {
@@ -289,7 +288,6 @@ func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": data})
 }
 
-// 获取训练计划记录 只能获取自己的
 func (h *WorkoutDayHandler) FetchStudentWorkoutDayProfile(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var body struct {
@@ -304,13 +302,13 @@ func (h *WorkoutDayHandler) FetchStudentWorkoutDayProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 id 参数", "data": nil})
 		return
 	}
-	if body.StudentId == 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 student_id 参数", "data": nil})
-		return
+	query := h.db
+	query = query.Where("id = ? AND coach_id = ?", body.Id, uid)
+	if body.StudentId != 0 {
+		query = query.Where("student_id = ?", body.StudentId)
 	}
 	var workout_day models.WorkoutDay
-	if err := h.db.
-		Where("id = ? AND coach_id = ? AND student_id = ?", body.Id, uid, body.StudentId).
+	if err := query.
 		Preload("WorkoutPlan").
 		Preload("WorkoutPlan.Creator.Profile1").
 		First(&workout_day).Error; err != nil {
@@ -876,12 +874,13 @@ func (h *WorkoutActionHistoryHandler) FetchStudentWorkoutActionHistoryListOfWork
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
 		return
 	}
-	if body.StudentId == 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
-		return
-	}
 	var d models.WorkoutDay
-	if err := h.db.Where("id = ? AND student_id = ? AND coach_id = ?", body.WorkoutDayId, body.StudentId, uid).First(&d).Error; err != nil {
+	query1 := h.db
+	query1 = query1.Where("id = ? AND coach_id = ?", body.WorkoutDayId, uid)
+	if body.StudentId != 0 {
+		query1 = query1.Where("student_id = ?", body.StudentId)
+	}
+	if err := query1.First(&d).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
