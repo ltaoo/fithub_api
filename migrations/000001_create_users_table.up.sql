@@ -228,7 +228,7 @@ CREATE TABLE COACH(
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
     profile1_id INTEGER, --详情
     profile2_id INTEGER, --详情
-    nickname TEXT(255) NOT NULL DEFAULT '', --昵称
+    nickname TEXT(255) NOT NULL DEFAULT '', --实际上当 uid 用
     bio TEXT(1000) NOT NULL DEFAULT '', --个人简介
     coach_type INTEGER NOT NULL DEFAULT 1, --教练类型;1普通 2私教 3团课 4在线
     status INTEGER NOT NULL DEFAULT 1, --状态;1正常 2暂停服务 3封禁
@@ -254,7 +254,7 @@ CREATE TABLE COACH_RELATIONSHIP(
     coach_id INTEGER NOT NULL, --教练id
     student_id INTEGER NOT NULL, --学员id（也是教练id）
     status INTEGER NOT NULL DEFAULT 1, --关系状态;1待确认 2已确认 3已拒绝 4已解除
-    role INTEGER NOT NULL DEFAULT 1, --关系角色;1教练-学员 2合作教练
+    role INTEGER NOT NULL DEFAULT 1, --关系角色;1教练-学员 2教练-补全帐号的学员 3好友-好友 4我-关注者 5我-被关注者
     note TEXT(255) NOT NULL DEFAULT '', --备注信息
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, --创建时间
     updated_at DATETIME --更新时间

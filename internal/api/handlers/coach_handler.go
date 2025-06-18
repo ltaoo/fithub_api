@@ -43,8 +43,6 @@ var DefaultAvatarURL = AvatarPrefix + "default1.jpeg"
 var MobileSiteHostname = "https://h5.fithub.top"
 
 func (h *CoachHandler) RegisterCoach(c *gin.Context) {
-
-	// CoachRegisterBody represents the request body for coach registration
 	var body struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -57,21 +55,10 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "请输入邮箱", "data": nil})
 		return
 	}
-
-	var existing models.CoachAccount
-	query := h.db.Where("provider_type = ? AND provider_id = ?", models.AccountProviderTypeEmailWithPwd, body.Email)
-	if err := query.First(&existing).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
-			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
-			return
-		}
-	}
-	// Check if email is already registered
-	if existing.CoachId != 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "该邮箱已被使用", "data": nil})
+	if body.Password == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "请输入密码", "data": nil})
 		return
 	}
-
 	tx := h.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -81,12 +68,25 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		}
 	}()
 
+	var existing models.CoachAccount
+	query := tx.Where("provider_type = ? AND provider_id = ?", models.AccountProviderTypeEmailWithPwd, body.Email)
+	if err := query.First(&existing).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+	}
+	if existing.CoachId != 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "该邮箱已被使用", "data": nil})
+		return
+	}
+
 	nickname := func() string {
 		// Generate a random UUID and take first 6 characters
 		uuid := uuid.New().String()
 		// Remove hyphens and take first 6 characters
-		cleanUUID := strings.ReplaceAll(uuid, "-", "")
-		return cleanUUID[:6]
+		uid := strings.ReplaceAll(uuid, "-", "")
+		return uid[:6]
 	}()
 
 	now := time.Now()
@@ -103,7 +103,6 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		return
 	}
 
-	// Email + Password authentication
 	hashed_pwd, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		tx.Rollback()
@@ -140,25 +139,6 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create coach account", "data": nil})
 		return
 	}
-	// var subscription_plan models.SubscriptionPlan
-	// if err := tx.First(&subscription_plan).Error; err == nil {
-	// 	day_count := 30
-	// 	expired_at := now.AddDate(0, 0, day_count)
-	// 	subscription := models.Subscription{
-	// 		Step:               2,
-	// 		Count:              30,
-	// 		ExpectExpiredAt:    &expired_at,
-	// 		Reason:             "注册赠送",
-	// 		SubscriptionPlanId: subscription_plan.Id,
-	// 		CoachId:            the_coach.Id,
-	// 		ActiveAt:           &now,
-	// 		CreatedAt:          now,
-	// 	}
-	// 	if err := tx.Create(&subscription).Error; err != nil {
-	// 		h.logger.Error("Failed to create subscription", err)
-	// 	}
-	// }
-	// Generate JWT token
 	token, expires_at, err := models.GenerateJWT(the_coach.Id)
 	if err != nil {
 		tx.Rollback()
@@ -166,7 +146,6 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to generate token", "data": nil})
 		return
 	}
-
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
@@ -248,7 +227,13 @@ func (h *CoachHandler) FetchCoachProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "没有找到记录", "data": nil})
 		return
 	}
-
+	var account models.CoachAccount
+	if err := tx.Where("coach_id = ?", coach.Id).First(&account).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+	}
 	// First try to find the latest active subscription
 	var active_subscription models.Subscription
 	if err := tx.Where("coach_id = ? AND step = 2", uid).Order("created_at DESC").Preload("SubscriptionPlan").First(&active_subscription).Error; err != nil {
@@ -327,9 +312,11 @@ func (h *CoachHandler) FetchCoachProfile(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "获取成功", "data": gin.H{
 		"id":           coach.Id,
+		"uid":          coach.Nickname,
 		"nickname":     coach.Profile1.Nickname,
 		"avatar_url":   coach.Profile1.AvatarURL,
 		"subscription": subscription_resp,
+		"no_account":   account.ProviderType == 0,
 	}})
 }
 
@@ -715,8 +702,15 @@ func (h *CoachHandler) CreateStudent(c *gin.Context) {
 		}
 	}()
 	now := time.Now().UTC()
+	nickname := func() string {
+		// Generate a random UUID and take first 6 characters
+		uuid := uuid.New().String()
+		// Remove hyphens and take first 6 characters
+		uid := strings.ReplaceAll(uuid, "-", "")
+		return uid[:6]
+	}()
 	student := models.Coach{
-		Nickname:  body.Name,
+		Nickname:  nickname,
 		CreatedAt: now,
 	}
 	if err := tx.Create(&student).Error; err != nil {
@@ -742,7 +736,7 @@ func (h *CoachHandler) CreateStudent(c *gin.Context) {
 	}
 	relationship := models.CoachRelationship{
 		CoachId:   uid,
-		StudentId: int(student.Id),
+		StudentId: student.Id,
 		Status:    models.RelationPending,
 		Role:      models.RoleCoachStudent,
 		CreatedAt: now,
@@ -1104,6 +1098,8 @@ func (h *CoachHandler) FetchStudentList(c *gin.Context) {
 			"avatar_url": v.Student.Profile1.AvatarURL,
 			"age":        v.Student.Profile1.Age,
 			"gender":     v.Student.Profile1.Gender,
+			"role":       v.Role,
+			"status":     v.Status,
 			"created_at": v.CreatedAt,
 		})
 	}
@@ -1152,12 +1148,14 @@ func (h *CoachHandler) FetchStudentProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 501, "msg": "没有找到该记录", "data": nil})
 		return
 	}
-	data := map[string]interface{}{
+	data := gin.H{
 		"id":         profile.Id,
 		"nickname":   profile.Profile1.Nickname,
 		"avatar_url": profile.Profile1.AvatarURL,
 		"gender":     profile.Profile1.Gender,
 		"age":        profile.Profile1.Age,
+		"status":     relation.Status,
+		"role":       relation.Role,
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "请求成功", "data": data})
 }
@@ -1180,6 +1178,117 @@ func (h *CoachHandler) RefreshToken(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "请求成功", "data": response})
+}
+
+// 通过授权链接访问，并且补全登录信息
+func (h *CoachHandler) CreateAccount(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+
+	var body struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	if body.Email == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "请输入邮箱", "data": nil})
+		return
+	}
+	if body.Password == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "请输入密码", "data": nil})
+		return
+	}
+	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered from panic:", r)
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
+
+	var coach models.Coach
+	if err := tx.Where("id = ?", uid).First(&coach).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "异常操作", "data": nil})
+		return
+	}
+	var relation models.CoachRelationship
+	// 只有学员才需要补全帐号
+	if err := tx.Where("student_id = ?", uid).First(&relation).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "异常操作", "data": nil})
+		return
+	}
+	var existing models.CoachAccount
+	query := tx.Where("provider_type = ? AND provider_id = ?", models.AccountProviderTypeEmailWithPwd, body.Email)
+	if err := query.First(&existing).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "已经补全过帐号了", "data": nil})
+		return
+	}
+	if existing.CoachId != 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "该邮箱已被使用", "data": nil})
+		return
+	}
+
+	now := time.Now()
+
+	hashed_pwd, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 501, "msg": "注册失败", "data": nil})
+		return
+	}
+	the_coach_account := models.CoachAccount{
+		ProviderType: models.AccountProviderTypeEmailWithPwd,
+		ProviderId:   body.Email,
+		ProviderArg1: string(hashed_pwd),
+		CreatedAt:    now,
+		CoachId:      coach.Id,
+	}
+	if err := tx.Create(&the_coach_account).Error; err != nil {
+		tx.Rollback()
+		h.logger.Error("Failed to create coach account", err)
+		c.JSON(http.StatusOK, gin.H{"code": 502, "msg": "操作失败", "data": nil})
+		return
+	}
+	// 补全后，更新教练和学员的关系，让教练不能再管理学员了
+	if err := tx.Model(&relation).Update("role", 2).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 502, "msg": "操作失败", "data": nil})
+		return
+	}
+
+	token, expires_at, err := models.GenerateJWT(coach.Id)
+	if err != nil {
+		tx.Rollback()
+		h.logger.Error("Failed to generate JWT", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "操作失败", "data": nil})
+		return
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	response := models.AuthResponse{
+		Token:     "Bearer " + token,
+		ExpiresAt: expires_at.Unix(),
+		Status:    "success",
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "操作成功", "data": response})
 }
 
 type PersonAvatar struct {
@@ -1255,6 +1364,113 @@ func (h *CoachHandler) CreateCoachContent(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": nil})
+}
+
+// 添加好友
+func (h *CoachHandler) AddFriend(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		// 添加好友只能通过 uid
+		UID string `json:"uid"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.UID == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少参数", "data": nil})
+		return
+	}
+	var friend models.Coach
+	if err := h.db.Where("nickname = ?", body.UID).First(&friend).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "UID 错误", "data": nil})
+		return
+	}
+	var existing models.CoachRelationship
+	if err := h.db.Where("coach_id = ? AND student_id = ?", uid, friend.Id).First(&existing).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		created := models.CoachRelationship{
+			Role:      3,
+			CoachId:   uid,
+			StudentId: friend.Id,
+		}
+		if err := h.db.Create(&created).Error; err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "添加成功", "data": nil})
+		return
+	}
+	if existing.Role == 1 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "无法添加为好友", "data": nil})
+		return
+	}
+	if existing.Role == 2 {
+		c.JSON(http.StatusOK, gin.H{"code": 201, "msg": "无法添加为好友", "data": nil})
+		return
+	}
+	if existing.Role == 3 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "已经添加过了", "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "异常操作", "data": nil})
+}
+
+func (h *CoachHandler) StudentToFriend(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少参数", "data": nil})
+		return
+	}
+	var friend models.Coach
+	if err := h.db.Where("id = ?", body.Id).First(&friend).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "用户不存在", "data": nil})
+		return
+	}
+	var existing models.CoachRelationship
+	if err := h.db.Where("coach_id = ? AND student_id = ?", uid, friend.Id).First(&existing).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "记录不存在", "data": nil})
+		return
+	}
+	if existing.Role == 1 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "无法添加为好友", "data": nil})
+		return
+	}
+	if existing.Role == 3 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "已经是好友了", "data": nil})
+		return
+	}
+	if existing.Role == 2 {
+		if err := h.db.Model(&existing).Update("role", 3).Error; err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "操作成功", "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "异常操作", "data": nil})
 }
 
 // 我关注别人
@@ -1425,19 +1641,19 @@ func (h *CoachHandler) FetchCoachProfileInWechat(c *gin.Context) {
 		return
 	}
 	var body struct {
-		Id int `json:"id"`
+		UID string `json:"uid"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	if body.Id == 0 {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少 id 参数", "data": nil})
+	if body.UID == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少参数", "data": nil})
 		return
 	}
 	var coach models.Coach
 	if err := h.db.
-		Where("id = ?", body.Id).
+		Where("nickname = ?", body.UID).
 		Preload("Profile1").
 		First(&coach).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
@@ -1448,12 +1664,13 @@ func (h *CoachHandler) FetchCoachProfileInWechat(c *gin.Context) {
 		return
 	}
 	var platform_accounts []models.CoachMediaSocialAccount
-	if err := h.db.Where("coach_id = ?", body.Id).Find(&platform_accounts).Error; err != nil {
+	if err := h.db.Where("coach_id = ?", coach.Id).Find(&platform_accounts).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "获取成功", "data": gin.H{
 		"id":         coach.Id,
+		"uid":        coach.Nickname,
 		"nickname":   coach.Profile1.Nickname,
 		"avatar_url": coach.Profile1.AvatarURL,
 		"accounts":   platform_accounts,
