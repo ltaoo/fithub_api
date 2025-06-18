@@ -37,3 +37,6 @@ Thumbs.db
 
 # 特定文件
 fithub_api 
+fithub_api/
+myapi.db*
+
