@@ -133,7 +133,9 @@ type CoachContentWithWorkoutAction struct {
 	SortIdx    int       `json:"sort_idx"`
 	StartPoint int       `json:"start_point"`
 	D          int       `json:"d"`
+	Status     int       `json:"status"` // 1公开 2私有
 	Details    string    `json:"details"`
+	Text       string    `json:"text"`
 	CreatedAt  time.Time `json:"created_at"`
 
 	CoachContentId  int           `json:"coach_content_id"`
@@ -150,6 +152,7 @@ type CoachContentWithWorkoutPlan struct {
 	Id        int       `json:"id" gorm:"primaryKey"`
 	SortIdx   int       `json:"sort_idx"`
 	D         int       `json:"d"`
+	Status    int       `json:"status"` // 1公开 2私有
 	Details   string    `json:"details"`
 	CreatedAt time.Time `json:"created_at"`
 
@@ -263,13 +266,12 @@ type Claims struct {
 
 // Default JWT configuration
 var DefaultJWTConfig = JWTConfig{
-	SecretKey:     []byte("your-secret-key-change-in-production"), // Should be loaded from environment variables
-	TokenDuration: 48 * time.Hour,                                 // 24 hours
+	TokenDuration: 48 * time.Hour, // 24 hours
 	// TokenDuration: 5 * time.Minute, // 5分钟，测试用
 }
 
 // Helper function to generate JWT token
-func GenerateJWT(coach_id int) (string, time.Time, error) {
+func GenerateJWT(coach_id int, secret_key string) (string, time.Time, error) {
 	expiration_time := time.Now().Add(DefaultJWTConfig.TokenDuration)
 
 	claims := jwt.MapClaims{
@@ -279,7 +281,7 @@ func GenerateJWT(coach_id int) (string, time.Time, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	str, err := token.SignedString(DefaultJWTConfig.SecretKey)
+	str, err := token.SignedString([]byte(secret_key))
 
 	if err != nil {
 		return "", time.Now(), err
@@ -289,7 +291,7 @@ func GenerateJWT(coach_id int) (string, time.Time, error) {
 }
 
 // ParseJWT parses and validates a JWT token
-func ParseJWT(str string) (*Claims, error) {
+func ParseJWT(str string, secret_key string) (*Claims, error) {
 	// Remove "Bearer " prefix if present
 	str = strings.TrimPrefix(str, "Bearer ")
 	token, err := jwt.Parse(str, func(token *jwt.Token) (interface{}, error) {
@@ -297,7 +299,7 @@ func ParseJWT(str string) (*Claims, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return DefaultJWTConfig.SecretKey, nil
+		return []byte(secret_key), nil
 	})
 
 	if err != nil {

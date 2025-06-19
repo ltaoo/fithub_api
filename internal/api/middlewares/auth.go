@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"myapi/config"
 	"myapi/internal/models"
 	"myapi/pkg/logger"
 
@@ -12,7 +13,7 @@ import (
 )
 
 // AuthMiddleware checks for a valid JWT token in the Authorization header
-func AuthMiddleware(logger *logger.Logger) gin.HandlerFunc {
+func AuthMiddleware(logger *logger.Logger, config *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth_header := c.GetHeader("Authorization")
 		if auth_header == "" {
@@ -32,7 +33,7 @@ func AuthMiddleware(logger *logger.Logger) gin.HandlerFunc {
 		}
 
 		token_str := strings.TrimPrefix(auth_header, "Bearer ")
-		claims, err := models.ParseJWT(token_str)
+		claims, err := models.ParseJWT(token_str, config.TokenSecretKey)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "凭证失效请重新登录", "data": nil})
 			c.Abort()

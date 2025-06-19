@@ -25,6 +25,14 @@ type Config struct {
 
 	// 迁移配置
 	MigrationsPath string
+
+	// 七牛云
+	QiniuAccessKey string
+	QiniuSecretKey string
+	QiniuBucket    string
+
+	// 用户凭证
+	TokenSecretKey string
 }
 
 // LoadConfig 从环境变量或配置文件加载配置
@@ -53,6 +61,10 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("DB_NAME", "myapi")
 	viper.SetDefault("DB_PATH", "./myapi.db")
 	viper.SetDefault("MIGRATIONS_PATH", "file:///migrations")
+	viper.SetDefault("QINIU_ACCESS_KEY", "")
+	viper.SetDefault("QINIU_SECRET_KEY", "")
+	viper.SetDefault("QINIU_BUCKET", "")
+	viper.SetDefault("TOKEN_SECRET_KEY", "fithub")
 
 	config := &Config{
 		ServerAddress:  viper.GetString("SERVER_ADDRESS"),
@@ -66,6 +78,10 @@ func LoadConfig() (*Config, error) {
 		DBName:         viper.GetString("DB_NAME"),
 		DBPath:         viper.GetString("DB_PATH"),
 		MigrationsPath: viper.GetString("MIGRATIONS_PATH"),
+		QiniuAccessKey: viper.GetString("QINIU_ACCESS_KEY"),
+		QiniuSecretKey: viper.GetString("QINIU_SECRET_KEY"),
+		QiniuBucket:    viper.GetString("QINIU_BUCKET"),
+		TokenSecretKey: viper.GetString("TOKEN_SECRET_KEY"),
 	}
 
 	return config, nil

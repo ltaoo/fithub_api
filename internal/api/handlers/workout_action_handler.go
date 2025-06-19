@@ -457,7 +457,7 @@ func (h *WorkoutActionHandler) CreateContentWithWorkoutAction(c *gin.Context) {
 }
 
 func (h *WorkoutActionHandler) FetchContentListOfWorkoutAction(c *gin.Context) {
-	// uid := int(c.GetFloat64("id"))
+	uid := int(c.GetFloat64("id"))
 
 	var body struct {
 		models.Pagination
@@ -471,13 +471,18 @@ func (h *WorkoutActionHandler) FetchContentListOfWorkoutAction(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 WorkoutActionId 参数", "data": nil})
 		return
 	}
-	query := h.db.Where("d IS NULL OR d = 0")
-	query = query.Where("workout_action_id = ?", body.WorkoutActionId)
+	query := h.db.Where("coach_content_with_workout_action.d IS NULL OR coach_content_with_workout_action.d = 0")
+	if uid != 0 {
+		query = query.Joins("JOIN coach_content ON coach_content.id = coach_content_with_workout_action.coach_content_id").Where("(coach_content_with_workout_action.status = 1) OR (coach_content_with_workout_action.status = 2 AND coach_content.coach_id = ?)", uid)
+	} else {
+		query = query.Where("coach_content_with_workout_action.status = 1")
+	}
+	query = query.Where("coach_content_with_workout_action.workout_action_id = ?", body.WorkoutActionId)
 	pb := pagination.NewPaginationBuilder[models.CoachContentWithWorkoutAction](query).
 		SetLimit(body.PageSize).
 		SetPage(body.Page).
-		SetOrderBy("created_at DESC").
-		SetOrderBy("sort_idx DESC")
+		SetOrderBy("coach_content_with_workout_action.created_at DESC").
+		SetOrderBy("coach_content_with_workout_action.sort_idx DESC")
 
 	var list1 []models.CoachContentWithWorkoutAction
 	if err := pb.Build().Preload("Content").Preload("Content.Coach").Preload("Content.Coach.Profile1").Find(&list1).Error; err != nil {
@@ -489,11 +494,11 @@ func (h *WorkoutActionHandler) FetchContentListOfWorkoutAction(c *gin.Context) {
 	list := make([]map[string]interface{}, 0, len(list2))
 	for _, v := range list2 {
 		list = append(list, map[string]interface{}{
-			"id":          v.Content.Id,
-			"title":       v.Content.Title,
-			"description": v.Content.Description,
-			"video_url":   v.Content.VideoKey,
-			"like_count":  v.Content.LikeCount,
+			"id":        v.Content.Id,
+			"title":     v.Content.Title,
+			"overview":  v.Content.Description,
+			"video_url": v.Content.VideoKey,
+			"time":      v.StartPoint,
 			"creator": map[string]interface{}{
 				"nickname":   v.Content.Coach.Profile1.Nickname,
 				"avatar_url": v.Content.Coach.Profile1.AvatarURL,

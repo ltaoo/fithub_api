@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"myapi/config"
 	"myapi/internal/models"
 	"myapi/internal/pkg/pagination"
 	"myapi/internal/pkg/sensitive"
@@ -22,19 +23,21 @@ import (
 type CoachHandler struct {
 	db     *gorm.DB
 	logger *logger.Logger
+	config *config.Config
 }
 
 // NewCoachHandler creates a new coach handler
-func NewCoachHandler(db *gorm.DB, logger *logger.Logger) *CoachHandler {
+func NewCoachHandler(db *gorm.DB, logger *logger.Logger, config *config.Config) *CoachHandler {
 	return &CoachHandler{
 		db:     db,
 		logger: logger,
+		config: config,
 	}
 }
 
 func (h *CoachHandler) FetchVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
-		"version": "2506181310",
+		"version": "2506191623",
 	}})
 }
 
@@ -139,7 +142,7 @@ func (h *CoachHandler) RegisterCoach(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to create coach account", "data": nil})
 		return
 	}
-	token, expires_at, err := models.GenerateJWT(the_coach.Id)
+	token, expires_at, err := models.GenerateJWT(the_coach.Id, h.config.TokenSecretKey)
 	if err != nil {
 		tx.Rollback()
 		h.logger.Error("Failed to generate JWT", err)
@@ -192,8 +195,9 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 		return
 	}
 	// Generate JWT token
-	token, expires_at, err := models.GenerateJWT(account.CoachId)
+	token, expires_at, err := models.GenerateJWT(account.CoachId, h.config.TokenSecretKey)
 	if err != nil {
+		h.logger.Error("Failed to generate JWT", err)
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "登录失败", "data": nil})
 		return
 	}
@@ -903,7 +907,7 @@ func (h *CoachHandler) BuildStudentAuthURL(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到记录", "data": nil})
 		return
 	}
-	token, _, err := models.GenerateJWT(existing.StudentId)
+	token, _, err := models.GenerateJWT(existing.StudentId, h.config.TokenSecretKey)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
@@ -936,7 +940,7 @@ func (h *CoachHandler) BuildCoachAuthURLInAdmin(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
 		return
 	}
-	token, _, err := models.GenerateJWT(existing.Id)
+	token, _, err := models.GenerateJWT(existing.Id, h.config.TokenSecretKey)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
@@ -1164,7 +1168,7 @@ func (h *CoachHandler) RefreshToken(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
 	// Generate new JWT token
-	token, expires_at, err := models.GenerateJWT(uid)
+	token, expires_at, err := models.GenerateJWT(uid, h.config.TokenSecretKey)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to generate token", "data": nil})
 		return
@@ -1271,7 +1275,7 @@ func (h *CoachHandler) CreateAccount(c *gin.Context) {
 		return
 	}
 
-	token, expires_at, err := models.GenerateJWT(coach.Id)
+	token, expires_at, err := models.GenerateJWT(coach.Id, h.config.TokenSecretKey)
 	if err != nil {
 		tx.Rollback()
 		h.logger.Error("Failed to generate JWT", err)
@@ -1304,15 +1308,354 @@ type AvatarGroup struct {
 	Persons []PersonWithAvatars
 }
 
-func (h *CoachHandler) CreateCoachContent(c *gin.Context) {
+func (h *CoachHandler) FetchArticleList(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
-	if uid != 1 {
-		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "没有权限", "data": nil})
-	}
 	var body struct {
-		ContentType   int    `json:"content_type"`
+		models.Pagination
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	query := h.db.Where("d IS NULL OR d = 0")
+	if uid != 0 {
+		query = query.Where("(publish = 1) OR (publish = 2 AND coach_id = ?)", uid)
+	} else {
+		query = query.Where("publish = 1")
+	}
+	pb := pagination.NewPaginationBuilder[models.CoachContent](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetOrderBy("created_at DESC")
+	var list1 []models.CoachContent
+	if err := pb.Build().Preload("Coach.Profile1").Find(&list1).Error; err != nil {
+		h.logger.Error("Failed to fetch coach content list", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	list2, has_more, next_marker := pb.ProcessResults(list1)
+	fmt.Println("the", len(list2))
+	list := make([]map[string]interface{}, 0, len(list2))
+	for _, v := range list2 {
+		list = append(list, gin.H{
+			"id":        v.Id,
+			"title":     v.Title,
+			"overview":  v.Description,
+			"type":      v.ContentType,
+			"video_url": v.VideoKey,
+			"creator": gin.H{
+				"nickname":   v.Coach.Profile1.Nickname,
+				"avatar_url": v.Coach.Profile1.AvatarURL,
+			},
+			"created_at": v.CreatedAt,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "",
+		"data": gin.H{
+			"list":        list,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_marker,
+		},
+	})
+}
+
+func (h *CoachHandler) FetchArticleProfile(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		Id int `json:"id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少参数", "data": nil})
+		return
+	}
+	query := h.db.Where("d IS NULL OR d == 0")
+	if uid != 0 {
+		query = query.Where("(publish = 1) OR (publish = 2 AND coach_id = ?)", uid)
+	} else {
+		query = query.Where("publish = 1")
+	}
+	query = query.Where("id = ?", body.Id)
+	var existing models.CoachContent
+	if err := query.Preload("Coach.Profile1").First(&existing).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到记录", "data": nil})
+		return
+	}
+	var the_points1 []models.CoachContentWithWorkoutAction
+	query2 := h.db.Where("d IS NULL OR d = 0")
+	query2 = query2.Where("coach_content_id = ?", existing.Id)
+	if err := query2.Preload("WorkoutAction").Find(&the_points1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	points2 := make([]map[string]interface{}, 0, len(the_points1))
+	for _, v := range the_points1 {
+		var act map[string]interface{}
+		if v.WorkoutActionId != 0 {
+			act = make(map[string]interface{})
+			act["id"] = v.WorkoutAction.Id
+			act["zh_name"] = v.WorkoutAction.ZhName
+		}
+		points2 = append(points2, gin.H{
+			"id":             v.Id,
+			"text":           v.Text,
+			"time":           v.StartPoint,
+			"workout_action": act,
+		})
+	}
+	data := gin.H{
+		"id":          existing.Id,
+		"title":       existing.Title,
+		"overview":    existing.Description,
+		"type":        existing.ContentType,
+		"video_url":   existing.VideoKey,
+		"created_at":  existing.CreatedAt,
+		"time_points": points2,
+		"is_author":   existing.CoachId == uid,
+		"creator": gin.H{
+			"nickname":   existing.Coach.Profile1.Nickname,
+			"avatar_url": existing.Coach.Profile1.AvatarURL,
+		},
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": data})
+}
+
+func (h *CoachHandler) CreateArticle(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		Title    string `json:"title"`
+		Overview string `json:"overview"`
+		Type     int    `json:"type"`
+		Status   int    `json:"status"`
+		// CoverImageURL string `json:"cover_image_url"`
+		// ContentURL    string `json:"content_url"`
+		VideoURL   string `json:"video_url"`
+		TimePoints []struct {
+			Time            int    `json:"time"`
+			Text            string `json:"text"`
+			WorkoutActionId int    `json:"workout_action_id"`
+		} `json:"time_points"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	if body.Title == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少标题", "data": nil})
+		return
+	}
+	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
+	// var existing models.CoachContent
+	// if err := tx.Where("video_key = ?", body.VideoURL).First(&existing).Error; err == nil {
+	// 	c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "该记录已存在", "data": nil})
+	// 	return
+	// }
+	now := time.Now()
+	the_content := models.CoachContent{
+		Title:         body.Title,
+		ContentType:   body.Type,
+		Description:   body.Overview,
+		ContentURL:    "",
+		CoverImageURL: "",
+		VideoKey:      body.VideoURL,
+		Status:        1,
+		Publish:       body.Status,
+		LikeCount:     0,
+		CreatedAt:     now,
+		CoachId:       uid,
+	}
+	if err := tx.Create(&the_content).Error; err != nil {
+		tx.Rollback()
+		h.logger.Error("Failed to create content", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	for _, point := range body.TimePoints {
+		the_content_with_action := models.CoachContentWithWorkoutAction{
+			WorkoutActionId: point.WorkoutActionId,
+			CoachContentId:  the_content.Id,
+			StartPoint:      point.Time,
+			Status:          body.Status,
+			Text:            point.Text,
+			CreatedAt:       now,
+		}
+		if err := tx.Create(&the_content_with_action).Error; err != nil {
+			tx.Rollback()
+			h.logger.Error("Failed to create point", err)
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+
+	}
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "创建成功", "data": gin.H{
+		"id": the_content.Id,
+	}})
+}
+
+func (h *CoachHandler) UpdateArticle(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	var body struct {
+		Id         int    `json:"id"`
+		Title      string `json:"title"`
+		Overview   string `json:"overview"`
+		Type       int    `json:"type"`
+		VideoURL   string `json:"video_url"`
+		TimePoints []struct {
+			Id              int    `json:"id"`
+			Time            int    `json:"time"`
+			Text            string `json:"text"`
+			WorkoutActionId int    `json:"workout_action_id"`
+		} `json:"time_points"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+	if body.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少 id", "data": nil})
+		return
+	}
+	if body.Title == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少标题", "data": nil})
+		return
+	}
+	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
+	var existing models.CoachContent
+	if err := tx.Where("id = ? AND coach_id = ?", body.Id, uid).First(&existing).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到记录", "data": nil})
+		return
+	}
+	now := time.Now()
+	updates := map[string]interface{}{}
+	if body.Title != "" {
+		updates["title"] = body.Title
+	}
+	if body.Overview != "" {
+		updates["description"] = body.Overview
+	}
+	if body.Type != 0 {
+		updates["content_type"] = body.Type
+	}
+	if body.VideoURL != "" {
+		updates["video_key"] = body.VideoURL
+	}
+	if err := tx.Model(&existing).Updates(&updates).Error; err != nil {
+		tx.Rollback()
+		h.logger.Error("Failed to create content", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	// 1. 查询当前 content 的所有 time_points
+	var existing_points []models.CoachContentWithWorkoutAction
+	if err := tx.Where("d IS NULL OR d = 0").Where("coach_content_id = ?", existing.Id).Find(&existing_points).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	existing_point_map := make(map[int]models.CoachContentWithWorkoutAction)
+	for _, p := range existing_points {
+		existing_point_map[p.Id] = p
+	}
+
+	// 2. 遍历 body.TimePoints，做新增/更新，并记录前端传来的 id
+	new_point_id_set := make(map[int]bool)
+	for _, point := range body.TimePoints {
+		if point.Id > 0 {
+			// update
+			if _, ok := existing_point_map[point.Id]; ok {
+				update_fields := map[string]interface{}{
+					"start_point":       point.Time,
+					"text":              point.Text,
+					"workout_action_id": point.WorkoutActionId,
+				}
+				if err := tx.Model(&models.CoachContentWithWorkoutAction{}).Where("id = ?", point.Id).Updates(update_fields).Error; err != nil {
+					tx.Rollback()
+					h.logger.Error("Failed to update point", err)
+					c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+					return
+				}
+				new_point_id_set[point.Id] = true
+			}
+		} else {
+			// create
+			newPoint := models.CoachContentWithWorkoutAction{
+				CoachContentId:  existing.Id,
+				StartPoint:      point.Time,
+				Text:            point.Text,
+				WorkoutActionId: point.WorkoutActionId,
+				CreatedAt:       now,
+				Status:          1, // 默认公开
+			}
+			if err := tx.Create(&newPoint).Error; err != nil {
+				tx.Rollback()
+				h.logger.Error("Failed to create point", err)
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
+			new_point_id_set[newPoint.Id] = true
+		}
+	}
+
+	// 3. 删除未出现在前端的点（软删除）
+	for id := range existing_point_map {
+		if !new_point_id_set[id] {
+			if err := tx.Model(&models.CoachContentWithWorkoutAction{}).Where("id = ?", id).Update("d", 1).Error; err != nil {
+				tx.Rollback()
+				h.logger.Error("Failed to delete point", err)
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": gin.H{
+		"id": existing.Id,
+	}})
+}
+
+func (h *CoachHandler) CreateCoachContent(c *gin.Context) {
+	// uid := int(c.GetFloat64("id"))
+	var body struct {
 		Title         string `json:"title"`
 		Description   string `json:"description"`
+		ContentType   int    `json:"content_type"`
 		CoverImageURL string `json:"cover_image_url"`
 		ContentURL    string `json:"content_url"`
 		VideoKey      string `json:"video_key"`

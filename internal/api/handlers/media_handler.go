@@ -10,6 +10,7 @@ import (
 	"github.com/qiniu/go-sdk/v7/storagev2/uptoken"
 	"gorm.io/gorm"
 
+	"myapi/config"
 	"myapi/internal/models"
 	"myapi/internal/pkg/pagination"
 	"myapi/pkg/logger"
@@ -18,12 +19,14 @@ import (
 type MediaResourceHandler struct {
 	db     *gorm.DB
 	logger *logger.Logger
+	config *config.Config
 }
 
-func NewMediaResourceHandler(db *gorm.DB, logger *logger.Logger) *MediaResourceHandler {
+func NewMediaResourceHandler(db *gorm.DB, logger *logger.Logger, config *config.Config) *MediaResourceHandler {
 	return &MediaResourceHandler{
 		db:     db,
 		logger: logger,
+		config: config,
 	}
 }
 
@@ -33,10 +36,10 @@ func NewMediaResourceHandler(db *gorm.DB, logger *logger.Logger) *MediaResourceH
 // qiniu.region.na0: 代表北美区域
 // qiniu.region.as0: 代表新加坡区域
 func (h *MediaResourceHandler) BuildQiniuToken(c *gin.Context) {
-	access_key := "HriJcPNneVwy8gZWB_QAB-hxswRtk1zFWSbYVlUu"
-	secret_key := "Ku0DYLqYWO6GLhKiixvTLFeluU0hSc7itJvc6eIJ"
+	access_key := h.config.QiniuAccessKey
+	secret_key := h.config.QiniuSecretKey
+	bucket := h.config.QiniuBucket
 	mac := credentials.NewCredentials(access_key, secret_key)
-	bucket := "fithub"
 	putPolicy, err := uptoken.NewPutPolicy(bucket, time.Now().Add(1*time.Hour))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})

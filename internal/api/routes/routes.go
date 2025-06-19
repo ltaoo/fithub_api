@@ -33,17 +33,17 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 	// API路由组
 	api := r.Group("/api")
 	authorized := api.Group("/")
-	authorized.Use(middlewares.AuthMiddleware(logger))
+	authorized.Use(middlewares.AuthMiddleware(logger, cfg))
 	{
 		// 用户处理器
-		userHandler := handlers.NewUserHandler(db, logger)
+		// userHandler := handlers.NewUserHandler(db, logger)
 
 		// 公开路由
 		// api.POST("/user/list", userHandler.GetUsers)
 		// api.POST("/user/profile", userHandler.GetUser)
 
 		{
-			handler := handlers.NewCoachHandler(db, logger)
+			handler := handlers.NewCoachHandler(db, logger, cfg)
 			api.POST("/auth/web_register", handler.RegisterCoach)
 			api.POST("/auth/web_login", handler.LoginCoach)
 			api.GET("/ping", handler.FetchVersion)
@@ -64,6 +64,10 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/student/to_friend", handler.StudentToFriend)
 			authorized.POST("/friend/add", handler.AddFriend)
 			authorized.POST("/coach/profile", handler.FetchCoachProfileInWechat)
+			authorized.POST("/content/create", handler.CreateArticle)
+			authorized.POST("/content/update", handler.UpdateArticle)
+			authorized.POST("/content/list", handler.FetchArticleList)
+			authorized.POST("/content/profile", handler.FetchArticleProfile)
 			authorized.POST("/follow", handler.FollowCoach)
 			authorized.POST("/my/follower/list", handler.FetchMyFollowerList)
 			authorized.POST("/my/following/list", handler.FetchMyFollowingList)
@@ -75,14 +79,6 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/coach/content/create", handler.CreateCoachContent)
 			authorized.POST("/admin/coach/auth_url", handler.BuildCoachAuthURLInAdmin)
 			authorized.POST("/admin/coach/profile", handler.FetchCoachProfileInAdmin)
-		}
-
-		{
-			authorized := api.Group("/user")
-			authorized.Use(middlewares.AuthMiddleware(logger))
-			// authorized.POST("/user/create", userHandler.CreateUser)
-			authorized.POST("/user/update", userHandler.UpdateUser)
-			// authorized.POST("/user/delete", userHandler.DeleteUser)
 		}
 		{
 
@@ -206,7 +202,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/gift_card/using", handler.UsingGiftCard)
 		}
 		{
-			handler := handlers.NewMediaResourceHandler(db, logger)
+			handler := handlers.NewMediaResourceHandler(db, logger, cfg)
 			api.POST("/media/qiniu_token", handler.BuildQiniuToken)
 			authorized.POST("/media/create", handler.CreateMediaResource)
 			authorized.POST("/media/list", handler.FetchMediaResourceList)
