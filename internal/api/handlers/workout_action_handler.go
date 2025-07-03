@@ -97,6 +97,61 @@ func (h *WorkoutActionHandler) FetchWorkoutActionList(c *gin.Context) {
 	})
 }
 
+func (h *WorkoutActionHandler) FetchCardioWorkoutActionList(c *gin.Context) {
+	var body struct {
+		models.Pagination
+		Keyword string `json:"keyword"`
+		Tag     string `json:"tag"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "Invalid request body", "data": nil})
+		return
+	}
+
+	query := h.db.Where("d IS NULL OR d = 0")
+	query = query.Where("type = ?", "cardio")
+	if body.Keyword != "" {
+		query = query.Where("zh_name LIKE ? OR alias LIKE ?", "%"+body.Keyword+"%", "%"+body.Keyword+"%")
+	}
+	if body.Tag != "" {
+		query = query.Where("tags2 LIKE ?", "%"+body.Tag+"%")
+	}
+	pb := pagination.NewPaginationBuilder[models.WorkoutAction](query).
+		SetLimit(body.PageSize).
+		SetPage(body.Page).
+		SetNextMarker(body.NextMarker).
+		SetOrderBy("sort_idx DESC")
+	var list1 []models.WorkoutAction
+	if err := pb.Build().Find(&list1).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch workout actions", "data": nil})
+		return
+	}
+	list2, has_more, next_cursor := pb.ProcessResults(list1)
+	list := make([]map[string]interface{}, 0, len(list2))
+	for _, v := range list2 {
+		list = append(list, map[string]interface{}{
+			"id":            v.Id,
+			"name":          v.Name,
+			"zh_name":       v.ZhName,
+			"idx":           v.SortIdx,
+			"tags":          v.Tags2,
+			"muscle_ids":    v.MuscleIds,
+			"equipment_ids": v.EquipmentIds,
+			"created_at":    v.CreatedAt,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "Success",
+		"data": gin.H{
+			"list":        list,
+			"page_size":   pb.GetLimit(),
+			"has_more":    has_more,
+			"next_marker": next_cursor,
+		},
+	})
+}
+
 func (h *WorkoutActionHandler) FetchWorkoutActionListByIds(c *gin.Context) {
 
 	var body struct {
@@ -359,7 +414,7 @@ func (h *WorkoutActionHandler) UpdateWorkoutActionProfile(c *gin.Context) {
 		"owner_id":               uid,
 		"updated_at":             now,
 	}).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "更新成功", "data": body})

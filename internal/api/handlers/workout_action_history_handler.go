@@ -30,11 +30,11 @@ func (h *WorkoutActionHistoryHandler) CreateWorkoutHistory(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
 	var body struct {
-		WorkoutActionId int    `json:"workout_action_id"`
-		Reps            int    `json:"reps"`
-		RepsUnit        string `json:"reps_unit"`
-		Weight          int    `json:"weight"`
-		WeightUnit      string `json:"weight_unit"`
+		WorkoutActionId int     `json:"workout_action_id"`
+		Reps            int     `json:"reps"`
+		RepsUnit        string  `json:"reps_unit"`
+		Weight          float64 `json:"weight"`
+		WeightUnit      string  `json:"weight_unit"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
@@ -94,7 +94,7 @@ func (h *WorkoutActionHistoryHandler) FetchWorkoutActionHistoryListOfWorkoutDay(
 		return
 	}
 
-	query := h.db
+	query := h.db.Where("d IS NULL OR d = 0")
 	query = query.Where("workout_day_id = ?", body.WorkoutDayId)
 	pb := pagination.NewPaginationBuilder[models.WorkoutActionHistory](query).
 		SetLimit(body.PageSize).
@@ -147,7 +147,7 @@ func (h *WorkoutActionHistoryHandler) FetchWorkoutActionHistoryListOfWorkoutActi
 			return
 		}
 	}
-	query := h.db
+	query := h.db.Where("d IS NULL OR d = 0")
 	query = query.Where("action_id = ? AND student_id = ?", body.WorkoutActionId, body.StudentId)
 	pb := pagination.NewPaginationBuilder[models.WorkoutActionHistory](query).
 		SetLimit(body.PageSize).

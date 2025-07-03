@@ -3,7 +3,8 @@
 ### 数据库迁移
 
 ```bash
-migrate -path ./migrations --database "sqlite3://./myapi.db" down 1
+# 降级到指定迁移版本
+migrate -path ./migrations --database "sqlite3://./myapi.db" goto 8
 ```
 
 ### 手动迁移数据库

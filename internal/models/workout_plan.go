@@ -10,6 +10,7 @@ type WorkoutPlan struct {
 	Title             string     `json:"title"`
 	Overview          string     `json:"overview"`
 	CoverURL          string     `json:"cover_url"`
+	Type              string     `json:"type"` //
 	Level             int        `json:"level" gorm:"default:1"`
 	Tags              string     `json:"tags"`
 	EstimatedDuration int        `json:"estimated_duration" gorm:"default:60"`
@@ -84,7 +85,7 @@ type CoachWorkoutSchedule struct {
 	D           int        `json:"d"`
 	Interval    int        `json:"interval"`
 	Status      int        `json:"status"`
-	StartDate   time.Time  `json:"start_date"`
+	StartDate   *time.Time `json:"start_date"`
 	AppliedAt   time.Time  `json:"applied_at"`
 	CancelledAt *time.Time `json:"cancelled_at"`
 

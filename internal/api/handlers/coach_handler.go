@@ -289,6 +289,7 @@ func (h *CoachHandler) FetchCoachProfile(c *gin.Context) {
 		"name":       "",
 		"status":     0,
 		"expired_at": "",
+		"count":      0,
 	}
 
 	// If we have a latest subscription
@@ -299,6 +300,7 @@ func (h *CoachHandler) FetchCoachProfile(c *gin.Context) {
 				"name":       active_subscription.SubscriptionPlan.Name,
 				"status":     active_subscription.Step,
 				"expired_at": active_subscription.ExpectExpiredAt,
+				"count":      active_subscription.Count,
 			}
 		} else {
 			// Otherwise use the latest one
@@ -306,7 +308,12 @@ func (h *CoachHandler) FetchCoachProfile(c *gin.Context) {
 				"name":       latest_subscription.SubscriptionPlan.Name,
 				"status":     latest_subscription.Step,
 				"expired_at": latest_subscription.ExpectExpiredAt,
+				"count":      latest_subscription.Count,
 			}
+		}
+		// 生效中
+		if subscription_resp["status"] == 2 && subscription_resp["count"] == 9999 {
+			subscription_resp["name"] = "终身VIP"
 		}
 	}
 	if err := tx.Commit().Error; err != nil {
@@ -440,10 +447,43 @@ func (h *CoachHandler) SendVerificationCode(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "Verification code sent", "data": response})
 }
 
+type LocalTime struct {
+	time.Time
+}
+
+func (t *LocalTime) UnmarshalJSON(b []byte) error {
+	// 去掉引号
+	s := strings.Trim(string(b), "\"")
+	if s == "null" || s == "" {
+		return nil
+	}
+	// 先按 RFC3339 解析
+	tt, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return err
+	}
+	// 转为本地时区
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	t.Time = tt.In(loc)
+	return nil
+}
+
 func (h *CoachHandler) RefreshCoachStats(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	if uid == 0 {
 		c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "请先登录", "data": nil})
+		return
+	}
+	var body struct {
+		RangeOfStart *LocalTime `json:"range_of_start"`
+		RangeOfEnd   *LocalTime `json:"range_of_end"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.RangeOfStart == nil || body.RangeOfEnd == nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少参数", "data": nil})
 		return
 	}
 	var existing models.Coach
@@ -452,230 +492,366 @@ func (h *CoachHandler) RefreshCoachStats(c *gin.Context) {
 		return
 	}
 
-	// 获取所有训练天数
-	var workout_days []models.WorkoutDay
-	if err := h.db.Where("student_id = ?", uid).Find(&workout_days).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+	now := time.Now()
+
+	// 1.1 获取所有训练日期（用于最长连续天数）
+	var dateList []string
+	h.db.Raw(`SELECT DISTINCT finished_at as date_str FROM WORKOUT_DAY WHERE student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ? ORDER BY date_str ASC`, uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).Scan(&dateList)
+
+	// fmt.Println("dateList:", dateList)
+	if len(dateList) == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "本月没有任何训练记录", "data": nil})
 		return
 	}
 
-	// 计算最近7天的训练情况
-	now := time.Now()
-	seven_days_ago := now.AddDate(0, 0, -7)
-	recent_workout_days := 0
-
-	// 使用map来统计不重复的训练天数
-	unique_workout_days := make(map[string]bool)
-	recent_unique_workout_days := make(map[string]bool)
-
-	for _, day := range workout_days {
-		// 将时间转换为日期字符串（去掉时分秒）
-		dateStr := day.CreatedAt.Format("2006-01-02")
-		unique_workout_days[dateStr] = true
-		if day.CreatedAt.After(seven_days_ago) {
-			recent_unique_workout_days[dateStr] = true
+	// 统计最长连续天数
+	max_streak, cur_streak := 0, 0
+	var last_date time.Time
+	var cur_streak_start, max_streak_start, max_streak_end time.Time
+	for i, dateStr := range dateList {
+		t, _ := time.Parse("2006-01-02", dateStr)
+		if i == 0 || t.Sub(last_date) == 24*time.Hour {
+			cur_streak++
+			if cur_streak == 1 {
+				cur_streak_start = t
+			}
+		} else {
+			cur_streak = 1
+			cur_streak_start = t
 		}
+		if cur_streak > max_streak {
+			max_streak = cur_streak
+			max_streak_start = cur_streak_start
+			max_streak_end = t
+		}
+		// fmt.Printf("[streak] i=%d, date=%s, cur_streak=%d, cur_streak_start=%s, max_streak=%d, max_streak_start=%s, max_streak_end=%s\n", i, dateStr, cur_streak, cur_streak_start.Format("2006-01-02"), max_streak, max_streak_start.Format("2006-01-02"), max_streak_end.Format("2006-01-02"))
+		last_date = t
+	}
+	// fmt.Printf("[streak result] max_streak=%d, start=%s, end=%s\n", max_streak, max_streak_start.Format("2006-01-02"), max_streak_end.Format("2006-01-02"))
+
+	// 2. 训练时长最长、容量最大的、最早开始、最晚完成的 WorkoutDay
+	var max_duration_day, max_volume_day, earliest_start_day, latest_finish_day models.WorkoutDay
+	h.db.Where("student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ?", uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).
+		Order("duration DESC").Preload("WorkoutPlan").First(&max_duration_day)
+	h.db.Where("student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ?", uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).
+		Order("total_volume DESC").Preload("WorkoutPlan").First(&max_volume_day)
+	h.db.Where("student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ?", uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).
+		Order("started_at ASC").Preload("WorkoutPlan").First(&earliest_start_day)
+	h.db.Where("student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ?", uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).
+		Order("datetime(finished_at, '+8 hours') DESC").Preload("WorkoutPlan").First(&latest_finish_day)
+
+	// 3. 聚合 WorkoutPlan.type 下的所有 workout_day 及其 workout_plan
+	type WorkoutDayWithPlan struct {
+		WorkoutDayId int
+		PlanId       int
+		PlanTitle    string
+		PlanType     int
+		// 你可以根据需要加更多字段
+	}
+	var workout_days_with_plan []WorkoutDayWithPlan
+	h.db.Raw(`
+		SELECT 
+			wd.id as workout_day_id, 
+			wp.id as plan_id, 
+			wp.title as plan_title, 
+			wp.type as plan_type
+		FROM WORKOUT_DAY wd 
+		JOIN WORKOUT_PLAN wp ON wd.workout_plan_id = wp.id 
+		WHERE wd.student_id = ? AND wd.status = 2 AND DATE(wd.finished_at, '+8 hours') BETWEEN ? AND ?
+		ORDER BY wp.type, wd.id
+	`, uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).Scan(&workout_days_with_plan)
+
+	// 按 type 分组
+	workout_day_group_with_type := map[int][]map[string]interface{}{}
+	for _, v := range workout_days_with_plan {
+		workout_day_group_with_type[v.PlanType] = append(workout_day_group_with_type[v.PlanType], map[string]interface{}{
+			"workout_day_id": v.WorkoutDayId,
+			"workout_plan": map[string]interface{}{
+				"id":    v.PlanId,
+				"title": v.PlanTitle,
+				// 你可以加更多字段
+			},
+		})
 	}
 
-	recent_workout_days = len(recent_unique_workout_days)
+	// 5. 对比同一训练计划最早和最晚一次训练的容量差距
+	// type PlanStat struct {
+	// 	PlanId      int     `json:"plan_id"`
+	// 	PlanName    string  `json:"plan_name"`
+	// 	FirstVolume float64 `json:"first_volume"`
+	// 	LastVolume  float64 `json:"last_volume"`
+	// 	Progress    float64 `json:"progress"`
+	// }
+	// var plan_stats []PlanStat
+	// h.db.Raw(`
+	// SELECT
+	//   wd1.workout_plan_id as plan_id,
+	//   wp.title as plan_name,
+	//   wd1.total_volume as first_volume,
+	//   wd2.total_volume as last_volume,
+	//   wd2.total_volume - wd1.total_volume as progress
+	// FROM (
+	//   SELECT workout_plan_id, MIN(created_at) as first_date, MAX(created_at) as last_date
+	//   FROM WORKOUT_DAY
+	//   WHERE student_id = ? AND status = 2 AND finished_at BETWEEN ? AND ?
+	//   GROUP BY workout_plan_id
+	//   HAVING COUNT(*) >= 2
+	// ) t
+	// JOIN WORKOUT_DAY wd1 ON wd1.workout_plan_id = t.workout_plan_id AND wd1.created_at = t.first_date
+	// JOIN WORKOUT_DAY wd2 ON wd2.workout_plan_id = t.workout_plan_id AND wd2.created_at = t.last_date
+	// JOIN WORKOUT_PLAN wp ON wp.id = t.workout_plan_id
+	// `, uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).Scan(&plan_stats)
+
+	// 总训练次数
+	var totalWorkoutTimes int64
+	h.db.Model(&models.WorkoutDay{}).
+		Where("student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ?", uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).
+		Count(&totalWorkoutTimes)
 
 	type WorkoutStats struct {
 		Version           string    `json:"v"`
 		TotalWorkoutDays  int       `json:"total_workout_days"`
-		TotalWorkoutTimes int       `json:"total_workout_times"`
-		RecentWorkoutDays int       `json:"recent_workout_days"`
+		TotalWorkoutTimes int64     `json:"total_workout_times"`
 		CreatedAt         time.Time `json:"created_at"`
 	}
 
+	// 1. 统计不重复的训练天数
+	var total_workout_days int
+	h.db.Raw(`SELECT COUNT(DISTINCT DATE(finished_at, '+8 hours')) FROM WORKOUT_DAY WHERE student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ?`, uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).Scan(&total_workout_days)
+
 	stats := WorkoutStats{
 		Version:           "250608",
-		TotalWorkoutDays:  len(unique_workout_days),
-		TotalWorkoutTimes: len(workout_days),
-		RecentWorkoutDays: recent_workout_days,
+		TotalWorkoutDays:  total_workout_days,
+		TotalWorkoutTimes: totalWorkoutTimes,
 		CreatedAt:         now,
 	}
 
-	statsJSON, err := json.Marshal(stats)
+	// 动作统计
+	var action_histories []models.WorkoutActionHistory
+	if err := h.db.
+		Where("student_id = ? AND DATE(created_at, '+8 hours') BETWEEN ? AND ?", uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).
+		Preload("WorkoutAction").
+		Find(&action_histories).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	// 1. 按动作分组
+	type Record struct {
+		Reps       int       `json:"reps"`
+		RepsUnit   string    `json:"reps_unit"`
+		Weight     float64   `json:"weight"`
+		WeightUnit string    `json:"weight_unit"`
+		CreatedAt  time.Time `json:"created_at"`
+	}
+	action_map := make(map[string][]Record)
+	for _, history := range action_histories {
+		action_name := history.WorkoutAction.ZhName // 或英文名
+		rec := Record{
+			Reps:       history.Reps,
+			RepsUnit:   history.RepsUnit,
+			Weight:     history.Weight,
+			WeightUnit: history.WeightUnit,
+			CreatedAt:  history.CreatedAt,
+		}
+		action_map[action_name] = append(action_map[action_name], rec)
+	}
+
+	// 2. 转为目标结构
+	type ActionStat struct {
+		Action  string   `json:"action"`
+		Records []Record `json:"records"`
+	}
+	var action_stats []ActionStat
+	for action, records := range action_map {
+		action_stats = append(action_stats, ActionStat{
+			Action:  action,
+			Records: records,
+		})
+	}
+
+	// 3. 可选：按动作名排序
+	// sort.Slice(result, func(i, j int) bool { return result[i].Action < result[j].Action })
+
+	// 4. 返回
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"code": 200,
+	// 	"msg":  "动作统计获取成功",
+	// 	"data": result,
+	// })
+
+	stats_json, err := json.Marshal(stats)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to marshal stats", "data": nil})
 		return
 	}
 
-	if err := h.db.Model(&existing).Update("workout_stats", string(statsJSON)).Error; err != nil {
+	if err := h.db.Model(&existing).Update("workout_stats", string(stats_json)).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to update stats", "data": nil})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
-		"msg":  "统计数据获取成功",
-		"data": stats,
+		"msg":  "获取成功",
+		"data": gin.H{
+			"stats":      stats,
+			"max_streak": max_streak,
+			"max_streak_range": gin.H{
+				"start": func() string {
+					if max_streak > 0 {
+						return max_streak_start.Format("2006-01-02")
+					} else {
+						return ""
+					}
+				}(),
+				"end": func() string {
+					if max_streak > 0 {
+						return max_streak_end.Format("2006-01-02")
+					} else {
+						return ""
+					}
+				}(),
+			},
+			"max_duration_day": gin.H{
+				"id":           max_duration_day.Id,
+				"started_at":   max_duration_day.StartedAt,
+				"finished_at":  max_duration_day.FinishedAt,
+				"duration":     max_duration_day.Duration,
+				"total_volume": max_duration_day.TotalVolume,
+				"workout_plan": gin.H{
+					"id":       max_duration_day.WorkoutPlan.Id,
+					"title":    max_duration_day.WorkoutPlan.Title,
+					"overview": max_duration_day.WorkoutPlan.Overview,
+					"type":     max_duration_day.WorkoutPlan.Type,
+				},
+			},
+			"earliest_start_day": gin.H{
+				"id":           earliest_start_day.Id,
+				"started_at":   earliest_start_day.StartedAt,
+				"finished_at":  earliest_start_day.FinishedAt,
+				"duration":     earliest_start_day.Duration,
+				"total_volume": earliest_start_day.TotalVolume,
+				"workout_plan": gin.H{
+					"id":       earliest_start_day.WorkoutPlan.Id,
+					"title":    earliest_start_day.WorkoutPlan.Title,
+					"overview": earliest_start_day.WorkoutPlan.Overview,
+					"type":     earliest_start_day.WorkoutPlan.Type,
+				},
+			},
+			"latest_finish_day": gin.H{
+				"id":           latest_finish_day.Id,
+				"started_at":   latest_finish_day.StartedAt,
+				"finished_at":  latest_finish_day.FinishedAt,
+				"duration":     latest_finish_day.Duration,
+				"total_volume": latest_finish_day.TotalVolume,
+				"workout_plan": gin.H{
+					"id":       latest_finish_day.WorkoutPlan.Id,
+					"title":    latest_finish_day.WorkoutPlan.Title,
+					"overview": latest_finish_day.WorkoutPlan.Overview,
+					"type":     latest_finish_day.WorkoutPlan.Type,
+				},
+			},
+			"type_plan_map": workout_day_group_with_type,
+			"max_volume_day": gin.H{
+				"id":           max_volume_day.Id,
+				"started_at":   max_volume_day.StartedAt,
+				"finished_at":  max_volume_day.FinishedAt,
+				"duration":     max_volume_day.Duration,
+				"total_volume": max_volume_day.TotalVolume,
+				"workout_plan": gin.H{
+					"id":       max_volume_day.WorkoutPlan.Id,
+					"title":    max_volume_day.WorkoutPlan.Title,
+					"overview": max_volume_day.WorkoutPlan.Overview,
+					"type":     max_volume_day.WorkoutPlan.Type,
+				},
+			},
+			// "plan_stats": plan_stats,
+			"action_stats": action_stats,
+		},
 	})
 }
 
 func (h *CoachHandler) RefreshWorkoutActionStats(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 
-	// 获取所有训练动作历史
+	var body struct {
+		RangeOfStart *time.Time `json:"range_of_start"`
+		RangeOfEnd   *time.Time `json:"range_of_end"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.RangeOfStart == nil || body.RangeOfEnd == nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少参数", "data": nil})
+		return
+	}
+
+	query := h.db.Where("student_id = ? AND created_at BETWEEN ? AND ?", uid, body.RangeOfStart, body.RangeOfEnd)
 	var workout_action_histories []models.WorkoutActionHistory
-	if err := h.db.Where("student_id = ?", uid).Find(&workout_action_histories).Error; err != nil {
+	if err := query.Preload("WorkoutAction").Find(&workout_action_histories).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 
-	// 获取所有训练动作
-	var workout_actions []models.WorkoutAction
-	if err := h.db.Find(&workout_actions).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
-		return
-	}
-
-	// 获取所有训练计划
-	var workout_plans []models.WorkoutPlan
-	if err := h.db.Where("student_id = ?", uid).Find(&workout_plans).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
-		return
-	}
-
-	recent_workout_actions := 0
-	now := time.Now()
-	seven_days_ago := now.AddDate(0, 0, -7)
-
-	// 用于排序的切片
-	type ActionStat struct {
-		ActionId    int
-		TotalCount  int
-		MaxWeight   int
-		MaxReps     int
-		TotalWeight int
-		TotalReps   int
-	}
-	var actionStatsList []ActionStat
-
-	// 统计每个动作的完成情况
-	action_stats := make(map[int]map[string]interface{})
-	for _, action := range workout_actions {
-		action_stats[action.Id] = map[string]interface{}{
-			"name":           action.Name,
-			"total_count":    0,
-			"recent_count":   0,
-			"last_completed": nil,
-			"max_weight":     0,
-			"max_reps":       0,
-			"total_weight":   0,
-			"total_reps":     0,
-			"avg_weight":     0.0,
-			"avg_reps":       0.0,
-		}
-	}
+	// 根据 WorkoutAction 的 tags1 统计每个部位的组数，tags1 是 胸,肩 这样的字符串，请将其按照 , 分割后统计
+	body_part_stats := make(map[string]int) // 用于统计每个部位的组数
 
 	for _, history := range workout_action_histories {
-		if stats, exists := action_stats[history.WorkoutActionId]; exists {
-			// 更新总次数
-			totalCount := stats["total_count"].(int) + 1
-			stats["total_count"] = totalCount
-
-			// 更新最近7天次数
-			if history.CreatedAt.After(seven_days_ago) {
-				recentCount := stats["recent_count"].(int) + 1
-				stats["recent_count"] = recentCount
+		if history.WorkoutAction.Tags1 != "" {
+			// 将 tags1 按逗号分割
+			tags := strings.Split(history.WorkoutAction.Tags1, ",")
+			for _, tag := range tags {
+				// 去除空格
+				tag = strings.TrimSpace(tag)
+				if tag != "" {
+					// 统计每个部位的组数
+					body_part_stats[tag]++
+				}
 			}
-
-			// 更新最后完成时间
-			if stats["last_completed"] == nil || history.CreatedAt.After(stats["last_completed"].(time.Time)) {
-				stats["last_completed"] = history.CreatedAt
-			}
-
-			// 更新重量相关统计
-			if history.Weight > stats["max_weight"].(int) {
-				stats["max_weight"] = history.Weight
-			}
-			totalWeight := stats["total_weight"].(int) + history.Weight
-			stats["total_weight"] = totalWeight
-			stats["avg_weight"] = float64(totalWeight) / float64(totalCount)
-
-			// 更新次数相关统计
-			if history.Reps > stats["max_reps"].(int) {
-				stats["max_reps"] = history.Reps
-			}
-			totalReps := stats["total_reps"].(int) + history.Reps
-			stats["total_reps"] = totalReps
-			stats["avg_reps"] = float64(totalReps) / float64(totalCount)
-
-			// 添加到排序列表
-			actionStatsList = append(actionStatsList, ActionStat{
-				ActionId:    history.WorkoutActionId,
-				TotalCount:  totalCount,
-				MaxWeight:   stats["max_weight"].(int),
-				MaxReps:     stats["max_reps"].(int),
-				TotalWeight: totalWeight,
-				TotalReps:   totalReps,
-			})
 		}
 	}
 
-	for _, history := range workout_action_histories {
-		if history.CreatedAt.After(seven_days_ago) {
-			recent_workout_actions++
-		}
-	}
-	// 按不同维度排序
-	type TopActions struct {
-		MostFrequent []map[string]interface{} `json:"most_frequent"` // 最常做的动作
-		MaxWeight    []map[string]interface{} `json:"max_weight"`    // 最大重量
-		MaxReps      []map[string]interface{} `json:"max_reps"`      // 最大次数
-		MostProgress []map[string]interface{} `json:"most_progress"` // 进步最大的动作
+	// 将统计结果转换为排序后的切片
+	type BodyPartStat struct {
+		BodyPart string `json:"body_part"`
+		Sets     int    `json:"sets"`
 	}
 
-	topActions := TopActions{
-		MostFrequent: make([]map[string]interface{}, 0, 3),
-		MaxWeight:    make([]map[string]interface{}, 0, 3),
-		MaxReps:      make([]map[string]interface{}, 0, 3),
-		MostProgress: make([]map[string]interface{}, 0, 3),
-	}
-
-	// 按总次数排序
-	sort.Slice(actionStatsList, func(i, j int) bool {
-		return actionStatsList[i].TotalCount > actionStatsList[j].TotalCount
-	})
-	for i := 0; i < 3 && i < len(actionStatsList); i++ {
-		actionId := actionStatsList[i].ActionId
-		topActions.MostFrequent = append(topActions.MostFrequent, map[string]interface{}{
-			"name":        action_stats[actionId]["name"],
-			"total_count": actionStatsList[i].TotalCount,
-			"max_weight":  actionStatsList[i].MaxWeight,
-			"max_reps":    actionStatsList[i].MaxReps,
-			"avg_weight":  action_stats[actionId]["avg_weight"],
-			"avg_reps":    action_stats[actionId]["avg_reps"],
+	var body_part_stats_list []BodyPartStat
+	for body_part, sets := range body_part_stats {
+		body_part_stats_list = append(body_part_stats_list, BodyPartStat{
+			BodyPart: body_part,
+			Sets:     sets,
 		})
 	}
 
-	// 按最大重量排序
-	sort.Slice(actionStatsList, func(i, j int) bool {
-		return actionStatsList[i].MaxWeight > actionStatsList[j].MaxWeight
+	// 按组数降序排序
+	sort.Slice(body_part_stats_list, func(i, j int) bool {
+		return body_part_stats_list[i].Sets > body_part_stats_list[j].Sets
 	})
-	for i := 0; i < 3 && i < len(actionStatsList); i++ {
-		actionId := actionStatsList[i].ActionId
-		topActions.MaxWeight = append(topActions.MaxWeight, map[string]interface{}{
-			"name":        action_stats[actionId]["name"],
-			"max_weight":  actionStatsList[i].MaxWeight,
-			"total_count": actionStatsList[i].TotalCount,
-		})
+
+	// 计算总体统计
+	total_sets := 0
+	for _, stat := range body_part_stats_list {
+		total_sets += stat.Sets
 	}
 
-	// 按最大次数排序
-	sort.Slice(actionStatsList, func(i, j int) bool {
-		return actionStatsList[i].MaxReps > actionStatsList[j].MaxReps
-	})
-	for i := 0; i < 3 && i < len(actionStatsList); i++ {
-		actionId := actionStatsList[i].ActionId
-		topActions.MaxReps = append(topActions.MaxReps, map[string]interface{}{
-			"name":        action_stats[actionId]["name"],
-			"max_reps":    actionStatsList[i].MaxReps,
-			"total_count": actionStatsList[i].TotalCount,
-		})
+	// 构建响应数据
+	response := gin.H{
+		"body_part_stats": body_part_stats_list,
+		"total_sets":      total_sets,
+		"total_actions":   len(workout_action_histories),
+		"range_start":     body.RangeOfStart,
+		"range_end":       body.RangeOfEnd,
 	}
 
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "统计数据获取成功",
+		"data": response,
+	})
 }
 
 func (h *CoachHandler) CreateStudent(c *gin.Context) {
@@ -1405,6 +1581,7 @@ func (h *CoachHandler) FetchArticleProfile(c *gin.Context) {
 			act = make(map[string]interface{})
 			act["id"] = v.WorkoutAction.Id
 			act["zh_name"] = v.WorkoutAction.ZhName
+			act["score"] = v.WorkoutAction.Score
 		}
 		points2 = append(points2, gin.H{
 			"id":             v.Id,

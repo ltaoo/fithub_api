@@ -314,7 +314,7 @@ CREATE TABLE COACH_BODY_MEASUREMENT(
 CREATE TABLE WORKOUT_DAY(
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
     time TEXT NOT NULL DEFAULT '', --训练时间;年月日时分秒
-    status INTEGER NOT NULL DEFAULT 1, --训练日状态; 1等待进行 2进行中 3已完成 4已过期 5手动作废
+    status INTEGER NOT NULL DEFAULT 1, --训练日状态; 0等待进行 1进行中 2已完成 3已过期 4手动作废
     estimated_duration INTEGER NOT NULL DEFAULT 0, --预计时间
     pending_steps TEXT(1000) NOT NULL DEFAULT '{}', --执行记录;JSON 数组
     updated_details TEXT(1000) NOT NULL DEFAULT '', --执行记录;JSON 数组

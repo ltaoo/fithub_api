@@ -42,7 +42,7 @@ func (h *MuscleHandler) FetchMuscleList(c *gin.Context) {
 		SetOrderBy("sort_idx DESC")
 	var list1 []models.Muscle
 	if err := pb.Build().Find(&list1).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to fetch equipments" + err.Error(), "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 	list2, has_more, next_marker := pb.ProcessResults(list1)

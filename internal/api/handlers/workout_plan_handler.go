@@ -30,6 +30,7 @@ func NewWorkoutPlanHandler(db *gorm.DB, logger *logger.Logger) *WorkoutPlanHandl
 
 type WorkoutPlanBody struct {
 	Title             string `json:"title" binding:"required"`
+	Type              string `json:"type"`
 	Overview          string `json:"overview"`
 	Level             int    `json:"level"`
 	Status            int    `json:"status" binding:"required,oneof=1 2"`
@@ -53,6 +54,7 @@ func (h *WorkoutPlanHandler) CreateWorkoutPlan(c *gin.Context) {
 	}
 	record := models.WorkoutPlan{
 		Title:             body.Title,
+		Type:              body.Type,
 		Overview:          body.Overview,
 		Status:            body.Status,
 		Level:             body.Level,
@@ -65,6 +67,9 @@ func (h *WorkoutPlanHandler) CreateWorkoutPlan(c *gin.Context) {
 		EquipmentIds:      body.EquipmentIds,
 		CreatedAt:         time.Now(),
 		OwnerId:           uid,
+	}
+	if record.Type == "" {
+		record.Type = "strength"
 	}
 	if err := h.db.Create(&record).Error; err != nil {
 		// h.logger.Error("Failed to create workout plan", "error", result.Error)
@@ -165,40 +170,6 @@ func (h *WorkoutPlanHandler) FetchWorkoutPlanProfile(c *gin.Context) {
 			return
 		}
 	}
-	type WorkoutPlanStepJSON250607 struct {
-		Title           string `json:"title"`
-		Type            string `json:"type"`
-		Idx             int    `json:"idx"`
-		SetType         string `json:"set_type"`
-		SetCount        int    `json:"set_count"`
-		SetRestDuration int    `json:"set_rest_duration"`
-		SetWeight       string `json:"set_weight"`
-		Actions         []struct {
-			ActionId int `json:"action_id"`
-			Action   struct {
-				Id     int    `json:"id"`
-				Name   string `json:"name"`
-				ZhName string `json:"zh_name"`
-			} `json:"action"`
-			Idx          int    `json:"idx"`
-			SetIdx       int    `json:"set_idx"`
-			Weight       string `json:"weight"`
-			Reps         int    `json:"reps"`
-			RepsUnit     string `json:"reps_unit"`
-			RestDuration int    `json:"rest_duration"`
-			Note         string `json:"note"`
-		} `json:"actions"`
-		SetNote string `json:"set_note"`
-	}
-	type WorkoutPlanProfileJSON250607 struct {
-		Version string                      `json:"v"`
-		Steps   []WorkoutPlanStepJSON250607 `json:"steps"`
-	}
-	var details WorkoutPlanProfileJSON250607
-	if err := json.Unmarshal([]byte(record.Details), &details); err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 600, "msg": err.Error(), "data": nil})
-		return
-	}
 	data := map[string]interface{}{
 		"id":                 record.Id,
 		"title":              record.Title,
@@ -210,7 +181,7 @@ func (h *WorkoutPlanHandler) FetchWorkoutPlanProfile(c *gin.Context) {
 		"cover_url":          record.CoverURL,
 		"equipment_ids":      record.EquipmentIds,
 		"muscle_ids":         record.MuscleIds,
-		"steps":              details.Steps,
+		"details":            record.Details,
 		"creator": map[string]interface{}{
 			"nickname":   record.Creator.Profile1.Nickname,
 			"avatar_url": record.Creator.Profile1.AvatarURL,
@@ -879,7 +850,7 @@ func (h *WorkoutPlanHandler) ApplyWorkoutSchedule(c *gin.Context) {
 		record := models.CoachWorkoutSchedule{
 			WorkoutPlanCollectionId: body.Id,
 			CoachId:                 uid,
-			StartDate:               body.StartDate,
+			StartDate:               &body.StartDate,
 			Status:                  1,
 			AppliedAt:               time.Now(),
 		}
@@ -977,10 +948,9 @@ func (h *WorkoutPlanHandler) FetchAppliedWorkoutScheduleList(c *gin.Context) {
 				"tags":            schedule.WorkoutPlan.Tags,
 			})
 		}
-		data = append(data, map[string]interface{}{
+		d := map[string]interface{}{
 			"id":                  relation.Id,
 			"status":              relation.Status,
-			"start_date":          relation.StartDate,
 			"workout_schedule_id": relation.WorkoutPlanCollection.Id,
 			"title":               relation.WorkoutPlanCollection.Title,
 			"overview":            relation.WorkoutPlanCollection.Overview,
@@ -988,7 +958,13 @@ func (h *WorkoutPlanHandler) FetchAppliedWorkoutScheduleList(c *gin.Context) {
 			"level":               relation.WorkoutPlanCollection.Level,
 			"details":             relation.WorkoutPlanCollection.Details,
 			"schedules":           schedules,
-		})
+			"applied_at":          relation.AppliedAt,
+			"start_date":          nil,
+		}
+		if relation.StartDate != nil {
+			d["start_date"] = relation.StartDate
+		}
+		data = append(data, d)
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
 		"list": data,
