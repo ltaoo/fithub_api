@@ -2,7 +2,7 @@
 PRAGMA foreign_keys = OFF;
 
 -- 3. 创建新表（复制原表结构，修改`weight`字段类型）
-CREATE TABLE WORKOUT_ACTION_HISTORY_OLD (
+CREATE TABLE IF NOT EXISTS WORKOUT_ACTION_HISTORY_OLD (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, --id
     action_id INTEGER NOT NULL DEFAULT 0, --做的动作id
     d INTEGER NOT NULL DEFAULT 0, --软删除
@@ -19,12 +19,12 @@ CREATE TABLE WORKOUT_ACTION_HISTORY_OLD (
 );
 
 -- 4. 复制原表数据到新表（需指定字段名，避免顺序问题）
-INSERT INTO WORKOUT_ACTION_HISTORY_OLD (id, d, action_id, reps, reps_unit, weight, weight_unit, remark, feedback, extra_medias, created_at, workout_day_id, student_id)
-SELECT id, d, action_id, reps, reps_unit, weight, weight_unit, remark, feedback, extra_medias, created_at, workout_day_id, student_id
+INSERT INTO WORKOUT_ACTION_HISTORY_OLD (id, action_id, reps, reps_unit, weight, weight_unit, remark, feedback, extra_medias, created_at, workout_day_id, student_id)
+SELECT id, action_id, reps, reps_unit, weight, weight_unit, remark, feedback, extra_medias, created_at, workout_day_id, student_id
 FROM WORKOUT_ACTION_HISTORY;
 
 -- 5. 删除旧表
-DROP TABLE WORKOUT_ACTION_HISTORY;
+DROP TABLE IF EXISTS WORKOUT_ACTION_HISTORY;
 
 -- 6. 重命名新表为原表名（保持应用兼容性）
 ALTER TABLE WORKOUT_ACTION_HISTORY_OLD RENAME TO WORKOUT_ACTION_HISTORY;

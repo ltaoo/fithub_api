@@ -106,7 +106,7 @@ func (h *WorkoutDayHandler) CreateWorkoutDay(c *gin.Context) {
 				continue
 			}
 			var relation models.CoachRelationship
-			if err := tx.Where("coach_id = ? AND student_id = ?", uid, student_id).First(&relation).Error; err != nil {
+			if err := tx.Where("coach_id = ? AND student_id = ? OR coach_id = ? AND student_id = ?", uid, student_id, student_id, uid).First(&relation).Error; err != nil {
 				if err != gorm.ErrRecordNotFound {
 					c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 					return
@@ -122,8 +122,8 @@ func (h *WorkoutDayHandler) CreateWorkoutDay(c *gin.Context) {
 				GroupNo:       group_no,
 				CreatedAt:     now,
 				WorkoutPlanId: body.WorkoutPlanId,
-				CoachId:       relation.CoachId,
-				StudentId:     relation.StudentId,
+				CoachId:       uid,
+				StudentId:     student_id,
 			}
 			if body.StartWhenCreate {
 				workout_day.StartedAt = &now
@@ -451,7 +451,7 @@ func (h *WorkoutDayHandler) FetchStartedWorkoutDay(c *gin.Context) {
 	var list []models.WorkoutDay
 	if err := h.db.
 		Where("status = ?", int(models.WorkoutDayStatusStarted)).
-		Where("coach_id = ?", uid).
+		Where("coach_id = ? OR student_id = ?", uid, uid).
 		Where("started_at IS NOT NULL").
 		Order("started_at DESC").
 		Preload("WorkoutPlan").
@@ -641,11 +641,8 @@ func (h *WorkoutDayHandler) FetchStudentWorkoutDayProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 id 参数", "data": nil})
 		return
 	}
-	query := h.db
-	query = query.Where("id = ? AND coach_id = ?", body.Id, uid)
-	if body.StudentId != 0 {
-		query = query.Where("student_id = ?", body.StudentId)
-	}
+	query := h.db.Where("d IS NULL OR d = 0")
+	query = query.Where("id = ? AND (coach_id = ? OR student_id = ?)", body.Id, uid, uid)
 	var workout_day models.WorkoutDay
 	if err := query.
 		Preload("WorkoutPlan").
@@ -717,7 +714,7 @@ func (h *WorkoutDayHandler) UpdateWorkoutDayPlanDetails(c *gin.Context) {
 		return
 	}
 	var existing models.WorkoutDay
-	if err := h.db.Where("id = ? AND coach_id = ?", body.Id, uid).First(&existing).Error; err != nil {
+	if err := h.db.Where("id = ? AND (coach_id = ? OR student_id = ?)", body.Id, uid, uid).First(&existing).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
@@ -755,7 +752,7 @@ func (h *WorkoutDayHandler) UpdateWorkoutDayStepProgress(c *gin.Context) {
 		return
 	}
 	var existing models.WorkoutDay
-	if result := h.db.Where("id = ? AND coach_id = ?", body.Id, uid).First(&existing); result.Error != nil {
+	if result := h.db.Where("id = ? AND (coach_id = ? OR student_id = ?)", body.Id, uid, uid).First(&existing); result.Error != nil {
 		if result.Error != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": result.Error.Error(), "data": nil})
 			return
@@ -845,7 +842,7 @@ func (h *WorkoutDayHandler) FinishWorkoutDay(c *gin.Context) {
 	}()
 
 	var existing models.WorkoutDay
-	if err := tx.Where("id = ? AND coach_id = ?", body.Id, uid).First(&existing).Error; err != nil {
+	if err := tx.Where("id = ? AND (coach_id = ? OR student_id = ?)", body.Id, uid, uid).First(&existing).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
@@ -933,7 +930,7 @@ func (h *WorkoutDayHandler) GiveUpWorkoutDay(c *gin.Context) {
 		return
 	}
 	var existing models.WorkoutDay
-	if err := h.db.Where("id = ? AND coach_id = ?", body.Id, uid).First(&existing).Error; err != nil {
+	if err := h.db.Where("id = ? AND (coach_id = ? OR student_id = ?)", body.Id, uid, uid).First(&existing).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
@@ -1161,7 +1158,7 @@ func (h *WorkoutDayHandler) FetchMyStudentWorkoutDayList(c *gin.Context) {
 
 	// 确保是自己的学员
 	var relation models.CoachRelationship
-	if err := h.db.Where("coach_id = ? AND student_id = ?", uid, body.Id).First(&relation).Error; err != nil {
+	if err := h.db.Where("coach_id = ? AND student_id = ? OR coach_id = ? AND student_id = ?", uid, body.Id, body.Id, uid).First(&relation).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
@@ -1240,10 +1237,7 @@ func (h *WorkoutActionHistoryHandler) FetchStudentWorkoutActionHistoryListOfWork
 	}
 	var d models.WorkoutDay
 	query1 := h.db
-	query1 = query1.Where("id = ? AND coach_id = ?", body.WorkoutDayId, uid)
-	if body.StudentId != 0 {
-		query1 = query1.Where("student_id = ?", body.StudentId)
-	}
+	query1 = query1.Where("id = ? AND (coach_id = ? OR student_id = ?)", body.WorkoutDayId, uid, body.StudentId)
 	if err := query1.First(&d).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
@@ -1284,13 +1278,27 @@ func (h *WorkoutDayHandler) RefreshWorkoutDayRecords250630(c *gin.Context) {
 	}()
 	// 查询所有 status=2（已完成）的 WorkoutDay 记录
 	var days []models.WorkoutDay
-	err := tx.Where("status = ?", int(models.WorkoutDayStatusFinished)).Find(&days).Error
+	err := tx.Where("status = ?", int(models.WorkoutDayStatusFinished)).Preload("WorkoutPlan").Find(&days).Error
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "查询失败: " + err.Error(), "data": nil})
 		return
 	}
 	updated := 0
 	for _, day := range days {
+		if day.Title == "" {
+			if err := tx.Model(&models.WorkoutDay{}).Where("id = ?", day.Id).Update("title", day.WorkoutPlan.Title).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
+		}
+		if day.Type == "" {
+			if err := tx.Model(&models.WorkoutDay{}).Where("id = ?", day.Id).Update("type", day.WorkoutPlan.Type).Error; err != nil {
+				tx.Rollback()
+				c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+				return
+			}
+		}
 		if day.StartedAt != nil && day.FinishedAt != nil && day.FinishedAt.After(*day.StartedAt) {
 			dur_sec := int(day.FinishedAt.Sub(*day.StartedAt).Seconds())
 			// Duration 字段单位为分，四舍五入

@@ -8,8 +8,6 @@ import (
 	"myapi/pkg/logger"
 )
 
-// var trans ut.Translator // 全局翻译器
-
 func main() {
 	// 初始化配置
 	cfg, err := config.LoadConfig()

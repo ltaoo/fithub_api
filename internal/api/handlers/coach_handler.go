@@ -37,7 +37,7 @@ func NewCoachHandler(db *gorm.DB, logger *logger.Logger, config *config.Config) 
 
 func (h *CoachHandler) FetchVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
-		"version": "2506191623",
+		"version": "2507071316",
 	}})
 }
 
@@ -545,7 +545,7 @@ func (h *CoachHandler) RefreshCoachStats(c *gin.Context) {
 		WorkoutDayId int
 		PlanId       int
 		PlanTitle    string
-		PlanType     int
+		PlanType     string
 		// 你可以根据需要加更多字段
 	}
 	var workout_days_with_plan []WorkoutDayWithPlan
@@ -562,7 +562,7 @@ func (h *CoachHandler) RefreshCoachStats(c *gin.Context) {
 	`, uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).Scan(&workout_days_with_plan)
 
 	// 按 type 分组
-	workout_day_group_with_type := map[int][]map[string]interface{}{}
+	workout_day_group_with_type := map[string][]map[string]interface{}{}
 	for _, v := range workout_days_with_plan {
 		workout_day_group_with_type[v.PlanType] = append(workout_day_group_with_type[v.PlanType], map[string]interface{}{
 			"workout_day_id": v.WorkoutDayId,
@@ -1254,7 +1254,7 @@ func (h *CoachHandler) FetchStudentList(c *gin.Context) {
 		return
 	}
 	query := h.db.Where("d IS NULL OR d = 0")
-	query = query.Where("coach_relationship.coach_id = ?", uid)
+	query = query.Where("coach_relationship.coach_id = ? OR coach_relationship.student_id = ?", uid, uid)
 	if body.Keyword != "" {
 		query = query.Joins("JOIN coach_profile1 ON coach_relationship.student_id = coach_profile1.coach_id").
 			Where("coach_profile1.nickname LIKE ?", "%"+body.Keyword+"%")
@@ -1265,23 +1265,71 @@ func (h *CoachHandler) FetchStudentList(c *gin.Context) {
 		SetOrderBy("created_at DESC")
 
 	var list1 []models.CoachRelationship
-	if err := pb.Build().Preload("Student").Preload("Student.Profile1").Find(&list1).Error; err != nil {
+	if err := pb.Build().Preload("Coach").Preload("Coach.Profile1").Preload("Student").Preload("Student.Profile1").Find(&list1).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
 	list2, has_more, next_marker := pb.ProcessResults(list1)
 	list := make([]map[string]interface{}, 0, len(list2))
 	for _, v := range list2 {
-		list = append(list, map[string]interface{}{
-			"id":         v.StudentId,
-			"nickname":   v.Student.Profile1.Nickname,
-			"avatar_url": v.Student.Profile1.AvatarURL,
-			"age":        v.Student.Profile1.Age,
-			"gender":     v.Student.Profile1.Gender,
-			"role":       v.Role,
-			"status":     v.Status,
-			"created_at": v.CreatedAt,
-		})
+		if v.Role == models.RoleCoachStudent {
+			if uid == v.StudentId {
+				list = append(list, map[string]interface{}{
+					"id":         v.CoachId,
+					"nickname":   v.Coach.Profile1.Nickname,
+					"avatar_url": v.Coach.Profile1.AvatarURL,
+					"age":        v.Coach.Profile1.Age,
+					"gender":     v.Coach.Profile1.Gender,
+					"role":       v.Role,
+					"role_text":  "教练",
+					"status":     v.Status,
+					"created_at": v.CreatedAt,
+				})
+			}
+			if uid == v.CoachId {
+				list = append(list, map[string]interface{}{
+					"id":         v.StudentId,
+					"nickname":   v.Student.Profile1.Nickname,
+					"avatar_url": v.Student.Profile1.AvatarURL,
+					"age":        v.Student.Profile1.Age,
+					"gender":     v.Student.Profile1.Gender,
+					"role":       v.Role,
+					"role_text":  "学员",
+					"status":     v.Status,
+					"created_at": v.CreatedAt,
+				})
+			}
+		}
+		if v.Role == models.RoleFriendAndFriend {
+			if uid == v.StudentId {
+				list = append(list, map[string]interface{}{
+					"id":         v.CoachId,
+					"nickname":   v.Coach.Profile1.Nickname,
+					"avatar_url": v.Coach.Profile1.AvatarURL,
+					"age":        v.Coach.Profile1.Age,
+					"gender":     v.Coach.Profile1.Gender,
+					"role":       v.Role,
+					"role_text":  "好友",
+					"status":     v.Status,
+					"created_at": v.CreatedAt,
+				})
+			}
+			if uid == v.CoachId {
+				list = append(list, map[string]interface{}{
+					"id":         v.StudentId,
+					"nickname":   v.Student.Profile1.Nickname,
+					"avatar_url": v.Student.Profile1.AvatarURL,
+					"age":        v.Student.Profile1.Age,
+					"gender":     v.Student.Profile1.Gender,
+					"role":       v.Role,
+					"role_text":  "好友",
+					"status":     v.Status,
+					"created_at": v.CreatedAt,
+				})
+			}
+
+		}
+
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
@@ -1320,7 +1368,7 @@ func (h *CoachHandler) FetchStudentProfile(c *gin.Context) {
 		return
 	}
 	var relation models.CoachRelationship
-	if err := h.db.Where("d IS NULL OR d = 0").Where("coach_id = ? AND student_id = ?", uid, body.Id).First(&relation).Error; err != nil {
+	if err := h.db.Where("d IS NULL OR d = 0").Where("coach_id = ? AND student_id = ? OR coach_id = ? AND student_id = ?", uid, body.Id, body.Id, uid).First(&relation).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
@@ -1911,7 +1959,7 @@ func (h *CoachHandler) AddFriend(c *gin.Context) {
 		return
 	}
 	var existing models.CoachRelationship
-	if err := h.db.Where("coach_id = ? AND student_id = ?", uid, friend.Id).First(&existing).Error; err != nil {
+	if err := h.db.Where("coach_id = ? AND student_id = ? OR coach_id = ? AND student_id = ?", uid, friend.Id, friend.Id, uid).First(&existing).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return

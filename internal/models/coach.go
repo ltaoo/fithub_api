@@ -240,8 +240,9 @@ const (
 	RelationDismissed = 4 // 已解除
 
 	// RelationshipRole 关系角色
-	RoleCoachStudent = 1 // 教练-学员
-	RolePartner      = 2 // 合作教练
+	RoleCoachStudent              = 1 // 教练-学员
+	RoleCoachAndStudentHasAccount = 2 // 教练-学员
+	RoleFriendAndFriend           = 3 // 好友
 )
 
 // AuthResponse represents the response for authentication operations

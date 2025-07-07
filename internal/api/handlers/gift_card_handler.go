@@ -393,3 +393,123 @@ func (h *GiftCardHandler) UsingGiftCard(c *gin.Context) {
 		"data": nil,
 	})
 }
+
+// 赠送礼品卡
+func (h *GiftCardHandler) SendGiftCard(c *gin.Context) {
+	// uid := int(c.GetFloat64("id"))
+	var body struct {
+		Code      string `json:"code"`
+		ToCoachId int    `json:"to_coach_id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.Code == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 code 参数", "data": nil})
+		return
+	}
+	if body.ToCoachId == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 to_coach_id 参数", "data": nil})
+		return
+	}
+	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		}
+	}()
+	if tx.Error != nil {
+		h.logger.Error("Failed to start transaction", tx.Error)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Internal server error", "data": nil})
+		return
+	}
+	var existing_card models.GiftCard
+	if r := tx.Where("d IS NULL OR d = 0").Where("code = ?", body.Code).Preload("GiftCardReward").First(&existing_card); r.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": r.Error.Error(), "data": nil})
+		return
+	}
+	var existing_coach models.Coach
+	if r := tx.Where("d IS NULL OR d = 0").Where("id = ?", body.ToCoachId).First(&existing_coach); r.Error != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": r.Error.Error(), "data": nil})
+		return
+	}
+	if existing_card.Status == int(models.GiftCardStatusUsed) {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "兑换码已被使用", "data": nil})
+		return
+	}
+	if existing_card.GiftCardReward.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 600, "msg": "异常数据", "data": nil})
+		return
+	}
+	var details GiftCardRewardDetailsJSON250607
+	if err := json.Unmarshal([]byte(existing_card.GiftCardReward.Details), &details); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 601, "msg": "异常数据", "data": nil})
+		return
+	}
+	if details.SubscriptionPlanId == 0 || details.DayCount == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 602, "msg": "异常数据", "data": nil})
+		return
+	}
+	var subscription_plan models.SubscriptionPlan
+	if err := tx.Where("id = ?", details.SubscriptionPlanId).First(&subscription_plan).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 603, "msg": "异常数据", "data": nil})
+		return
+	}
+	now := time.Now()
+
+	// 检查是否有生效中的订阅
+	var active_subscription models.Subscription
+	has_active_subscription := tx.Where("coach_id = ? AND step = 2 AND expired_at IS NULL", existing_coach.Id).First(&active_subscription).Error == nil
+
+	// 创建新订阅
+	subscription := models.Subscription{
+		Step:               1,
+		Count:              details.DayCount,
+		Reason:             "好友赠送",
+		CreatedAt:          now,
+		SubscriptionPlanId: subscription_plan.Id,
+		CoachId:            existing_coach.Id,
+	}
+
+	// 如果没有生效中的订阅，则新订阅立即生效
+	if !has_active_subscription {
+		subscription.Step = 2
+		subscription.ActiveAt = &now
+		expired_at := now.AddDate(0, 0, details.DayCount)
+		subscription.ExpectExpiredAt = &expired_at
+	}
+
+	if err := tx.Create(&subscription).Error; err != nil {
+		tx.Rollback()
+		h.logger.Error("create subscription failed", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "兑换失败", "data": nil})
+		return
+	}
+
+	updates := map[string]interface{}{
+		"status":      int(models.GiftCardStatusUsed),
+		"consumer_id": existing_coach.Id,
+		"used_at":     now,
+	}
+	if err := tx.Model(&existing_card).Updates(updates).Error; err != nil {
+		tx.Rollback()
+		h.logger.Error("Failed to update gift card", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		h.logger.Error("Failed to commit transaction", err)
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Failed to commit transaction", "data": nil})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "兑换成功",
+		"data": nil,
+	})
+}

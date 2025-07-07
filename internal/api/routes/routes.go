@@ -207,6 +207,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/gift_card/reward_list", handler.FetchGiftCardRewardList)
 			authorized.POST("/gift_card/profile", handler.FetchGiftCardProfile)
 			authorized.POST("/gift_card/using", handler.UsingGiftCard)
+			authorized.POST("/gift_card/send", handler.SendGiftCard)
 		}
 		{
 			handler := handlers.NewMediaResourceHandler(db, logger, cfg)
