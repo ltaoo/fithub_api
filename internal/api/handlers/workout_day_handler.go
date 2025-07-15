@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -246,13 +245,13 @@ func (h *WorkoutDayHandler) CreateFreeWorkoutDay(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	progress, err := ParseWorkoutDayProgress(body.PendingSteps)
+	progress, err := models.ParseWorkoutDayProgress(body.PendingSteps)
 	if err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	latest := ConvertToLatestProgress(progress)
+	latest := models.ToWorkoutDayStepProgress(progress)
 	total_volume := float64(0)
 	for _, set := range latest.Sets {
 		for _, act := range set.Actions {
@@ -358,13 +357,13 @@ func (h *WorkoutDayHandler) UpdateWorkoutDay(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
 		}
-		progress, err := ParseWorkoutDayProgress(body.PendingSteps)
+		progress, err := models.ParseWorkoutDayProgress(body.PendingSteps)
 		if err != nil {
 			tx.Rollback()
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
 		}
-		latest := ConvertToLatestProgress(progress)
+		latest := models.ToWorkoutDayStepProgress(progress)
 		total_volume := float64(0)
 		for _, set := range latest.Sets {
 			for _, act := range set.Actions {
@@ -494,7 +493,7 @@ func (h *WorkoutDayHandler) FetchStartedWorkoutDay(c *gin.Context) {
 	}})
 }
 
-// 获取训练计划记录 只能获取自己的
+// 获取训练计划记录 获取自己的和当时一起训练好友、学员的
 func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 	uid := int(c.GetFloat64("id"))
 	var body struct {
@@ -508,12 +507,13 @@ func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 id 参数", "data": nil})
 		return
 	}
-	var workout_day models.WorkoutDay
+	var existing_workout_day models.WorkoutDay
 	if err := h.db.
-		Where("id = ? AND student_id = ?", body.Id, uid).
+		Where("id = ?", body.Id).
 		Preload("WorkoutPlan").
 		Preload("WorkoutPlan.Creator.Profile1").
-		First(&workout_day).Error; err != nil {
+		Preload("Student.Profile1").
+		First(&existing_workout_day).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
@@ -521,44 +521,53 @@ func (h *WorkoutDayHandler) FetchWorkoutDayProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到该记录", "data": nil})
 		return
 	}
-
-	// Calculate the day number based on unique dates
-	// var day_number int64
-	// h.db.Model(&models.WorkoutDay{}).
-	// 	Select("COUNT(DISTINCT DATE(created_at))").
-	// 	Where("student_id = ? AND DATE(created_at) <= DATE(?)", uid, workout_day.CreatedAt).
-	// 	Count(&day_number)
-
+	var existing_relation models.CoachRelationship
+	if err := h.db.
+		Where("(coach_id = ? AND student_id = ?) OR (coach_id = ? AND student_id = ?)", uid, existing_workout_day.StudentId, existing_workout_day.StudentId, uid).
+		First(&existing_relation).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+			return
+		}
+	}
+	if existing_workout_day.StudentId != uid && existing_relation.Id == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "异常操作", "data": nil})
+		return
+	}
 	data := gin.H{
-		"id":           workout_day.Id,
-		"title":        workout_day.Title,
-		"type":         workout_day.Type,
-		"status":       workout_day.Status,
-		"duration":     workout_day.Duration,
-		"total_volume": workout_day.TotalVolume,
-		"remark":       workout_day.Remark,
-		"medias":       workout_day.Medias,
+		"id":           existing_workout_day.Id,
+		"title":        existing_workout_day.Title,
+		"type":         existing_workout_day.Type,
+		"status":       existing_workout_day.Status,
+		"duration":     existing_workout_day.Duration,
+		"total_volume": existing_workout_day.TotalVolume,
+		"remark":       existing_workout_day.Remark,
+		"medias":       existing_workout_day.Medias,
 		// 训练记录
-		"pending_steps": workout_day.PendingSteps,
+		"pending_steps": existing_workout_day.PendingSteps,
 		// 训练内容
-		"updated_details": workout_day.UpdatedDetails,
-		"student_id":      workout_day.StudentId,
-		"is_self":         workout_day.StudentId == uid,
-		// "day_number":  day_number,
-		"started_at":   workout_day.StartedAt,
-		"finished_at":  workout_day.FinishedAt,
+		"updated_details": existing_workout_day.UpdatedDetails,
+		"student_id":      existing_workout_day.StudentId,
+		"student": gin.H{
+			"id":         existing_workout_day.Student.Id,
+			"nickname":   existing_workout_day.Student.Profile1.Nickname,
+			"avatar_url": existing_workout_day.Student.Profile1.AvatarURL,
+		},
+		"is_self":      existing_workout_day.StudentId == uid,
+		"started_at":   existing_workout_day.StartedAt,
+		"finished_at":  existing_workout_day.FinishedAt,
 		"workout_plan": nil,
 	}
-	if workout_day.WorkoutPlanId != 0 {
+	if existing_workout_day.WorkoutPlanId != 0 {
 		data["workout_plan"] = gin.H{
-			"id":       workout_day.WorkoutPlan.Id,
-			"title":    workout_day.WorkoutPlan.Title,
-			"overview": workout_day.WorkoutPlan.Overview,
-			"tags":     workout_day.WorkoutPlan.Tags,
-			"details":  workout_day.WorkoutPlan.Details,
+			"id":       existing_workout_day.WorkoutPlan.Id,
+			"title":    existing_workout_day.WorkoutPlan.Title,
+			"overview": existing_workout_day.WorkoutPlan.Overview,
+			"tags":     existing_workout_day.WorkoutPlan.Tags,
+			"details":  existing_workout_day.WorkoutPlan.Details,
 			"creator": gin.H{
-				"nickname":   workout_day.WorkoutPlan.Creator.Profile1.Nickname,
-				"avatar_url": workout_day.WorkoutPlan.Creator.Profile1.AvatarURL,
+				"nickname":   existing_workout_day.WorkoutPlan.Creator.Profile1.Nickname,
+				"avatar_url": existing_workout_day.WorkoutPlan.Creator.Profile1.AvatarURL,
 			},
 		}
 	}
@@ -609,7 +618,13 @@ func (h *WorkoutDayHandler) FetchWorkoutDayResult(c *gin.Context) {
 		"updated_details": workout_day.UpdatedDetails,
 		"student_id":      workout_day.StudentId,
 		"is_self":         workout_day.StudentId == uid,
-		"workout_plan": gin.H{
+		"workout_plan":    nil,
+		// "day_number":  day_number,
+		"started_at":  workout_day.StartedAt,
+		"finished_at": workout_day.FinishedAt,
+	}
+	if workout_day.WorkoutPlanId != 0 {
+		data["workout_plan"] = gin.H{
 			"id":       workout_day.WorkoutPlan.Id,
 			"title":    workout_day.WorkoutPlan.Title,
 			"overview": workout_day.WorkoutPlan.Overview,
@@ -619,10 +634,7 @@ func (h *WorkoutDayHandler) FetchWorkoutDayResult(c *gin.Context) {
 				"nickname":   workout_day.WorkoutPlan.Creator.Profile1.Nickname,
 				"avatar_url": workout_day.WorkoutPlan.Creator.Profile1.AvatarURL,
 			},
-		},
-		// "day_number":  day_number,
-		"started_at":  workout_day.StartedAt,
-		"finished_at": workout_day.FinishedAt,
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": data})
 }
@@ -641,12 +653,18 @@ func (h *WorkoutDayHandler) FetchStudentWorkoutDayProfile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": "缺少 id 参数", "data": nil})
 		return
 	}
+	var existing_relation models.CoachRelationship
+	if err := h.db.Where("(coach_id = ? AND student_id = ?) OR (coach_id = ? AND student_id = ?)", uid, body.StudentId, body.StudentId, uid).First(&existing_relation).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
 	query := h.db.Where("d IS NULL OR d = 0")
-	query = query.Where("id = ? AND (coach_id = ? OR student_id = ?)", body.Id, uid, uid)
+	query = query.Where("id = ? AND (coach_id = ? OR student_id = ?)", body.Id, body.StudentId, body.StudentId)
 	var workout_day models.WorkoutDay
 	if err := query.
 		Preload("WorkoutPlan").
 		Preload("WorkoutPlan.Creator.Profile1").
+		Preload("Student.Profile1").
 		First(&workout_day).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
@@ -677,7 +695,12 @@ func (h *WorkoutDayHandler) FetchStudentWorkoutDayProfile(c *gin.Context) {
 		// 训练内容
 		"updated_details": workout_day.UpdatedDetails,
 		"student_id":      workout_day.StudentId,
-		"is_self":         workout_day.StudentId == uid,
+		"student": gin.H{
+			"id":         workout_day.Student.Id,
+			"nickname":   workout_day.Student.Profile1.Nickname,
+			"avatar_url": workout_day.Student.Profile1.AvatarURL,
+		},
+		"is_self": workout_day.StudentId == uid,
 		// "day_number":  day_number,
 		"started_at":   workout_day.StartedAt,
 		"finished_at":  workout_day.FinishedAt,
@@ -857,13 +880,13 @@ func (h *WorkoutDayHandler) FinishWorkoutDay(c *gin.Context) {
 		existing.UpdatedDetails = body.UpdatedDetails
 	}
 	// 训练进行中的记录
-	progress, err := ParseWorkoutDayProgress(existing.PendingSteps)
+	progress, err := models.ParseWorkoutDayProgress(existing.PendingSteps)
 	if err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	latest := ConvertToLatestProgress(progress)
+	latest := models.ToWorkoutDayStepProgress(progress)
 	total_volume := float64(0)
 	for _, set := range latest.Sets {
 		for _, act := range set.Actions {
@@ -1056,21 +1079,25 @@ func (h *WorkoutDayHandler) FetchWorkoutDayList(c *gin.Context) {
 	list2, has_more, next_marker := pb.ProcessResults(list1)
 	list := make([]map[string]interface{}, 0, len(list2))
 	for _, v := range list2 {
-		list = append(list, map[string]interface{}{
-			"id":          v.Id,
-			"status":      v.Status,
-			"title":       v.Title,
-			"type":        v.Type,
-			"group_no":    v.GroupNo,
-			"started_at":  v.StartedAt,
-			"finished_at": v.FinishedAt,
-			"workout_plan": map[string]interface{}{
+		d := map[string]interface{}{
+			"id":           v.Id,
+			"status":       v.Status,
+			"title":        v.Title,
+			"type":         v.Type,
+			"group_no":     v.GroupNo,
+			"workout_plan": nil,
+			"started_at":   v.StartedAt,
+			"finished_at":  v.FinishedAt,
+		}
+		if v.WorkoutPlanId != 0 {
+			d["workout_plan"] = map[string]interface{}{
 				"id":       v.WorkoutPlan.Id,
 				"title":    v.WorkoutPlan.Title,
 				"overview": v.WorkoutPlan.Overview,
 				"tags":     v.WorkoutPlan.Tags,
-			},
-		})
+			}
+		}
+		list = append(list, d)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -1189,20 +1216,24 @@ func (h *WorkoutDayHandler) FetchMyStudentWorkoutDayList(c *gin.Context) {
 	list2, has_more, next_marker := pb.ProcessResults(list)
 	data := []map[string]interface{}{}
 	for _, v := range list2 {
-		data = append(data, map[string]interface{}{
-			"id":          v.Id,
-			"status":      v.Status,
-			"title":       v.Title,
-			"type":        v.Type,
-			"started_at":  v.StartedAt,
-			"finished_at": v.FinishedAt,
-			"workout_plan": map[string]interface{}{
+		d := map[string]interface{}{
+			"id":           v.Id,
+			"status":       v.Status,
+			"title":        v.Title,
+			"type":         v.Type,
+			"workout_plan": nil,
+			"started_at":   v.StartedAt,
+			"finished_at":  v.FinishedAt,
+		}
+		if v.WorkoutPlanId != 0 {
+			d["workout_plan"] = map[string]interface{}{
 				"id":       v.WorkoutPlan.Id,
 				"title":    v.WorkoutPlan.Title,
 				"overview": v.WorkoutPlan.Overview,
 				"tags":     v.WorkoutPlan.Tags,
-			},
-		})
+			}
+		}
+		data = append(data, d)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -1312,10 +1343,10 @@ func (h *WorkoutDayHandler) RefreshWorkoutDayRecords250630(c *gin.Context) {
 				updated++
 			}
 		}
-		progress, err := ParseWorkoutDayProgress(day.PendingSteps)
+		progress, err := models.ParseWorkoutDayProgress(day.PendingSteps)
 		if err == nil {
 			total_volume := float64(0)
-			latest := ConvertToLatestProgress(progress)
+			latest := models.ToWorkoutDayStepProgress(progress)
 			for _, set := range latest.Sets {
 				for _, act := range set.Actions {
 					if act.Completed {
@@ -1345,349 +1376,6 @@ func (h *WorkoutDayHandler) RefreshWorkoutDayRecords250630(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "刷新完成", "data": gin.H{"updated": updated, "total": len(days)}})
-}
-
-type WorkoutDayProgress interface {
-	GetVersion() string
-}
-
-func ParseWorkoutDayProgress(data string) (WorkoutDayProgress, error) {
-	var versionHolder struct {
-		V string `json:"v"`
-	}
-	if err := json.Unmarshal([]byte(data), &versionHolder); err != nil {
-		return nil, err
-	}
-	switch versionHolder.V {
-	case "250424":
-		var v WorkoutDayProgressJSON250424
-		if err := json.Unmarshal([]byte(data), &v); err != nil {
-			return nil, err
-		}
-		return v, nil
-	case "250531":
-		var v WorkoutDayStepProgressJSON250531
-		if err := json.Unmarshal([]byte(data), &v); err != nil {
-			return nil, err
-		}
-		return v, nil
-	case "250616":
-		var v WorkoutDayStepProgressJSON250616
-		if err := json.Unmarshal([]byte(data), &v); err != nil {
-			return nil, err
-		}
-		return v, nil
-	case "250629":
-		var v WorkoutDayStepProgressJSON250629
-		if err := json.Unmarshal([]byte(data), &v); err != nil {
-			return nil, err
-		}
-		return v, nil
-	default:
-		return nil, fmt.Errorf("unknown version: %s", versionHolder.V)
-	}
-}
-
-type WorkoutDayProgressJSON250424 struct {
-	V             string                            `json:"v"`
-	StepIdx       int                               `json:"step_idx"`
-	SetIdx        int                               `json:"set_idx"`
-	ActIdx        int                               `json:"act_idx"`
-	TouchedSetIdx []string                          `json:"touched_set_idx"`
-	Sets          []WorkoutDayStepProgressSet250424 `json:"sets"`
-}
-
-func (w WorkoutDayProgressJSON250424) GetVersion() string { return w.V }
-
-type WorkoutDayStepProgressSet250424 struct {
-	StepIdx int                                  `json:"step_idx"`
-	Idx     int                                  `json:"idx"`
-	Actions []WorkoutDayStepProgressAction250424 `json:"actions"`
-}
-
-type WorkoutDayStepProgressAction250424 struct {
-	Idx         int     `json:"idx"`
-	ActionId    int     `json:"action_id"`
-	Reps        int     `json:"reps"`
-	RepsUnit    string  `json:"reps_unit"`
-	Weight      float64 `json:"weight"`
-	WeightUnit  string  `json:"weight_unit"`
-	Remark      string  `json:"remark"`
-	Completed   bool    `json:"completed"`
-	CompletedAt int     `json:"completed_at"`
-	Time1       float64 `json:"time1"`
-	Time2       float64 `json:"time2"`
-	Time3       float64 `json:"time3"`
-}
-
-type WorkoutDayStepProgressJSON250531 struct {
-	V             string                            `json:"v"`
-	StepIdx       int                               `json:"step_idx"`
-	SetIdx        int                               `json:"set_idx"`
-	ActIdx        int                               `json:"act_idx"`
-	TouchedSetIdx []string                          `json:"touched_set_idx"`
-	Sets          []WorkoutDayStepProgressSet250531 `json:"sets"`
-}
-
-func (w WorkoutDayStepProgressJSON250531) GetVersion() string { return w.V }
-
-type WorkoutDayStepProgressSet250531 struct {
-	StepIdx       int                                  `json:"step_idx"`
-	Idx           int                                  `json:"idx"`
-	Actions       []WorkoutDayStepProgressAction250531 `json:"actions"`
-	RemainingTime float64                              `json:"remaining_time"`
-	ExceedTime    float64                              `json:"exceed_time"`
-	Completed     bool                                 `json:"completed"`
-	Remark        string                               `json:"remark"`
-}
-
-type WorkoutDayStepProgressAction250531 struct {
-	Idx         int         `json:"idx"`
-	ActionId    interface{} `json:"action_id"` // int or string
-	Reps        int         `json:"reps"`
-	RepsUnit    string      `json:"reps_unit"`
-	Weight      float64     `json:"weight"`
-	WeightUnit  string      `json:"weight_unit"`
-	Completed   bool        `json:"completed"`
-	CompletedAt int         `json:"completed_at"`
-	Time1       float64     `json:"time1"`
-	Time2       float64     `json:"time2"`
-	Time3       float64     `json:"time3"`
-}
-
-type WorkoutDayStepProgressJSON250616 struct {
-	V             string                            `json:"v"`
-	StepIdx       int                               `json:"step_idx"`
-	SetIdx        int                               `json:"set_idx"`
-	ActIdx        int                               `json:"act_idx"`
-	TouchedSetUid []string                          `json:"touched_set_uid"`
-	Sets          []WorkoutDayStepProgressSet250616 `json:"sets"`
-}
-
-func (w WorkoutDayStepProgressJSON250616) GetVersion() string { return w.V }
-
-type WorkoutDayStepProgressSet250616 struct {
-	StepUid       int                                  `json:"step_uid"`
-	Uid           int                                  `json:"uid"`
-	Actions       []WorkoutDayStepProgressAction250616 `json:"actions"`
-	RemainingTime float64                              `json:"remaining_time"`
-	ExceedTime    float64                              `json:"exceed_time"`
-	Completed     bool                                 `json:"completed"`
-	Remark        string                               `json:"remark"`
-}
-
-type WorkoutDayStepProgressAction250616 struct {
-	Uid         int     `json:"uid"`
-	ActionId    int     `json:"action_id"`
-	Reps        int     `json:"reps"`
-	RepsUnit    string  `json:"reps_unit"`
-	Weight      float64 `json:"weight"`
-	WeightUnit  string  `json:"weight_unit"`
-	Completed   bool    `json:"completed"`
-	CompletedAt int     `json:"completed_at"`
-	Time1       float64 `json:"time1"`
-	Time2       float64 `json:"time2"`
-	Time3       float64 `json:"time3"`
-}
-
-type WorkoutDayStepProgressJSON250629 struct {
-	V             string                            `json:"v"`
-	StepIdx       int                               `json:"step_idx"`
-	SetIdx        int                               `json:"set_idx"`
-	ActIdx        int                               `json:"act_idx"`
-	TouchedSetUid []string                          `json:"touched_set_uid"`
-	Sets          []WorkoutDayStepProgressSet250629 `json:"sets"`
-}
-
-func (w WorkoutDayStepProgressJSON250629) GetVersion() string { return w.V }
-
-type WorkoutDayStepProgressSet250629 struct {
-	StepUid       int                                  `json:"step_uid"`
-	Uid           int                                  `json:"uid"`
-	Actions       []WorkoutDayStepProgressAction250629 `json:"actions"`
-	StartAt       int                                  `json:"start_at"`
-	FinishedAt    int                                  `json:"finished_at"`
-	RemainingTime float64                              `json:"remaining_time"`
-	ExceedTime    float64                              `json:"exceed_time"`
-	Completed     bool                                 `json:"completed"`
-	Remark        string                               `json:"remark"`
-}
-
-type WorkoutDayStepProgressAction250629 struct {
-	Uid         int     `json:"uid"`
-	ActionId    int     `json:"action_id"`
-	ActionName  string  `json:"action_name"`
-	Reps        int     `json:"reps"`
-	RepsUnit    string  `json:"reps_unit"`
-	Weight      float64 `json:"weight"`
-	WeightUnit  string  `json:"weight_unit"`
-	Completed   bool    `json:"completed"`
-	CompletedAt int     `json:"completed_at"`
-	StartAt1    int     `json:"start_at1"`
-	StartAt2    int     `json:"start_at2"`
-	StartAt3    int     `json:"start_at3"`
-	FinishedAt1 int     `json:"finished_at1"`
-	FinishedAt2 int     `json:"finished_at2"`
-	FinishedAt3 int     `json:"finished_at3"`
-	Time1       float64 `json:"time1"`
-	Time2       float64 `json:"time2"`
-	Time3       float64 `json:"time3"`
-}
-
-func ConvertToLatestProgress(progress WorkoutDayProgress) WorkoutDayStepProgressJSON250629 {
-	switch v := progress.(type) {
-	case WorkoutDayProgressJSON250424:
-		sets := make([]WorkoutDayStepProgressSet250629, len(v.Sets))
-		for i, set := range v.Sets {
-			actions := make([]WorkoutDayStepProgressAction250629, len(set.Actions))
-			for j, act := range set.Actions {
-				actions[j] = WorkoutDayStepProgressAction250629{
-					Uid:         0, // 旧版无此字段，补0
-					ActionId:    act.ActionId,
-					ActionName:  "", // 旧版无此字段，补空
-					Reps:        act.Reps,
-					RepsUnit:    act.RepsUnit,
-					Weight:      act.Weight,
-					WeightUnit:  act.WeightUnit,
-					Completed:   act.Completed,
-					CompletedAt: act.CompletedAt,
-					StartAt1:    0,
-					StartAt2:    0,
-					StartAt3:    0,
-					FinishedAt1: 0,
-					FinishedAt2: 0,
-					FinishedAt3: 0,
-					Time1:       act.Time1,
-					Time2:       act.Time2,
-					Time3:       act.Time3,
-				}
-			}
-			sets[i] = WorkoutDayStepProgressSet250629{
-				StepUid:       0, // 旧版无此字段
-				Uid:           0,
-				Actions:       actions,
-				StartAt:       0,
-				FinishedAt:    0,
-				RemainingTime: 0,
-				ExceedTime:    0,
-				Completed:     false,
-				Remark:        "",
-			}
-		}
-		return WorkoutDayStepProgressJSON250629{
-			V:             "250629",
-			StepIdx:       v.StepIdx,
-			SetIdx:        v.SetIdx,
-			ActIdx:        v.ActIdx,
-			TouchedSetUid: v.TouchedSetIdx, // 旧版叫 TouchedSetIdx，类型一样
-			Sets:          sets,
-		}
-	case WorkoutDayStepProgressJSON250531:
-		sets := make([]WorkoutDayStepProgressSet250629, len(v.Sets))
-		for i, set := range v.Sets {
-			actions := make([]WorkoutDayStepProgressAction250629, len(set.Actions))
-			for j, act := range set.Actions {
-				actionId := 0
-				switch id := act.ActionId.(type) {
-				case int:
-					actionId = id
-				case float64:
-					actionId = int(id)
-				case string:
-					// 可选：尝试转成 int
-				}
-				actions[j] = WorkoutDayStepProgressAction250629{
-					Uid:         0,
-					ActionId:    actionId,
-					ActionName:  "",
-					Reps:        act.Reps,
-					RepsUnit:    act.RepsUnit,
-					Weight:      act.Weight,
-					WeightUnit:  act.WeightUnit,
-					Completed:   act.Completed,
-					CompletedAt: act.CompletedAt,
-					StartAt1:    0,
-					StartAt2:    0,
-					StartAt3:    0,
-					FinishedAt1: 0,
-					FinishedAt2: 0,
-					FinishedAt3: 0,
-					Time1:       act.Time1,
-					Time2:       act.Time2,
-					Time3:       act.Time3,
-				}
-			}
-			sets[i] = WorkoutDayStepProgressSet250629{
-				StepUid:       0,
-				Uid:           0,
-				Actions:       actions,
-				StartAt:       0,
-				FinishedAt:    0,
-				RemainingTime: set.RemainingTime,
-				ExceedTime:    set.ExceedTime,
-				Completed:     set.Completed,
-				Remark:        set.Remark,
-			}
-		}
-		return WorkoutDayStepProgressJSON250629{
-			V:             "250629",
-			StepIdx:       v.StepIdx,
-			SetIdx:        v.SetIdx,
-			ActIdx:        v.ActIdx,
-			TouchedSetUid: v.TouchedSetIdx,
-			Sets:          sets,
-		}
-	case WorkoutDayStepProgressJSON250616:
-		sets := make([]WorkoutDayStepProgressSet250629, len(v.Sets))
-		for i, set := range v.Sets {
-			actions := make([]WorkoutDayStepProgressAction250629, len(set.Actions))
-			for j, act := range set.Actions {
-				actions[j] = WorkoutDayStepProgressAction250629{
-					Uid:         act.Uid,
-					ActionId:    act.ActionId,
-					ActionName:  "",
-					Reps:        act.Reps,
-					RepsUnit:    act.RepsUnit,
-					Weight:      act.Weight,
-					WeightUnit:  act.WeightUnit,
-					Completed:   act.Completed,
-					CompletedAt: act.CompletedAt,
-					StartAt1:    0,
-					StartAt2:    0,
-					StartAt3:    0,
-					FinishedAt1: 0,
-					FinishedAt2: 0,
-					FinishedAt3: 0,
-					Time1:       float64(act.Time1),
-					Time2:       float64(act.Time2),
-					Time3:       act.Time3,
-				}
-			}
-			sets[i] = WorkoutDayStepProgressSet250629{
-				StepUid:       set.StepUid,
-				Uid:           set.Uid,
-				Actions:       actions,
-				StartAt:       0,
-				FinishedAt:    0,
-				RemainingTime: set.RemainingTime,
-				ExceedTime:    set.ExceedTime,
-				Completed:     set.Completed,
-				Remark:        set.Remark,
-			}
-		}
-		return WorkoutDayStepProgressJSON250629{
-			V:             "250629",
-			StepIdx:       v.StepIdx,
-			SetIdx:        v.SetIdx,
-			ActIdx:        v.ActIdx,
-			TouchedSetUid: v.TouchedSetUid,
-			Sets:          sets,
-		}
-	case WorkoutDayStepProgressJSON250629:
-		return v
-	default:
-		return WorkoutDayStepProgressJSON250629{}
-	}
 }
 
 // 辅助函数

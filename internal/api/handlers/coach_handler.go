@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -37,7 +39,7 @@ func NewCoachHandler(db *gorm.DB, logger *logger.Logger, config *config.Config) 
 
 func (h *CoachHandler) FetchVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": gin.H{
-		"version": "2507071316",
+		"version": "250707151622",
 	}})
 }
 
@@ -191,7 +193,7 @@ func (h *CoachHandler) LoginCoach(c *gin.Context) {
 	}
 	err := bcrypt.CompareHashAndPassword([]byte(account.ProviderArg1), []byte(body.Password))
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "Invalid email or password", "data": nil})
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "邮箱或密码错误", "data": nil})
 		return
 	}
 	// Generate JWT token
@@ -536,9 +538,9 @@ func (h *CoachHandler) RefreshCoachStats(c *gin.Context) {
 	h.db.Where("student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ?", uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).
 		Order("total_volume DESC").Preload("WorkoutPlan").First(&max_volume_day)
 	h.db.Where("student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ?", uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).
-		Order("started_at ASC").Preload("WorkoutPlan").First(&earliest_start_day)
+		Order("strftime('%H', started_at), started_at ASC").Preload("WorkoutPlan").First(&earliest_start_day)
 	h.db.Where("student_id = ? AND status = 2 AND DATE(finished_at, '+8 hours') BETWEEN ? AND ?", uid, body.RangeOfStart.Time, body.RangeOfEnd.Time).
-		Order("datetime(finished_at, '+8 hours') DESC").Preload("WorkoutPlan").First(&latest_finish_day)
+		Order("strftime('%H', finished_at) DESC, finished_at DESC").Preload("WorkoutPlan").First(&latest_finish_day)
 
 	// 3. 聚合 WorkoutPlan.type 下的所有 workout_day 及其 workout_plan
 	type WorkoutDayWithPlan struct {
@@ -768,6 +770,222 @@ func (h *CoachHandler) RefreshCoachStats(c *gin.Context) {
 			},
 			// "plan_stats": plan_stats,
 			"action_stats": action_stats,
+		},
+	})
+}
+
+// 刷新当日的训练总结
+func (h *CoachHandler) RefreshTodayWorkoutStats(c *gin.Context) {
+	uid := int(c.GetFloat64("id"))
+	if uid == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 401, "msg": "请先登录", "data": nil})
+		return
+	}
+	var body struct {
+		RangeOfStart *time.Time `json:"range_of_start"`
+		RangeOfEnd   *time.Time `json:"range_of_end"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 400, "msg": err.Error(), "data": nil})
+		return
+	}
+	if body.RangeOfStart == nil || body.RangeOfEnd == nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少参数", "data": nil})
+		return
+	}
+	var existing_coach models.Coach
+	if err := h.db.Where("id = ?", uid).First(&existing_coach).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "异常操作", "data": nil})
+		return
+	}
+
+	var existing_workout_days []models.WorkoutDay
+	if err := h.db.Where("student_id = ? AND status = 2 AND finished_at BETWEEN ? AND ?", uid, body.RangeOfStart, body.RangeOfEnd).Find(&existing_workout_days).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
+		return
+	}
+	type TodayWorkoutActionGroupSet struct {
+		// ActionName string  `json:"action_name"`
+		// Reps       int     `json:"reps"`
+		// RepsUnit   string  `json:"reps_unit"`
+		// Weight     float64 `json:"weight"`
+		// WeightUnit string  `json:"weight_unit"`
+		Idx   int      `json:"idx"`
+		Texts []string `json:"texts"`
+	}
+	type TodayWorkoutActionGroup struct {
+		Title       string                       `json:"title"`
+		Type        string                       `json:"type"`
+		TotalVolume float64                      `json:"total_volume"`
+		Duration    int                          `json:"duration"`
+		Sets        []TodayWorkoutActionGroupSet `json:"sets"`
+	}
+	error_msg := make([]string, 0)
+	list := make([]TodayWorkoutActionGroup, 0)
+	tags := make([]string, 0)
+	total_volume := float64(0)
+	set_count := 0
+	duration_count := 0
+	for _, v := range existing_workout_days {
+		if v.Status != 2 {
+			continue
+		}
+		tmp_pending_steps, err := models.ParseWorkoutDayProgress(v.PendingSteps)
+		if err != nil {
+			continue
+		}
+		duration_count += v.Duration
+		var workout_plan_details models.WorkoutPlanBodyDetailsJSON250627
+		// fmt.Println("the updated details", v.UpdatedDetails)
+		if v.UpdatedDetails != "" {
+			tmp_details, err := models.ParseWorkoutDayUpdatedDetails(v.UpdatedDetails)
+			if err != nil {
+				error_msg = append(error_msg, err.Error())
+				continue
+			}
+			workout_plan_details = models.WorkoutDayStepDetailsToWorkoutPlanBodyDetails(tmp_details)
+		} else {
+			var existing_workout_plan models.WorkoutPlan
+			if err := h.db.Where("id = ?", v.WorkoutPlanId).First(&existing_workout_plan).Error; err != nil {
+				error_msg = append(error_msg, err.Error())
+				continue
+			}
+			// fmt.Println("the profile", existing_workout_plan.Details)
+			tmp_details, err := models.ParseWorkoutPlanDetail(existing_workout_plan.Details)
+			if err != nil {
+				error_msg = append(error_msg, err.Error())
+				continue
+			}
+			workout_plan_details = models.ToWorkoutPlanBodyDetails(tmp_details)
+		}
+		if len(workout_plan_details.Steps) == 0 {
+			error_msg = append(error_msg, "没有解析出数据1")
+			continue
+		}
+		pending_steps := models.ToWorkoutDayStepProgress(tmp_pending_steps)
+		if len(pending_steps.Sets) == 0 {
+			error_msg = append(error_msg, "没有解析出数据2")
+			continue
+		}
+		day_total_volume := float64(0)
+		for step_uid, step := range workout_plan_details.Steps {
+			var pending_sets []models.WorkoutDayStepProgressSet250629
+			for _, vv := range pending_steps.Sets {
+				if vv.StepUid == step_uid {
+					pending_sets = append(pending_sets, vv)
+				}
+			}
+			first_set := pending_sets[0]
+			var sets []TodayWorkoutActionGroupSet
+			var action_names []string
+			var title string
+			if step.SetType == "super" {
+				for _, s := range first_set.Actions {
+					action_names = append(action_names, s.ActionName)
+				}
+				title = strings.Join(action_names, " + ") + " 超级组"
+			}
+			if step.SetType == "hiit" {
+				_, ok := lo.Find(tags, func(i string) bool {
+					return i == v.Type
+				})
+				if !ok {
+					tags = append(tags, "hiit")
+				}
+				for _, s := range first_set.Actions {
+					action_names = append(action_names, s.ActionName)
+				}
+				title = strings.Join(action_names, " + ") + " HIIT"
+			}
+			if step.SetType == "decreasing" {
+				action_names = append(action_names, first_set.Actions[0].ActionName)
+				title = strings.Join(action_names, " + ") + " 递减组"
+			}
+			if step.SetType == "normal" {
+				action_names = append(action_names, first_set.Actions[0].ActionName)
+				title = strings.Join(action_names, "")
+			}
+			for idx, ss := range pending_sets {
+				set_count += 1
+				var texts []string
+				for _, act := range ss.Actions {
+					// act_id := act.ActionId
+					act_name := act.ActionName
+					reps := act.Reps
+					reps_unit := act.RepsUnit
+					weight := act.Weight
+					weight_unit := act.WeightUnit
+					if weight_unit == "公斤" && reps_unit == "次" {
+						day_total_volume += float64(reps) * weight
+					}
+					if weight_unit == "磅" && reps_unit == "次" {
+						day_total_volume += float64(reps) * (weight * 0.45)
+					}
+					// weight_text := act.WeightUnit == "自重"
+					// fmt.Println("title", act.Weight)
+					// weight_text := fmt.Sprintf("%#g", act.Weight)
+					weight_text := strconv.FormatFloat(act.Weight, 'g', -1, 64) + act.WeightUnit
+					if act.WeightUnit == "自重" {
+						weight_text = act.WeightUnit
+					}
+					reps_text := strconv.Itoa(act.Reps) + act.RepsUnit
+					t := weight_text + "x" + reps_text
+					if step.SetType != "normal" && step.SetType != "decreasing" {
+						t = act_name + " " + t
+					}
+					texts = append(texts, t)
+				}
+				sets = append(sets, TodayWorkoutActionGroupSet{
+					Idx:   idx + 1,
+					Texts: texts,
+				})
+			}
+			dd := TodayWorkoutActionGroup{
+				Title:       title,
+				Type:        step.SetType,
+				Sets:        sets,
+				Duration:    v.Duration,
+				TotalVolume: day_total_volume,
+			}
+			if v.Type == "cardio" {
+				dd = TodayWorkoutActionGroup{
+					Title:       title,
+					Type:        "cardio",
+					Sets:        make([]TodayWorkoutActionGroupSet, 0),
+					Duration:    v.Duration,
+					TotalVolume: 0,
+				}
+			}
+			list = append(list, dd)
+		}
+		total_volume += day_total_volume
+		_, ok := lo.Find(tags, func(i string) bool {
+			return i == v.Type
+		})
+		if !ok {
+			tags = append(tags, v.Type)
+		}
+	}
+	if len(error_msg) != 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 500,
+			"msg":  strings.Join(error_msg, "\n"),
+			"data": nil,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"msg":  "获取成功",
+		"data": gin.H{
+			"workout_steps":  list,
+			"times":          len(existing_workout_days),
+			"set_count":      set_count,
+			"duration_count": duration_count,
+			"volume_count":   total_volume,
+			"tags": lo.Filter(tags, func(x string, idx int) bool {
+				return x != ""
+			}),
 		},
 	})
 }
@@ -1274,7 +1492,7 @@ func (h *CoachHandler) FetchStudentList(c *gin.Context) {
 	for _, v := range list2 {
 		if v.Role == models.RoleCoachStudent {
 			if uid == v.StudentId {
-				list = append(list, map[string]interface{}{
+				data := map[string]interface{}{
 					"id":         v.CoachId,
 					"nickname":   v.Coach.Profile1.Nickname,
 					"avatar_url": v.Coach.Profile1.AvatarURL,
@@ -1284,7 +1502,14 @@ func (h *CoachHandler) FetchStudentList(c *gin.Context) {
 					"role_text":  "教练",
 					"status":     v.Status,
 					"created_at": v.CreatedAt,
-				})
+				}
+				list = append(list, data)
+				if v.Role == int(models.RoleCoachStudent) {
+					data["role"] = int(models.RoleStudentCoach)
+				}
+				if v.Role == int(models.RoleCoachAndStudentHasAccount) {
+					data["role"] = int(models.RoleStudentHasAccountAndCoach)
+				}
 			}
 			if uid == v.CoachId {
 				list = append(list, map[string]interface{}{
@@ -1384,6 +1609,14 @@ func (h *CoachHandler) FetchStudentProfile(c *gin.Context) {
 		"age":        profile.Profile1.Age,
 		"status":     relation.Status,
 		"role":       relation.Role,
+	}
+	if relation.StudentId == uid {
+		if relation.Role == int(models.RoleCoachStudent) {
+			data["role"] = int(models.RoleStudentCoach)
+		}
+		if relation.Role == int(models.RoleCoachAndStudentHasAccount) {
+			data["role"] = int(models.RoleStudentHasAccountAndCoach)
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "请求成功", "data": data})
 }
@@ -1493,7 +1726,7 @@ func (h *CoachHandler) CreateAccount(c *gin.Context) {
 		return
 	}
 	// 补全后，更新教练和学员的关系，让教练不能再管理学员了
-	if err := tx.Model(&relation).Update("role", 2).Error; err != nil {
+	if err := tx.Model(&relation).Update("role", int(models.RoleCoachAndStudentHasAccount)).Error; err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusOK, gin.H{"code": 502, "msg": "操作失败", "data": nil})
 		return
@@ -2022,16 +2255,16 @@ func (h *CoachHandler) StudentToFriend(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 200, "msg": "记录不存在", "data": nil})
 		return
 	}
-	if existing.Role == 1 {
+	if existing.Role == int(models.RoleCoachStudent) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "无法添加为好友", "data": nil})
 		return
 	}
-	if existing.Role == 3 {
+	if existing.Role == int(models.RoleFriendAndFriend) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "已经是好友了", "data": nil})
 		return
 	}
-	if existing.Role == 2 {
-		if err := h.db.Model(&existing).Update("role", 3).Error; err != nil {
+	if existing.Role == int(models.RoleCoachAndStudentHasAccount) {
+		if err := h.db.Model(&existing).Update("role", int(models.RoleFriendAndFriend)).Error; err != nil {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 			return
 		}

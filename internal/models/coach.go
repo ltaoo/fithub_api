@@ -243,6 +243,8 @@ const (
 	RoleCoachStudent              = 1 // 教练-学员
 	RoleCoachAndStudentHasAccount = 2 // 教练-学员
 	RoleFriendAndFriend           = 3 // 好友
+	RoleStudentCoach              = 4 // 学员-教练
+	RoleStudentHasAccountAndCoach = 5 // 学员-教练
 )
 
 // AuthResponse represents the response for authentication operations
