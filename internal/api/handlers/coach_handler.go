@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -804,24 +803,9 @@ func (h *CoachHandler) RefreshTodayWorkoutStats(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": err.Error(), "data": nil})
 		return
 	}
-	type TodayWorkoutActionGroupSet struct {
-		// ActionName string  `json:"action_name"`
-		// Reps       int     `json:"reps"`
-		// RepsUnit   string  `json:"reps_unit"`
-		// Weight     float64 `json:"weight"`
-		// WeightUnit string  `json:"weight_unit"`
-		Idx   int      `json:"idx"`
-		Texts []string `json:"texts"`
-	}
-	type TodayWorkoutActionGroup struct {
-		Title       string                       `json:"title"`
-		Type        string                       `json:"type"`
-		TotalVolume float64                      `json:"total_volume"`
-		Duration    int                          `json:"duration"`
-		Sets        []TodayWorkoutActionGroupSet `json:"sets"`
-	}
+
 	error_msg := make([]string, 0)
-	list := make([]TodayWorkoutActionGroup, 0)
+	list := make([]models.TodayWorkoutActionGroup, 0)
 	tags := make([]string, 0)
 	total_volume := float64(0)
 	set_count := 0
@@ -830,142 +814,20 @@ func (h *CoachHandler) RefreshTodayWorkoutStats(c *gin.Context) {
 		if v.Status != 2 {
 			continue
 		}
-		tmp_pending_steps, err := models.ParseWorkoutDayProgress(v.PendingSteps)
+		result, err := models.BuildResultFromWorkoutDay(v, h.db)
 		if err != nil {
-			continue
+			error_msg = append(error_msg, err.Error())
 		}
-		duration_count += v.Duration
-		var workout_plan_details models.WorkoutPlanBodyDetailsJSON250627
-		// fmt.Println("the updated details", v.UpdatedDetails)
-		if v.UpdatedDetails != "" {
-			tmp_details, err := models.ParseWorkoutDayUpdatedDetails(v.UpdatedDetails)
-			if err != nil {
-				error_msg = append(error_msg, err.Error())
-				continue
-			}
-			workout_plan_details = models.WorkoutDayStepDetailsToWorkoutPlanBodyDetails(tmp_details)
-		} else {
-			var existing_workout_plan models.WorkoutPlan
-			if err := h.db.Where("id = ?", v.WorkoutPlanId).First(&existing_workout_plan).Error; err != nil {
-				error_msg = append(error_msg, err.Error())
-				continue
-			}
-			// fmt.Println("the profile", existing_workout_plan.Details)
-			tmp_details, err := models.ParseWorkoutPlanDetail(existing_workout_plan.Details)
-			if err != nil {
-				error_msg = append(error_msg, err.Error())
-				continue
-			}
-			workout_plan_details = models.ToWorkoutPlanBodyDetails(tmp_details)
-		}
-		if len(workout_plan_details.Steps) == 0 {
-			error_msg = append(error_msg, "没有解析出数据1")
-			continue
-		}
-		pending_steps := models.ToWorkoutDayStepProgress(tmp_pending_steps)
-		if len(pending_steps.Sets) == 0 {
-			error_msg = append(error_msg, "没有解析出数据2")
-			continue
-		}
-		day_total_volume := float64(0)
-		for step_uid, step := range workout_plan_details.Steps {
-			var pending_sets []models.WorkoutDayStepProgressSet250629
-			for _, vv := range pending_steps.Sets {
-				if vv.StepUid == step_uid {
-					pending_sets = append(pending_sets, vv)
-				}
-			}
-			first_set := pending_sets[0]
-			var sets []TodayWorkoutActionGroupSet
-			var action_names []string
-			var title string
-			if step.SetType == "super" {
-				for _, s := range first_set.Actions {
-					action_names = append(action_names, s.ActionName)
-				}
-				title = strings.Join(action_names, " + ") + " 超级组"
-			}
-			if step.SetType == "hiit" {
-				_, ok := lo.Find(tags, func(i string) bool {
-					return i == v.Type
-				})
-				if !ok {
-					tags = append(tags, "hiit")
-				}
-				for _, s := range first_set.Actions {
-					action_names = append(action_names, s.ActionName)
-				}
-				title = strings.Join(action_names, " + ") + " HIIT"
-			}
-			if step.SetType == "decreasing" {
-				action_names = append(action_names, first_set.Actions[0].ActionName)
-				title = strings.Join(action_names, " + ") + " 递减组"
-			}
-			if step.SetType == "normal" {
-				action_names = append(action_names, first_set.Actions[0].ActionName)
-				title = strings.Join(action_names, "")
-			}
-			for idx, ss := range pending_sets {
-				set_count += 1
-				var texts []string
-				for _, act := range ss.Actions {
-					// act_id := act.ActionId
-					act_name := act.ActionName
-					reps := act.Reps
-					reps_unit := act.RepsUnit
-					weight := act.Weight
-					weight_unit := act.WeightUnit
-					if weight_unit == "公斤" && reps_unit == "次" {
-						day_total_volume += float64(reps) * weight
-					}
-					if weight_unit == "磅" && reps_unit == "次" {
-						day_total_volume += float64(reps) * (weight * 0.45)
-					}
-					// weight_text := act.WeightUnit == "自重"
-					// fmt.Println("title", act.Weight)
-					// weight_text := fmt.Sprintf("%#g", act.Weight)
-					weight_text := strconv.FormatFloat(act.Weight, 'g', -1, 64) + act.WeightUnit
-					if act.WeightUnit == "自重" {
-						weight_text = act.WeightUnit
-					}
-					reps_text := strconv.Itoa(act.Reps) + act.RepsUnit
-					t := weight_text + "x" + reps_text
-					if step.SetType != "normal" && step.SetType != "decreasing" {
-						t = act_name + " " + t
-					}
-					texts = append(texts, t)
-				}
-				sets = append(sets, TodayWorkoutActionGroupSet{
-					Idx:   idx + 1,
-					Texts: texts,
-				})
-			}
-			dd := TodayWorkoutActionGroup{
-				Title:       title,
-				Type:        step.SetType,
-				Sets:        sets,
-				Duration:    v.Duration,
-				TotalVolume: day_total_volume,
-			}
-			if v.Type == "cardio" {
-				dd = TodayWorkoutActionGroup{
-					Title:       title,
-					Type:        "cardio",
-					Sets:        make([]TodayWorkoutActionGroupSet, 0),
-					Duration:    v.Duration,
-					TotalVolume: 0,
-				}
-			}
-			list = append(list, dd)
-		}
-		total_volume += day_total_volume
-		_, ok := lo.Find(tags, func(i string) bool {
-			return i == v.Type
-		})
-		if !ok {
-			tags = append(tags, v.Type)
-		}
+		set_count += result.SetCount
+		total_volume += result.TotalVolume
+		duration_count += result.DurationCount
+		list = append(list, result.List...)
+		tags = append(tags, result.Tags...)
 	}
+	tags = lo.Uniq(tags)
+	tags = lo.Filter(tags, func(x string, idx int) bool {
+		return x != ""
+	})
 	if len(error_msg) != 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 500,
@@ -983,9 +845,7 @@ func (h *CoachHandler) RefreshTodayWorkoutStats(c *gin.Context) {
 			"set_count":      set_count,
 			"duration_count": duration_count,
 			"volume_count":   total_volume,
-			"tags": lo.Filter(tags, func(x string, idx int) bool {
-				return x != ""
-			}),
+			"tags":           tags,
 		},
 	})
 }

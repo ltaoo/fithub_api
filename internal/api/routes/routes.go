@@ -44,6 +44,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 
 		{
 			handler := handlers.NewCoachHandler(db, logger, cfg)
+			handler2 := handlers.NewMediaResourceHandler(db, logger, cfg)
 			api.POST("/auth/web_register", handler.RegisterCoach)
 			api.POST("/auth/web_login", handler.LoginCoach)
 			api.GET("/ping", handler.FetchVersion)
@@ -53,6 +54,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/auth/update_profile", handler.UpdateCoachProfile)
 			authorized.POST("/auth/refresh_token", handler.RefreshToken)
 			authorized.POST("/auth/create_account", handler.CreateAccount)
+			authorized.POST("/auth/qiniu_token", handler2.BuildQiniuToken)
 			authorized.POST("/today_workout", handler.RefreshTodayWorkoutStats)
 			authorized.POST("/refresh_workout_stats", handler.RefreshCoachStats)
 			// authorized.POST("/refresh_workout_action_stats", handler.RefreshWorkoutActionStats)
@@ -128,6 +130,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 			authorized.POST("/workout_day/delete", handler.DeleteWorkoutDay)
 			authorized.POST("/student/workout_day/list", handler.FetchMyStudentWorkoutDayList)
 			authorized.POST("/student/workout_day/profile", handler.FetchStudentWorkoutDayProfile)
+			authorized.POST("/student/workout_day/result", handler.FetchStudentWorkoutDayResult)
 			authorized.POST("/admin/workout_day/refresh_250630", handler.RefreshWorkoutDayRecords250630)
 		}
 		{
@@ -212,7 +215,7 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		}
 		{
 			handler := handlers.NewMediaResourceHandler(db, logger, cfg)
-			api.POST("/media/qiniu_token", handler.BuildQiniuToken)
+			authorized.POST("/media/qiniu_token", handler.BuildQiniuToken)
 			authorized.POST("/media/create", handler.CreateMediaResource)
 			authorized.POST("/media/list", handler.FetchMediaResourceList)
 			authorized.POST("/media/delete", handler.DeleteMediaResource)
