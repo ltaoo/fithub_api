@@ -256,6 +256,7 @@ func ToWorkoutPlanBodyDetails(details WorkoutPlanDetails) WorkoutPlanBodyDetails
 				}
 			}
 			steps[step_uid] = WorkoutPlanBodyStepJSON250627{
+				StepUid:  step_uid + 1,
 				SetType:  step.SetType,
 				SetCount: step.SetCount,
 				SetRestDuration: WorkoutRestDuration{
@@ -383,6 +384,7 @@ type WorkoutPlanBodyDetailsJSON250627 struct {
 func (w WorkoutPlanBodyDetailsJSON250627) GetVersion() string { return w.V }
 
 type WorkoutPlanBodyStepJSON250627 struct {
+	StepUid         int                                   `json:"step_uid"`
 	SetType         string                                `json:"set_type"` // WorkoutPlanSetType
 	SetCount        int                                   `json:"set_count"`
 	SetRestDuration WorkoutRestDuration                   `json:"set_rest_duration"`

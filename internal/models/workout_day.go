@@ -474,6 +474,7 @@ func WorkoutDayStepDetailsToWorkoutPlanBodyDetails(details WorkoutDayStepDetails
 				}
 			}
 			steps[step_uid] = WorkoutPlanBodyStepJSON250627{
+				StepUid:  step_uid + 1,
 				SetType:  first_set.Type,
 				SetCount: len(step.Sets),
 				SetRestDuration: WorkoutRestDuration{
@@ -524,6 +525,7 @@ func WorkoutDayStepDetailsToWorkoutPlanBodyDetails(details WorkoutDayStepDetails
 				}
 			}
 			steps[step_uid] = WorkoutPlanBodyStepJSON250627{
+				StepUid:  step_uid + 1,
 				SetType:  first_set.Type,
 				SetCount: len(step.Sets),
 				SetRestDuration: WorkoutRestDuration{
@@ -565,6 +567,7 @@ func WorkoutDayStepDetailsToWorkoutPlanBodyDetails(details WorkoutDayStepDetails
 				}
 			}
 			steps[step_uid] = WorkoutPlanBodyStepJSON250627{
+				StepUid:         step.Uid,
 				SetType:         first_set.Type,
 				SetCount:        len(step.Sets),
 				SetRestDuration: first_set.RestDuration,
@@ -845,18 +848,15 @@ func BuildResultFromWorkoutDay(v WorkoutDay, db *gorm.DB) (*BuildedWorkoutDayRes
 	if v.Status != 2 {
 		return &BuildedWorkoutDayResult{}, nil
 	}
-	// error_msg := make([]string, 0)
 	list := make([]TodayWorkoutActionGroup, 0)
 	tags := make([]string, 0)
 	total_volume := float64(0)
 	set_count := 0
 	duration_count := v.Duration
-
 	tmp_pending_steps, err := ParseWorkoutDayProgress(v.PendingSteps)
 	if err != nil {
 		return nil, err
 	}
-	// duration_count += v.Duration
 	var workout_plan_details WorkoutPlanBodyDetailsJSON250627
 	if v.UpdatedDetails != "" {
 		tmp_details, err := ParseWorkoutDayUpdatedDetails(v.UpdatedDetails)
@@ -887,127 +887,123 @@ func BuildResultFromWorkoutDay(v WorkoutDay, db *gorm.DB) (*BuildedWorkoutDayRes
 		return nil, err
 	}
 	pending_steps := ToWorkoutDayStepProgress(tmp_pending_steps)
-	// fmt.Println("pending_steps", v.PendingSteps)
 	if len(pending_steps.Sets) == 0 {
 		// error_msg = append(error_msg, "没有解析出数据2")
 		// continue
 		return nil, err
 	}
 	day_total_volume := float64(0)
-	for step_uid, step := range workout_plan_details.Steps {
+	for _, step := range workout_plan_details.Steps {
 		var pending_sets []WorkoutDayStepProgressSet250629
 		for _, vv := range pending_steps.Sets {
-			if vv.StepUid == step_uid {
+			if vv.StepUid == step.StepUid {
 				pending_sets = append(pending_sets, vv)
 			}
 		}
-		if len(pending_sets) == 0 {
-			continue
-		}
-		first_set := pending_sets[0]
-		var sets []TodayWorkoutActionGroupSet
-		var action_names []string
-		var title string
-		if step.SetType == "super" {
-			for _, s := range first_set.Actions {
-				action_names = append(action_names, s.ActionName)
-			}
-			title = strings.Join(action_names, " + ") + " 超级组"
-		}
-		if step.SetType == "hiit" {
-			_, ok := lo.Find(tags, func(i string) bool {
-				return i == v.Type
-			})
-			if !ok {
-				tags = append(tags, "hiit")
-			}
-			for _, s := range first_set.Actions {
-				action_names = append(action_names, s.ActionName)
-			}
-			title = strings.Join(action_names, " + ") + " HIIT"
-		}
-		if step.SetType == "decreasing" && len(first_set.Actions) > 0 {
-			action_names = append(action_names, first_set.Actions[0].ActionName)
-			title = strings.Join(action_names, " + ") + " 递减组"
-		}
-		if step.SetType == "normal" && len(first_set.Actions) > 0 {
-			action_names = append(action_names, first_set.Actions[0].ActionName)
-			title = strings.Join(action_names, "")
-		}
-		for idx, ss := range pending_sets {
-			if !ss.Completed {
-				continue
-			}
-			set_count += 1
-			var texts []string
-			var actions []TodayWorkoutAction
-			for _, act := range ss.Actions {
-				// act_id := act.ActionId
-				act_name := act.ActionName
-				reps := act.Reps
-				reps_unit := act.RepsUnit
-				weight := act.Weight
-				weight_unit := act.WeightUnit
-				if weight_unit == "公斤" && reps_unit == "次" {
-					day_total_volume += float64(reps) * weight
+		if len(pending_sets) != 0 {
+			first_set := pending_sets[0]
+			var sets []TodayWorkoutActionGroupSet
+			var action_names []string
+			var title string
+			if step.SetType == "super" {
+				for _, s := range first_set.Actions {
+					action_names = append(action_names, s.ActionName)
 				}
-				if weight_unit == "磅" && reps_unit == "次" {
-					day_total_volume += float64(reps) * (weight * 0.45)
-				}
-				// weight_text := act.WeightUnit == "自重"
-				// fmt.Println("title", act.Weight)
-				// weight_text := fmt.Sprintf("%#g", act.Weight)
-				weight_text := strconv.FormatFloat(act.Weight, 'g', -1, 64) + act.WeightUnit
-				if act.WeightUnit == "自重" {
-					weight_text = act.WeightUnit
-				}
-				reps_text := strconv.Itoa(act.Reps) + act.RepsUnit
-				t := weight_text + "x" + reps_text
-				if step.SetType != "normal" && step.SetType != "decreasing" {
-					t = act_name + " " + t
-				}
-				texts = append(texts, t)
-				actions = append(actions, TodayWorkoutAction{
-					ActionId:   act.ActionId,
-					ActionName: act.ActionName,
-					Reps:       act.Reps,
-					RepsUnit:   act.RepsUnit,
-					Weight:     act.Weight,
-					WeightUnit: act.WeightUnit,
+				title = strings.Join(action_names, " + ") + " 超级组"
+			}
+			if step.SetType == "hiit" {
+				_, ok := lo.Find(tags, func(i string) bool {
+					return i == v.Type
 				})
+				if !ok {
+					tags = append(tags, "hiit")
+				}
+				for _, s := range first_set.Actions {
+					action_names = append(action_names, s.ActionName)
+				}
+				title = strings.Join(action_names, " + ") + " HIIT"
 			}
-			sets = append(sets, TodayWorkoutActionGroupSet{
-				Idx:     idx + 1,
-				Texts:   texts,
-				Actions: actions,
-			})
-		}
-		if len(sets) == 0 {
-			continue
-		}
-		dd := TodayWorkoutActionGroup{
-			Title:       title,
-			Type:        step.SetType,
-			Sets:        sets,
-			Duration:    v.Duration,
-			TotalVolume: day_total_volume,
-		}
-		if v.Type == "cardio" {
-			dd = TodayWorkoutActionGroup{
-				Title:       title,
-				Type:        "cardio",
-				Sets:        make([]TodayWorkoutActionGroupSet, 0),
-				Duration:    v.Duration,
-				TotalVolume: 0,
+			if step.SetType == "decreasing" && len(first_set.Actions) > 0 {
+				action_names = append(action_names, first_set.Actions[0].ActionName)
+				title = strings.Join(action_names, " + ") + " 递减组"
+			}
+			if step.SetType == "normal" && len(first_set.Actions) > 0 {
+				action_names = append(action_names, first_set.Actions[0].ActionName)
+				title = strings.Join(action_names, "")
+			}
+			for idx, ss := range pending_sets {
+				if ss.Completed {
+					set_count += 1
+					var texts []string
+					var actions []TodayWorkoutAction
+					for _, act := range ss.Actions {
+						// act_id := act.ActionId
+						act_name := act.ActionName
+						reps := act.Reps
+						reps_unit := act.RepsUnit
+						weight := act.Weight
+						weight_unit := act.WeightUnit
+						if weight_unit == "公斤" && reps_unit == "次" {
+							day_total_volume += float64(reps) * weight
+						}
+						if weight_unit == "磅" && reps_unit == "次" {
+							day_total_volume += float64(reps) * (weight * 0.45)
+						}
+						// weight_text := act.WeightUnit == "自重"
+						// fmt.Println("title", act.Weight)
+						// weight_text := fmt.Sprintf("%#g", act.Weight)
+						weight_text := strconv.FormatFloat(act.Weight, 'g', -1, 64) + act.WeightUnit
+						if act.WeightUnit == "自重" {
+							weight_text = act.WeightUnit
+						}
+						reps_text := strconv.Itoa(act.Reps) + act.RepsUnit
+						t := weight_text + "x" + reps_text
+						if step.SetType != "normal" && step.SetType != "decreasing" {
+							t = act_name + " " + t
+						}
+						texts = append(texts, t)
+						actions = append(actions, TodayWorkoutAction{
+							ActionId:   act.ActionId,
+							ActionName: act.ActionName,
+							Reps:       act.Reps,
+							RepsUnit:   act.RepsUnit,
+							Weight:     act.Weight,
+							WeightUnit: act.WeightUnit,
+						})
+					}
+					sets = append(sets, TodayWorkoutActionGroupSet{
+						Idx:     idx + 1,
+						Texts:   texts,
+						Actions: actions,
+					})
+				}
+			}
+			if len(sets) != 0 {
+				dd := TodayWorkoutActionGroup{
+					Title:       title,
+					Type:        step.SetType,
+					Sets:        sets,
+					Duration:    v.Duration,
+					TotalVolume: day_total_volume,
+				}
+				if v.Type == "cardio" {
+					dd = TodayWorkoutActionGroup{
+						Title:       title,
+						Type:        "cardio",
+						Sets:        make([]TodayWorkoutActionGroupSet, 0),
+						Duration:    v.Duration,
+						TotalVolume: 0,
+					}
+				}
+				list = append(list, dd)
 			}
 		}
-		list = append(list, dd)
 	}
 	total_volume += day_total_volume
 	_, ok := lo.Find(tags, func(i string) bool {
 		return i == v.Type
 	})
-	if !ok {
+	if !ok && v.Type != "" {
 		tags = append(tags, v.Type)
 	}
 	return &BuildedWorkoutDayResult{
