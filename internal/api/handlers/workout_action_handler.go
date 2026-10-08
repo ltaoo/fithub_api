@@ -43,6 +43,9 @@ func (h *WorkoutActionHandler) FetchWorkoutActionList(c *gin.Context) {
 	}
 
 	query := h.db.Where("d IS NULL OR d = 0")
+	if c.GetFloat64("id") == 0 {
+		query = query.Where("status = 1")
+	}
 	if body.Type != "" {
 		query = query.Where("type = ?", body.Type)
 	}
@@ -109,6 +112,9 @@ func (h *WorkoutActionHandler) FetchCardioWorkoutActionList(c *gin.Context) {
 	}
 
 	query := h.db.Where("d IS NULL OR d = 0")
+	if c.GetFloat64("id") == 0 {
+		query = query.Where("status = 1")
+	}
 	query = query.Where("type = ?", "cardio")
 	if body.Keyword != "" {
 		query = query.Where("zh_name LIKE ? OR alias LIKE ?", "%"+body.Keyword+"%", "%"+body.Keyword+"%")
@@ -166,6 +172,9 @@ func (h *WorkoutActionHandler) FetchWorkoutActionListByIds(c *gin.Context) {
 		return
 	}
 	query := h.db.Where("d IS NULL OR d = 0")
+	if c.GetFloat64("id") == 0 {
+		query = query.Where("status = 1")
+	}
 	query = query.Where("id IN (?)", body.Ids)
 	var list1 []models.WorkoutAction
 	if err := query.Find(&list1).Error; err != nil {
@@ -204,7 +213,11 @@ func (h *WorkoutActionHandler) GetWorkoutAction(c *gin.Context) {
 	}
 
 	var action models.WorkoutAction
-	result := h.db.First(&action, request.Id)
+	query := h.db.Where("(d IS NULL OR d = 0)")
+	if c.GetFloat64("id") == 0 {
+		query = query.Where("status = 1")
+	}
+	result := query.First(&action, request.Id)
 	if result.Error != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 404, "msg": "Workout action not found", "data": nil})
 		return

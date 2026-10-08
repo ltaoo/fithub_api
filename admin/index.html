@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="description" content="健身,训练计划,力量训练,fitness,workout" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer" />
+  <title>Fithub 管理后台</title>
+  <style>
+    html,
+    body {
+      overscroll-behavior: none;
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+      margin: 0;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      font-family: system-ui, -apple-system, "Helvetica Neue";
+    }
+
+    img {
+      -webkit-user-drag: none;
+    }
+
+    video {
+      max-height: 100%;
+      height: unset;
+    }
+  </style>
+</head>
+
+<body>
+  <script>!function () { try { var d = document.documentElement, n = 'data-theme', s = 'setAttribute'; var e = localStorage.getItem('theme'); if ('system' === e || (!e && true)) { var t = '(prefers-color-scheme: dark)', m = window.matchMedia(t); if (m.media !== t || m.matches) { d.style.colorScheme = 'dark'; d[s](n, 'dark') } else { d.style.colorScheme = 'light'; d[s](n, 'light') } } else if (e) { d[s](n, e || '') } d.classList.toggle('dark', d.getAttribute(n) === 'dark'); if (e === 'light' || e === 'dark') d.style.colorScheme = e } catch (e) { } }()</script>
+  <div id="root"></div>
+  <script defer type="module" src="/src/index.tsx"></script>
+</body>
+
+</html>

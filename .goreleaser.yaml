@@ -8,6 +8,9 @@
 
 version: 2
 
+# Keep frontend build output separate from release work files.
+dist: release
+
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -31,6 +34,11 @@ builds:
 
 archives:
   - formats: [tar.gz]
+    files:
+      - dist/admin/**/*
+      - dist/h5/**/*
+      - migrations/**/*
+      - .env.example
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
       {{ .ProjectName }}_

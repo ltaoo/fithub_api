@@ -7,6 +7,7 @@ import (
 	"myapi/config"
 	"myapi/internal/api/handlers"
 	"myapi/internal/api/middlewares"
+	"myapi/internal/web"
 	"myapi/pkg/logger"
 )
 
@@ -32,6 +33,8 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 
 	// API路由组
 	api := r.Group("/api")
+	catalog := api.Group("/")
+	catalog.Use(middlewares.OptionalAuthMiddleware(cfg))
 	authorized := api.Group("/")
 	authorized.Use(middlewares.AuthMiddleware(logger, cfg))
 	{
@@ -87,21 +90,21 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		{
 
 			handler := handlers.NewWorkoutPlanHandler(db, logger)
-			authorized.POST("/workout_plan/profile", handler.FetchWorkoutPlanProfile)
-			authorized.POST("/workout_plan/list", handler.FetchWorkoutPlanList)
+			catalog.POST("/workout_plan/profile", handler.FetchWorkoutPlanProfile)
+			catalog.POST("/workout_plan/list", handler.FetchWorkoutPlanList)
 			authorized.POST("/workout_plan/update", handler.UpdateWorkoutPlan)
 			authorized.POST("/workout_plan/delete", handler.DeleteWorkoutPlan)
 			authorized.POST("/workout_plan/create", handler.CreateWorkoutPlan)
 			authorized.POST("/workout_plan/mine", handler.FetchMyWorkoutPlanList)
 			// authorized.POST("/workout_plan/stats", handler.FetchMyWorkoutPlanList)
-			authorized.POST("/workout_plan/content/list", handler.FetchContentListOfWorkoutPlan)
-			authorized.POST("/workout_plan/content/profile", handler.FetchContentProfileOfWorkoutPlan)
+			catalog.POST("/workout_plan/content/list", handler.FetchContentListOfWorkoutPlan)
+			catalog.POST("/workout_plan/content/profile", handler.FetchContentProfileOfWorkoutPlan)
 			authorized.POST("/workout_plan/content/create", handler.CreateContentWithWorkoutPlan)
 			// 周期计划
-			authorized.POST("/workout_schedule/list", handler.FetchWorkoutScheduleList)
+			catalog.POST("/workout_schedule/list", handler.FetchWorkoutScheduleList)
 			authorized.POST("/workout_schedule/create", handler.CreateWorkoutSchedule)
 			authorized.POST("/workout_schedule/update", handler.UpdateWorkoutSchedule)
-			authorized.POST("/workout_schedule/profile", handler.FetchWorkoutScheduleProfile)
+			catalog.POST("/workout_schedule/profile", handler.FetchWorkoutScheduleProfile)
 			authorized.POST("/workout_schedule/apply", handler.ApplyWorkoutSchedule)
 			authorized.POST("/workout_schedule/cancel", handler.CancelWorkoutSchedule)
 			authorized.POST("/workout_schedule/enabled", handler.FetchAppliedWorkoutScheduleList)
@@ -142,32 +145,32 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		}
 		{
 			handler := handlers.NewWorkoutActionHandler(db, logger)
-			authorized.POST("/workout_action/list", handler.FetchWorkoutActionList)
-			authorized.POST("/workout_action/list_by_ids", handler.FetchWorkoutActionListByIds)
+			catalog.POST("/workout_action/list", handler.FetchWorkoutActionList)
+			catalog.POST("/workout_action/list_by_ids", handler.FetchWorkoutActionListByIds)
 			authorized.POST("/workout_action/list/by_muscle", handler.GetActionsByMuscle)
 			authorized.POST("/workout_action/list/by_level", handler.FetchWorkoutActionsByLevel)
 			authorized.POST("/workout_action/list/cardio", handler.FetchCardioWorkoutActionList)
 			authorized.POST("/workout_action/list/related", handler.FetchRelatedWorkoutActions)
-			authorized.POST("/workout_action/profile", handler.GetWorkoutAction)
+			catalog.POST("/workout_action/profile", handler.GetWorkoutAction)
 			authorized.POST("/workout_action/update_idx", handler.UpdateWorkoutActionIdx)
 			authorized.POST("/workout_action/create", handler.CreateWorkoutAction)
 			authorized.POST("/workout_action/update", handler.UpdateWorkoutActionProfile)
 			authorized.POST("/workout_action/delete", handler.DeleteWorkoutAction)
 			authorized.POST("/workout_action/content/create", handler.CreateContentWithWorkoutAction)
-			authorized.POST("/workout_action/content/list", handler.FetchContentListOfWorkoutAction)
+			catalog.POST("/workout_action/content/list", handler.FetchContentListOfWorkoutAction)
 		}
 		{
 			handler := handlers.NewMuscleHandler(db, logger)
-			authorized.POST("/muscle/list", handler.FetchMuscleList)
-			authorized.POST("/muscle/profile", handler.FetchMuscleProfile)
+			catalog.POST("/muscle/list", handler.FetchMuscleList)
+			catalog.POST("/muscle/profile", handler.FetchMuscleProfile)
 			authorized.POST("/muscle/create", handler.CreateMuscle)
 			authorized.POST("/muscle/update", handler.UpdateMuscle)
 			authorized.POST("/muscle/delete", handler.DeleteMuscle)
 		}
 		{
 			handler := handlers.NewEquipmentHandler(db, logger)
-			authorized.POST("/equipment/list", handler.FetchEquipmentList)
-			authorized.POST("/equipment/profile", handler.FetchEquipment)
+			catalog.POST("/equipment/list", handler.FetchEquipmentList)
+			catalog.POST("/equipment/profile", handler.FetchEquipment)
 			authorized.POST("/equipment/create", handler.CreateEquipment)
 			authorized.POST("/equipment/update", handler.UpdateEquipment)
 			authorized.POST("/equipment/delete", handler.DeleteEquipment)
@@ -222,5 +225,6 @@ func SetupRouter(db *gorm.DB, logger *logger.Logger, cfg *config.Config) *gin.En
 		}
 	}
 
+	web.Register(r, cfg.StaticDir)
 	return r
 }

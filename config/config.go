@@ -13,6 +13,7 @@ type Config struct {
 	ServerAddress string
 	Environment   string
 	LogLevel      string
+	StaticDir     string
 
 	// 数据库配置
 	DBType     string // mysql, postgres, sqlite
@@ -53,6 +54,7 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("SERVER_ADDRESS", ":8080")
 	viper.SetDefault("ENVIRONMENT", "development")
 	viper.SetDefault("LOG_LEVEL", "info")
+	viper.SetDefault("STATIC_DIR", "./dist")
 	viper.SetDefault("DB_TYPE", "sqlite")
 	viper.SetDefault("DB_HOST", "localhost")
 	viper.SetDefault("DB_PORT", "5432")
@@ -60,7 +62,7 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("DB_PASSWORD", "postgres")
 	viper.SetDefault("DB_NAME", "myapi")
 	viper.SetDefault("DB_PATH", "./myapi.db")
-	viper.SetDefault("MIGRATIONS_PATH", "file:///migrations")
+	viper.SetDefault("MIGRATIONS_PATH", "file://migrations")
 	viper.SetDefault("QINIU_ACCESS_KEY", "")
 	viper.SetDefault("QINIU_SECRET_KEY", "")
 	viper.SetDefault("QINIU_BUCKET", "")
@@ -70,6 +72,7 @@ func LoadConfig() (*Config, error) {
 		ServerAddress:  viper.GetString("SERVER_ADDRESS"),
 		Environment:    viper.GetString("ENVIRONMENT"),
 		LogLevel:       viper.GetString("LOG_LEVEL"),
+		StaticDir:      viper.GetString("STATIC_DIR"),
 		DBType:         viper.GetString("DB_TYPE"),
 		DBHost:         viper.GetString("DB_HOST"),
 		DBPort:         viper.GetString("DB_PORT"),

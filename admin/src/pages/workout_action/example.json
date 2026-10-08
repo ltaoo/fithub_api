@@ -1,0 +1,98 @@
+{
+  "id": "renegade_rows",
+  "name": "Renegade Rows",
+  "chinese_name": "叛逆划船",
+  "alias": [],
+  "tags": ["上肢", "核心", "day3"],
+  "target_muscles": [
+    {
+      "id": "latissimus_dorsi",
+      "name": "Latissimus dorsi",
+      "chinese_name": "背阔肌",
+      "contraction_types": ["向心收缩", "离心收缩"]
+    },
+    {
+      "id": "rhomboids",
+      "name": "Rhomboids",
+      "chinese_name": "菱形肌",
+      "contraction_types": ["向心收缩", "离心收缩"]
+    },
+    {
+      "id": "trapezius_middle_and_lower",
+      "name": "Trapezius middle and lower",
+      "chinese_name": "斜方肌中下束",
+      "contraction_types": ["向心收缩", "离心收缩"]
+    },
+    {
+      "id": "erector_spinae",
+      "name": "Erector spinae",
+      "chinese_name": "竖脊肌",
+      "contraction_types": ["向心收缩", "离心收缩"]
+    },
+    {
+      "id": "core_muscles",
+      "name": "Core muscles",
+      "chinese_name": "核心肌群",
+      "contraction_types": ["向心收缩", "离心收缩"]
+    }
+  ],
+  "benefits": ["增强上肢、背部和核心力量", "提高身体协调性和稳定性"],
+  "starting_position": "双手与肩同宽，正握住哑铃，双臂伸直支撑身体，双脚与肩同宽，脚尖着地，身体呈平板支撑姿势",
+  "range_and_breathing": [
+    "吸气，保持核心稳定，将一侧哑铃沿着身体一侧向上拉，直到肘部接近身体，感受背部肌肉收缩",
+    "呼气，缓慢将哑铃放下回到起始位置，另一侧重复相同动作"
+  ],
+  "action_points": ["背部发力带动手臂向上拉哑铃", "保持身体稳定，避免晃动", "核心肌群持续收紧"],
+  "advanced_actions": [
+    {
+      "id": "one_arm_renegade_rows",
+      "name": "One-arm Renegade Rows",
+      "chinese_name": "单臂叛逆划船"
+    }
+  ],
+  "regressed_actions": [
+    {
+      "id": "kneeling_renegade_rows",
+      "name": "Kneeling Renegade Rows",
+      "chinese_name": "跪姿叛逆划船"
+    }
+  ],
+  "problems": [
+    {
+      "problem": "身体晃动",
+      "muscles": [
+        {
+          "id": "core_muscles",
+          "name": "Core muscles",
+          "reason": "核心肌群力量不足，无法有效稳定身体",
+          "solution": "加强核心肌群训练，如平板支撑、侧板等动作",
+          "actions": [
+            {
+              "id": "plank",
+              "name": "Plank",
+              "description": "锻炼核心肌群，增强身体稳定性"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "problem": "手臂借力",
+      "muscles": [
+        {
+          "id": "latissimus_dorsi",
+          "name": "Latissimus dorsi",
+          "reason": "背阔肌力量不足，导致手臂过度用力辅助",
+          "solution": "强化背阔肌训练，如引体向上、哑铃划船等",
+          "actions": [
+            {
+              "id": "lat_pulldown",
+              "name": "Lat Pulldown",
+              "description": "主要锻炼背阔肌"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

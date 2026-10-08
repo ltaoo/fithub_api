@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Existing business views share the shadcn palette through these aliases. */
+:root {
+  --weui-BG-0: var(--background);
+  --weui-BG-1: var(--muted);
+  --weui-BG-2: var(--card);
+  --weui-BG-3: var(--card);
+  --weui-BG-4: var(--secondary);
+  --weui-BG-5: var(--accent);
+  --weui-BG-COLOR-ACTIVE: var(--accent);
+  --weui-FG-0: var(--foreground);
+  --weui-FG-1: var(--muted-foreground);
+  --weui-FG-2: var(--muted-foreground);
+  --weui-FG-3: var(--border);
+  --weui-FG-4: var(--input);
+  --weui-FG-5: var(--muted-foreground);
+  --weui-RED: var(--destructive);
+  --weui-BRAND: var(--primary);
+}
+body { background: var(--background); color: var(--foreground); }
+.admin-dialog { min-width: min(28rem, calc(100vw - 2rem)); }
+.admin-dialog > .p-4 > * { max-width: 100%; }
+.admin-dialog-locked > [class*="tt-absolute"] { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+.__a {
+  animation: __a 0.1s;
+}
+
+@keyframes __a {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@fithub/workspace",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev:h5": "pnpm --dir h5 run dev",
+    "dev:admin": "pnpm --dir admin run dev",
+    "dev:server": "go run ./cmd/server",
+    "build": "pnpm run build:web && pnpm run build:server",
+    "build:web": "pnpm run build:h5 && pnpm run build:admin",
+    "build:h5": "pnpm --dir h5 run build",
+    "build:admin": "pnpm --dir admin run build",
+    "build:server": "go build -o bin/fithub-server ./cmd/server",
+    "check": "pnpm --dir h5 run check && pnpm --dir admin run check",
+    "test:h5": "pnpm --dir h5 run test",
+    "test:admin": "pnpm --dir admin run test",
+    "test:server": "go test ./...",
+    "start": "./bin/fithub-server"
+  }
+}

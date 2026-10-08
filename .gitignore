@@ -40,3 +40,8 @@ fithub_api
 fithub_api/
 myapi.db*
 
+
+# Frontend dependencies and caches
+node_modules/
+.cache/
+/release/

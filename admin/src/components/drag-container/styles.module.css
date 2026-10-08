@@ -1,0 +1,58 @@
+.container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: var(--weui-BG-0);
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 268px;
+  max-width: 80vw;
+  max-height: 80vh;
+  user-select: none;
+  z-index: 999999999;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--weui-BG-0);
+  border-bottom: 1px solid var(--weui-FG-3);
+  cursor: grab;
+}
+
+.header:active {
+  cursor: grabbing;
+}
+
+.title {
+  font-weight: 500;
+  color: var(--weui-FG-0);
+}
+
+.collapseButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  color: #666;
+  font-size: 12px;
+}
+
+.collapseButton:hover {
+  color: var(--weui-FG-0);
+}
+
+.content {
+  padding: 12px;
+  transition: all 0.3s ease;
+  overflow: auto;
+  max-height: calc(80vh - 40px); /* 减去header的高度 */
+}
+
+.collapsed {
+  padding: 0;
+  height: 0;
+}

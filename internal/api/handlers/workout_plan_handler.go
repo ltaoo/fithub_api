@@ -165,7 +165,7 @@ func (h *WorkoutPlanHandler) FetchWorkoutPlanProfile(c *gin.Context) {
 		return
 	}
 	if record.Status != int(models.WorkoutPublishStatusPublic) {
-		if record.OwnerId != uid {
+		if uid == 0 || record.OwnerId != uid {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有权限查看", "data": nil})
 			return
 		}
@@ -389,7 +389,13 @@ func (h *WorkoutPlanHandler) FetchContentListOfWorkoutPlan(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "缺少 WorkoutPlanId 参数", "data": nil})
 		return
 	}
+	if !h.can_read_plan(c, body.WorkoutPlanId) {
+		return
+	}
 	query := h.db.Where("d IS NULL OR d = 0")
+	if c.GetFloat64("id") == 0 {
+		query = query.Where("status = 1")
+	}
 	query = query.Where("workout_plan_id = ?", body.WorkoutPlanId)
 	if body.Level != 0 {
 		query = query.Where("level = ?", body.Level)
@@ -494,6 +500,13 @@ func (h *WorkoutPlanHandler) FetchContentProfileOfWorkoutPlan(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有找到记录", "data": nil})
+		return
+	}
+	if c.GetFloat64("id") == 0 && (record.Status != 1 || record.D != 0) {
+		c.JSON(http.StatusOK, gin.H{"code": 403, "msg": "没有权限查看内容", "data": nil})
+		return
+	}
+	if !h.can_read_plan(c, record.WorkoutPlanId) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -709,7 +722,7 @@ func (h *WorkoutPlanHandler) FetchWorkoutScheduleProfile(c *gin.Context) {
 		return
 	}
 	if record.Status != int(models.WorkoutPublishStatusPublic) {
-		if record.OwnerId != uid {
+		if uid == 0 || record.OwnerId != uid {
 			c.JSON(http.StatusOK, gin.H{"code": 500, "msg": "没有权限查看", "data": nil})
 			return
 		}
@@ -730,6 +743,9 @@ func (h *WorkoutPlanHandler) FetchWorkoutScheduleProfile(c *gin.Context) {
 	}
 	schedules := []interface{}{}
 	for _, schedule := range record.WorkoutPlans {
+		if uid == 0 && (schedule.WorkoutPlan.Status != int(models.WorkoutPublishStatusPublic) || schedule.WorkoutPlan.D != 0) {
+			continue
+		}
 		schedules = append(schedules, map[string]interface{}{
 			"idx":     schedule.Idx,
 			"day":     schedule.Day,

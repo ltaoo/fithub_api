@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": ["vite/client"],
+    "noEmit": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@timeless/timeless": ["../../timeless/packages/timeless/dist/index.d.ts"],
+      "@timeless/timeless-dom": ["../../timeless/packages/timeless-dom/dist/index.d.ts"],
+      "@timeless/shadcn": ["../../timeless/packages/shadcn/dist/index.d.ts"]
+    }
+  }
+}

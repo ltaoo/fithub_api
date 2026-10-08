@@ -1,0 +1,6434 @@
+{
+  "summary": {
+    "project_source_records": 420,
+    "community_source_records": 876,
+    "input_records": 1296,
+    "unique_movements": 962,
+    "collapsed_records": 334,
+    "normalized_name_unique": 992,
+    "reviewed_semantic_rules": 38,
+    "groups_with_multiple_records": 315,
+    "policy": "explicit reviewed aliases and instructions; no fuzzy or muscle-only automatic merges"
+  },
+  "merged_groups": [
+    {
+      "canonical_key": "barbell-bent-over-row",
+      "canonical_id": 1,
+      "name": "Barbell Row",
+      "zh_name": "杠铃划船",
+      "reason": "正握俯身杠铃划船；反握、潘德雷、史密斯、长杆地雷架划船保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 14,
+          "name": "Barbell Row",
+          "zh_name": "杠铃划船"
+        },
+        {
+          "source": "community",
+          "id": "Bent_Over_Barbell_Row",
+          "name": "Bent Over Barbell Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "barbell-flat-bench-press",
+      "canonical_id": 2,
+      "name": "Barbell Bench Press",
+      "zh_name": "杠铃卧推",
+      "reason": "平凳、杠铃、常规握距；上斜、下斜、宽窄握、史密斯、哑铃均单独保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 1,
+          "name": "Barbell Bench Press",
+          "zh_name": "杠铃卧推"
+        },
+        {
+          "source": "project",
+          "id": 12,
+          "name": "Barbell Bench Press",
+          "zh_name": "杠铃平板卧推"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Bench_Press_-_Medium_Grip",
+          "name": "Barbell Bench Press - Medium Grip"
+        }
+      ]
+    },
+    {
+      "canonical_key": "barbell-floor-press",
+      "canonical_id": 3,
+      "name": "Floor Press",
+      "zh_name": "地面卧推",
+      "reason": "现有动作使用杠铃；哑铃、单臂、壶铃和桥式保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 24,
+          "name": "Floor Press",
+          "zh_name": "地面卧推"
+        },
+        {
+          "source": "community",
+          "id": "Floor_Press",
+          "name": "Floor Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "barbell-upright-row",
+      "canonical_id": 4,
+      "name": "Upright Row",
+      "zh_name": "直立提拉",
+      "reason": "现有描述为杠铃直立提拉；绳索、哑铃和史密斯保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 71,
+          "name": "Upright Row",
+          "zh_name": "直立提拉"
+        },
+        {
+          "source": "project",
+          "id": 408,
+          "name": "Upright Barbell Row",
+          "zh_name": "直立杠铃划船"
+        },
+        {
+          "source": "community",
+          "id": "Upright_Barbell_Row",
+          "name": "Upright Barbell Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "bodyweight-squat",
+      "canonical_id": 5,
+      "name": "Squat",
+      "zh_name": "深蹲",
+      "reason": "标准自重深蹲；杠铃、前蹲、相扑、单腿、窄站距、跳蹲分别保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 3,
+          "name": "Squat",
+          "zh_name": "深蹲"
+        },
+        {
+          "source": "project",
+          "id": 48,
+          "name": "Squats",
+          "zh_name": "自重深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Bodyweight_Squat",
+          "name": "Bodyweight Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "calf-foam-roll",
+      "canonical_id": 6,
+      "name": "Calf Foam Roller Massage",
+      "zh_name": "小腿泡沫轴按摩",
+      "reason": "小腿泡沫轴自我放松",
+      "members": [
+        {
+          "source": "project",
+          "id": 100,
+          "name": "Calf Foam Roller Massage",
+          "zh_name": "小腿泡沫轴按摩"
+        },
+        {
+          "source": "community",
+          "id": "Calves-SMR",
+          "name": "Calves-SMR"
+        }
+      ]
+    },
+    {
+      "canonical_key": "chair-side-lower-back-stretch",
+      "canonical_id": 7,
+      "name": "Chair Lower Back Stretch",
+      "zh_name": "椅子上腰部拉伸",
+      "reason": "现有两个记录的起始姿势和步骤完全相同",
+      "members": [
+        {
+          "source": "project",
+          "id": 206,
+          "name": "Chair Lower Back Stretch",
+          "zh_name": "椅子上腰部拉伸"
+        },
+        {
+          "source": "project",
+          "id": 209,
+          "name": "Chair Lower Back Stretch",
+          "zh_name": "椅子上腰部拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Chair_Lower_Back_Stretch",
+          "name": "Chair Lower Back Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "close-grip-barbell-bench-press",
+      "canonical_id": 8,
+      "name": "Close Grip Bench Press",
+      "zh_name": "窄距卧推",
+      "reason": "窄握平板杠铃卧推；哑铃、曲杠、史密斯、上斜下斜保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 80,
+          "name": "Close Grip Bench Press",
+          "zh_name": "窄距卧推"
+        },
+        {
+          "source": "community",
+          "id": "Close-Grip_Barbell_Bench_Press",
+          "name": "Close-Grip Barbell Bench Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "conventional-barbell-deadlift",
+      "canonical_id": 9,
+      "name": "Deadlift",
+      "zh_name": "硬拉",
+      "reason": "常规站距杠铃硬拉；相扑、六角杠、罗马尼亚、直腿、器械硬拉单独保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 6,
+          "name": "Deadlift",
+          "zh_name": "硬拉"
+        },
+        {
+          "source": "project",
+          "id": 21,
+          "name": "Deadlift",
+          "zh_name": "传统硬拉"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Deadlift",
+          "name": "Barbell Deadlift"
+        }
+      ]
+    },
+    {
+      "canonical_key": "dumbbell-biceps-curl",
+      "canonical_id": 10,
+      "name": "Dumbbell Curl",
+      "zh_name": "哑铃弯举",
+      "reason": "普通哑铃弯举；交替、锤式、坐姿、上斜、单臂、牧师凳保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 73,
+          "name": "Dumbbell Curl",
+          "zh_name": "哑铃弯举"
+        },
+        {
+          "source": "community",
+          "id": "Dumbbell_Bicep_Curl",
+          "name": "Dumbbell Bicep Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "dumbbell-step-up",
+      "canonical_id": 11,
+      "name": "Dumbbell Step Up on Bench",
+      "zh_name": "哑铃健身椅登阶",
+      "reason": "持哑铃登阶；自重、杠铃、提膝保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 141,
+          "name": "Dumbbell Step Up on Bench",
+          "zh_name": "哑铃健身椅登阶"
+        },
+        {
+          "source": "community",
+          "id": "Dumbbell_Step_Ups",
+          "name": "Dumbbell Step Ups"
+        }
+      ]
+    },
+    {
+      "canonical_key": "ez-bar-biceps-curl",
+      "canonical_id": 12,
+      "name": "Barbell Bicep Curl",
+      "zh_name": "曲杠二头弯举",
+      "reason": "现有动作明确使用曲杆；直杆 Barbell Curl 保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 13,
+          "name": "Barbell Bicep Curl",
+          "zh_name": "曲杠二头弯举"
+        },
+        {
+          "source": "community",
+          "id": "EZ-Bar_Curl",
+          "name": "EZ-Bar Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "ez-bar-lying-triceps-extension",
+      "canonical_id": 13,
+      "name": "Lying Triceps Extension",
+      "zh_name": "仰卧臂屈伸",
+      "reason": "现有动作明确使用曲杆；哑铃、直杠和绳索版本保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 30,
+          "name": "Lying Triceps Extension",
+          "zh_name": "仰卧臂屈伸"
+        },
+        {
+          "source": "community",
+          "id": "EZ-Bar_Skullcrusher",
+          "name": "EZ-Bar Skullcrusher"
+        }
+      ]
+    },
+    {
+      "canonical_key": "farmer-walk",
+      "canonical_id": 14,
+      "name": "Farmer Walk",
+      "zh_name": "农夫行走",
+      "reason": "普通双手农夫行走；单侧和过头负重行走保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 109,
+          "name": "Farmer Walk",
+          "zh_name": "农夫行走"
+        },
+        {
+          "source": "community",
+          "id": "Farmers_Walk",
+          "name": "Farmer's Walk"
+        }
+      ]
+    },
+    {
+      "canonical_key": "forearm-plank",
+      "canonical_id": 15,
+      "name": "Plank",
+      "zh_name": "平板支撑",
+      "reason": "双前臂支撑；直臂、侧撑、抬腿、行走变式单独保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 4,
+          "name": "Plank",
+          "zh_name": "平板支撑"
+        },
+        {
+          "source": "project",
+          "id": 32,
+          "name": "Plank",
+          "zh_name": "平板支撑"
+        },
+        {
+          "source": "community",
+          "id": "Plank",
+          "name": "Plank"
+        }
+      ]
+    },
+    {
+      "canonical_key": "high-cable-biceps-curl",
+      "canonical_id": 17,
+      "name": "Overhead Cable Curl",
+      "zh_name": "高位绳索弯举",
+      "reason": "双臂高位滑轮弯举；低位和仰卧保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 314,
+          "name": "Overhead Cable Curl",
+          "zh_name": "高位绳索弯举"
+        },
+        {
+          "source": "community",
+          "id": "High_Cable_Curls",
+          "name": "High Cable Curls"
+        },
+        {
+          "source": "community",
+          "id": "Overhead_Cable_Curl",
+          "name": "Overhead Cable Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "incline-barbell-bench-press",
+      "canonical_id": 18,
+      "name": "Incline Barbell Bench Press",
+      "zh_name": "上斜杠铃卧推",
+      "reason": "常规握距上斜杠铃卧推",
+      "members": [
+        {
+          "source": "project",
+          "id": 63,
+          "name": "Incline Barbell Bench Press",
+          "zh_name": "上斜杠铃卧推"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Incline_Bench_Press_-_Medium_Grip",
+          "name": "Barbell Incline Bench Press - Medium Grip"
+        }
+      ]
+    },
+    {
+      "canonical_key": "incline-dumbbell-bench-press",
+      "canonical_id": 19,
+      "name": "Incline Dumbbell Bench Press",
+      "zh_name": "上斜哑铃卧推",
+      "reason": "普通上斜哑铃卧推；锤式握法和单臂保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 28,
+          "name": "Incline Dumbbell Bench Press",
+          "zh_name": "上斜哑铃卧推"
+        },
+        {
+          "source": "community",
+          "id": "Incline_Dumbbell_Press",
+          "name": "Incline Dumbbell Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "incline-seated-dumbbell-curl",
+      "canonical_id": 20,
+      "name": "Inclined Seated Dumbbell Curl",
+      "zh_name": "上斜坐姿哑铃弯举",
+      "reason": "双臂同时上斜凳弯举；交替、扭转和 Flexor 变式保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 132,
+          "name": "Inclined Seated Dumbbell Curl",
+          "zh_name": "上斜坐姿哑铃弯举"
+        },
+        {
+          "source": "community",
+          "id": "Incline_Dumbbell_Curl",
+          "name": "Incline Dumbbell Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "lying-machine-leg-curl",
+      "canonical_id": 21,
+      "name": "Prone Leg Curl",
+      "zh_name": "俯卧腿弯举",
+      "reason": "俯卧器械腿弯举；坐姿、站姿、健身球、弹力带和单腿保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 90,
+          "name": "Prone Leg Curl",
+          "zh_name": "俯卧腿弯举"
+        },
+        {
+          "source": "project",
+          "id": 290,
+          "name": "Lying Leg Curls",
+          "zh_name": "俯卧腿弯举"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Leg_Curls",
+          "name": "Lying Leg Curls"
+        }
+      ]
+    },
+    {
+      "canonical_key": "machine-leg-press",
+      "canonical_id": 22,
+      "name": "Leg Press",
+      "zh_name": "腿推",
+      "reason": "同类普通双腿腿举；未确认的 Seated Leg Press、单腿、窄站距和史密斯腿举保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 9,
+          "name": "Leg Press",
+          "zh_name": "腿推"
+        },
+        {
+          "source": "project",
+          "id": 422,
+          "name": "Leg Press",
+          "zh_name": "腿举"
+        },
+        {
+          "source": "community",
+          "id": "Leg_Press",
+          "name": "Leg Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "mountain-climber",
+      "canonical_id": 23,
+      "name": "Mountain Climber Crawl",
+      "zh_name": "登山式爬行",
+      "reason": "双手固定、双膝交替向胸部移动；蜘蛛爬、侧爬和攀爬机保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 61,
+          "name": "Mountain Climber Crawl",
+          "zh_name": "登山式爬行"
+        },
+        {
+          "source": "community",
+          "id": "Mountain_Climbers",
+          "name": "Mountain Climbers"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:34situp",
+      "canonical_id": 24,
+      "name": "3/4 Sit-Up",
+      "zh_name": "3/4仰卧起坐",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 144,
+          "name": "3/4 Sit-Up",
+          "zh_name": "3/4仰卧起坐"
+        },
+        {
+          "source": "community",
+          "id": "3_4_Sit-Up",
+          "name": "3/4 Sit-Up"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:abcrunchmachine",
+      "canonical_id": 26,
+      "name": "Ab Crunch Machine",
+      "zh_name": "坐姿卷腹机训练",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 145,
+          "name": "Ab Crunch Machine",
+          "zh_name": "坐姿卷腹机训练"
+        },
+        {
+          "source": "community",
+          "id": "Ab_Crunch_Machine",
+          "name": "Ab Crunch Machine"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:abroller",
+      "canonical_id": 27,
+      "name": "Ab Roller",
+      "zh_name": "腹肌滚轮",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 146,
+          "name": "Ab Roller",
+          "zh_name": "腹肌滚轮"
+        },
+        {
+          "source": "community",
+          "id": "Ab_Roller",
+          "name": "Ab Roller"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:advancedkettlebellwindmill",
+      "canonical_id": 30,
+      "name": "Advanced Kettlebell Windmill",
+      "zh_name": "进阶壶铃风车",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 147,
+          "name": "Advanced Kettlebell Windmill",
+          "zh_name": "进阶壶铃风车"
+        },
+        {
+          "source": "community",
+          "id": "Advanced_Kettlebell_Windmill",
+          "name": "Advanced Kettlebell Windmill"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:airbike",
+      "canonical_id": 31,
+      "name": "Air Bike",
+      "zh_name": "仰卧空中蹬自行车",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 148,
+          "name": "Air Bike",
+          "zh_name": "仰卧空中蹬自行车"
+        },
+        {
+          "source": "community",
+          "id": "Air_Bike",
+          "name": "Air Bike"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:alternatehammercurl",
+      "canonical_id": 33,
+      "name": "Alternate Hammer Curl",
+      "zh_name": "交替锤式弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 149,
+          "name": "Alternate Hammer Curl",
+          "zh_name": "交替锤式弯举"
+        },
+        {
+          "source": "community",
+          "id": "Alternate_Hammer_Curl",
+          "name": "Alternate Hammer Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:alternateheeltouchers",
+      "canonical_id": 34,
+      "name": "Alternate Heel Touchers",
+      "zh_name": "交替触脚跟",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 150,
+          "name": "Alternate Heel Touchers",
+          "zh_name": "交替触脚跟"
+        },
+        {
+          "source": "community",
+          "id": "Alternate_Heel_Touchers",
+          "name": "Alternate Heel Touchers"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:alternateinclinedumbbellcurl",
+      "canonical_id": 35,
+      "name": "Alternate Incline Dumbbell Curl",
+      "zh_name": "交替上斜哑铃弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 151,
+          "name": "Alternate Incline Dumbbell Curl",
+          "zh_name": "交替上斜哑铃弯举"
+        },
+        {
+          "source": "community",
+          "id": "Alternate_Incline_Dumbbell_Curl",
+          "name": "Alternate Incline Dumbbell Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:anklecircles",
+      "canonical_id": 46,
+      "name": "Ankle Circles",
+      "zh_name": "脚踝绕环",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 152,
+          "name": "Ankle Circles",
+          "zh_name": "脚踝绕环"
+        },
+        {
+          "source": "community",
+          "id": "Ankle_Circles",
+          "name": "Ankle Circles"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:armcircles",
+      "canonical_id": 50,
+      "name": "Arm Circles",
+      "zh_name": "手臂画圈",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 153,
+          "name": "Arm Circles",
+          "zh_name": "手臂画圈"
+        },
+        {
+          "source": "community",
+          "id": "Arm_Circles",
+          "name": "Arm Circles"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:arnolddumbbellpress",
+      "canonical_id": 51,
+      "name": "Arnold Dumbbell Press",
+      "zh_name": "阿诺德哑铃推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 154,
+          "name": "Arnold Dumbbell Press",
+          "zh_name": "阿诺德哑铃推举"
+        },
+        {
+          "source": "community",
+          "id": "Arnold_Dumbbell_Press",
+          "name": "Arnold Dumbbell Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:aroundtheworlds",
+      "canonical_id": 52,
+      "name": "Around The Worlds",
+      "zh_name": "哑铃环绕",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 155,
+          "name": "Around The Worlds",
+          "zh_name": "哑铃环绕"
+        },
+        {
+          "source": "community",
+          "id": "Around_The_Worlds",
+          "name": "Around The Worlds"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:atlasstones",
+      "canonical_id": 53,
+      "name": "Atlas Stones",
+      "zh_name": "阿特拉斯石举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 157,
+          "name": "Atlas Stones",
+          "zh_name": "阿特拉斯石举"
+        },
+        {
+          "source": "community",
+          "id": "Atlas_Stones",
+          "name": "Atlas Stones"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:atlasstonetrainer",
+      "canonical_id": 54,
+      "name": "Atlas Stone Trainer",
+      "zh_name": "阿特拉斯石训练器",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 156,
+          "name": "Atlas Stone Trainer",
+          "zh_name": "阿特拉斯石训练器"
+        },
+        {
+          "source": "community",
+          "id": "Atlas_Stone_Trainer",
+          "name": "Atlas Stone Trainer"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:backflyeswithbands",
+      "canonical_id": 56,
+      "name": "Back Flyes - With Bands",
+      "zh_name": "弹力带反向飞鸟",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 158,
+          "name": "Back Flyes - With Bands",
+          "zh_name": "弹力带反向飞鸟"
+        },
+        {
+          "source": "community",
+          "id": "Back_Flyes_-_With_Bands",
+          "name": "Back Flyes - With Bands"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:backwarddrag",
+      "canonical_id": 58,
+      "name": "Backward Drag",
+      "zh_name": "后拉雪橇",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 159,
+          "name": "Backward Drag",
+          "zh_name": "后拉雪橇"
+        },
+        {
+          "source": "community",
+          "id": "Backward_Drag",
+          "name": "Backward Drag"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:backwardmedicineballthrow",
+      "canonical_id": 59,
+      "name": "Backward Medicine Ball Throw",
+      "zh_name": "向后药球抛掷",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 160,
+          "name": "Backward Medicine Ball Throw",
+          "zh_name": "向后药球抛掷"
+        },
+        {
+          "source": "community",
+          "id": "Backward_Medicine_Ball_Throw",
+          "name": "Backward Medicine Ball Throw"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:balanceboard",
+      "canonical_id": 60,
+      "name": "Balance Board",
+      "zh_name": "平衡板训练",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 161,
+          "name": "Balance Board",
+          "zh_name": "平衡板训练"
+        },
+        {
+          "source": "community",
+          "id": "Balance_Board",
+          "name": "Balance Board"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:balllegcurl",
+      "canonical_id": 61,
+      "name": "Ball Leg Curl",
+      "zh_name": "健身球腿弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 162,
+          "name": "Ball Leg Curl",
+          "zh_name": "健身球腿弯举"
+        },
+        {
+          "source": "community",
+          "id": "Ball_Leg_Curl",
+          "name": "Ball Leg Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bandassistedpullup",
+      "canonical_id": 62,
+      "name": "Band Assisted Pull-Up",
+      "zh_name": "弹力带辅助引体向上",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 163,
+          "name": "Band Assisted Pull-Up",
+          "zh_name": "弹力带辅助引体向上"
+        },
+        {
+          "source": "community",
+          "id": "Band_Assisted_Pull-Up",
+          "name": "Band Assisted Pull-Up"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bandgoodmorning",
+      "canonical_id": 63,
+      "name": "Band Good Morning",
+      "zh_name": "弹力带早安式",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 164,
+          "name": "Band Good Morning",
+          "zh_name": "弹力带早安式"
+        },
+        {
+          "source": "community",
+          "id": "Band_Good_Morning",
+          "name": "Band Good Morning"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bandhipadductions",
+      "canonical_id": 65,
+      "name": "Band Hip Adductions",
+      "zh_name": "弹力带髋外展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 165,
+          "name": "Band Hip Adductions",
+          "zh_name": "弹力带髋外展"
+        },
+        {
+          "source": "community",
+          "id": "Band_Hip_Adductions",
+          "name": "Band Hip Adductions"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bandpullapart",
+      "canonical_id": 66,
+      "name": "Band Pull Apart",
+      "zh_name": "弹力带反向拉开",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 166,
+          "name": "Band Pull Apart",
+          "zh_name": "弹力带反向拉开"
+        },
+        {
+          "source": "community",
+          "id": "Band_Pull_Apart",
+          "name": "Band Pull Apart"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bandskullcrusher",
+      "canonical_id": 67,
+      "name": "Band Skull Crusher",
+      "zh_name": "弹力带颈后臂屈伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 167,
+          "name": "Band Skull Crusher",
+          "zh_name": "弹力带颈后臂屈伸"
+        },
+        {
+          "source": "community",
+          "id": "Band_Skull_Crusher",
+          "name": "Band Skull Crusher"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellabrollout",
+      "canonical_id": 68,
+      "name": "Barbell Ab Rollout",
+      "zh_name": "杠铃卷腹",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 168,
+          "name": "Barbell Ab Rollout",
+          "zh_name": "杠铃卷腹"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Ab_Rollout",
+          "name": "Barbell Ab Rollout"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellcurlslyingagainstanincline",
+      "canonical_id": 71,
+      "name": "Barbell Curls Lying Against An Incline",
+      "zh_name": "俯卧杠铃弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 169,
+          "name": "Barbell Curls Lying Against An Incline",
+          "zh_name": "俯卧杠铃弯举"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Curls_Lying_Against_An_Incline",
+          "name": "Barbell Curls Lying Against An Incline"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellhacksquat",
+      "canonical_id": 75,
+      "name": "Barbell Hack Squat",
+      "zh_name": "杠铃哈克深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 170,
+          "name": "Barbell Hack Squat",
+          "zh_name": "杠铃哈克深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Hack_Squat",
+          "name": "Barbell Hack Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellinclineshoulderraise",
+      "canonical_id": 77,
+      "name": "Barbell Incline Shoulder Raise",
+      "zh_name": "杠铃上斜肩推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 171,
+          "name": "Barbell Incline Shoulder Raise",
+          "zh_name": "杠铃上斜肩推举"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Incline_Shoulder_Raise",
+          "name": "Barbell Incline Shoulder Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbelllunge",
+      "canonical_id": 78,
+      "name": "Barbell Lunge",
+      "zh_name": "杠铃弓步蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 172,
+          "name": "Barbell Lunge",
+          "zh_name": "杠铃弓步蹲"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Lunge",
+          "name": "Barbell Lunge"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellreardeltrow",
+      "canonical_id": 79,
+      "name": "Barbell Rear Delt Row",
+      "zh_name": "杠铃后束划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 173,
+          "name": "Barbell Rear Delt Row",
+          "zh_name": "杠铃后束划船"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Rear_Delt_Row",
+          "name": "Barbell Rear Delt Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellrolloutfrombench",
+      "canonical_id": 80,
+      "name": "Barbell Rollout from Bench",
+      "zh_name": "长凳杠铃前推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 174,
+          "name": "Barbell Rollout from Bench",
+          "zh_name": "长凳杠铃前推"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Rollout_from_Bench",
+          "name": "Barbell Rollout from Bench"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellseatedcalfraise",
+      "canonical_id": 81,
+      "name": "Barbell Seated Calf Raise",
+      "zh_name": "坐姿杠铃提踵",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 175,
+          "name": "Barbell Seated Calf Raise",
+          "zh_name": "坐姿杠铃提踵"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Seated_Calf_Raise",
+          "name": "Barbell Seated Calf Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellshoulderpress",
+      "canonical_id": 82,
+      "name": "Barbell Shoulder Press",
+      "zh_name": "杠铃肩上推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 15,
+          "name": "Barbell Shoulder Press",
+          "zh_name": "杠铃肩上推举"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Shoulder_Press",
+          "name": "Barbell Shoulder Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellshrugbehindtheback",
+      "canonical_id": 84,
+      "name": "Barbell Shrug Behind The Back",
+      "zh_name": "背后杠铃耸肩",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 176,
+          "name": "Barbell Shrug Behind The Back",
+          "zh_name": "背后杠铃耸肩"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Shrug_Behind_The_Back",
+          "name": "Barbell Shrug Behind The Back"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellsidebend",
+      "canonical_id": 85,
+      "name": "Barbell Side Bend",
+      "zh_name": "杠铃侧屈",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 177,
+          "name": "Barbell Side Bend",
+          "zh_name": "杠铃侧屈"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Side_Bend",
+          "name": "Barbell Side Bend"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellsidesplitsquat",
+      "canonical_id": 86,
+      "name": "Barbell Side Split Squat",
+      "zh_name": "杠铃侧分蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 178,
+          "name": "Barbell Side Split Squat",
+          "zh_name": "杠铃侧分蹲"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Side_Split_Squat",
+          "name": "Barbell Side Split Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellsquat",
+      "canonical_id": 87,
+      "name": "Barbell Squat",
+      "zh_name": "杠铃深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 16,
+          "name": "Barbell Squat",
+          "zh_name": "杠铃深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Squat",
+          "name": "Barbell Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellstepups",
+      "canonical_id": 89,
+      "name": "Barbell Step Ups",
+      "zh_name": "杠铃单腿上台阶",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 179,
+          "name": "Barbell Step Ups",
+          "zh_name": "杠铃单腿上台阶"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Step_Ups",
+          "name": "Barbell Step Ups"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:barbellwalkinglunge",
+      "canonical_id": 90,
+      "name": "Barbell Walking Lunge",
+      "zh_name": "杠铃弓步走",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 180,
+          "name": "Barbell Walking Lunge",
+          "zh_name": "杠铃弓步走"
+        },
+        {
+          "source": "community",
+          "id": "Barbell_Walking_Lunge",
+          "name": "Barbell Walking Lunge"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:battlingropes",
+      "canonical_id": 91,
+      "name": "Battling Ropes",
+      "zh_name": "战绳训练",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 181,
+          "name": "Battling Ropes",
+          "zh_name": "战绳训练"
+        },
+        {
+          "source": "community",
+          "id": "Battling_Ropes",
+          "name": "Battling Ropes"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bearcrawlsleddrags",
+      "canonical_id": 92,
+      "name": "Bear Crawl Sled Drags",
+      "zh_name": "熊爬拉雪橇",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 182,
+          "name": "Bear Crawl Sled Drags",
+          "zh_name": "熊爬拉雪橇"
+        },
+        {
+          "source": "community",
+          "id": "Bear_Crawl_Sled_Drags",
+          "name": "Bear Crawl Sled Drags"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:benchjump",
+      "canonical_id": 96,
+      "name": "Bench Jump",
+      "zh_name": "跳箱",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 183,
+          "name": "Bench Jump",
+          "zh_name": "跳箱"
+        },
+        {
+          "source": "community",
+          "id": "Bench_Jump",
+          "name": "Bench Jump"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:benchsprint",
+      "canonical_id": 100,
+      "name": "Bench Sprint",
+      "zh_name": "长凳冲刺",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 184,
+          "name": "Bench Sprint",
+          "zh_name": "长凳冲刺"
+        },
+        {
+          "source": "community",
+          "id": "Bench_Sprint",
+          "name": "Bench Sprint"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bentarmbarbellpullover",
+      "canonical_id": 101,
+      "name": "Bent-Arm Barbell Pullover",
+      "zh_name": "弯臂杠铃仰卧拉胸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 185,
+          "name": "Bent-Arm Barbell Pullover",
+          "zh_name": "弯臂杠铃仰卧拉胸"
+        },
+        {
+          "source": "community",
+          "id": "Bent-Arm_Barbell_Pullover",
+          "name": "Bent-Arm Barbell Pullover"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bentoverdumbbellreardeltraisewithheadonbench",
+      "canonical_id": 104,
+      "name": "Bent Over Dumbbell Rear Delt Raise With Head On Bench",
+      "zh_name": "头靠凳俯身哑铃后束侧平举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 186,
+          "name": "Bent Over Dumbbell Rear Delt Raise With Head On Bench",
+          "zh_name": "头靠凳俯身哑铃后束侧平举"
+        },
+        {
+          "source": "community",
+          "id": "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench",
+          "name": "Bent Over Dumbbell Rear Delt Raise With Head On Bench"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bentoverlowpulleysidelateral",
+      "canonical_id": 105,
+      "name": "Bent Over Low-Pulley Side Lateral",
+      "zh_name": "俯身低位滑轮侧平举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 187,
+          "name": "Bent Over Low-Pulley Side Lateral",
+          "zh_name": "俯身低位滑轮侧平举"
+        },
+        {
+          "source": "community",
+          "id": "Bent_Over_Low-Pulley_Side_Lateral",
+          "name": "Bent Over Low-Pulley Side Lateral"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bentovertwoarmlongbarrow",
+      "canonical_id": 106,
+      "name": "Bent Over Two-Arm Long Bar Row",
+      "zh_name": "俯身双臂长杆划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 189,
+          "name": "Bent Over Two-Arm Long Bar Row",
+          "zh_name": "俯身双臂长杆划船"
+        },
+        {
+          "source": "community",
+          "id": "Bent_Over_Two-Arm_Long_Bar_Row",
+          "name": "Bent Over Two-Arm Long Bar Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bentpress",
+      "canonical_id": 109,
+      "name": "Bent Press",
+      "zh_name": "俯身推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 190,
+          "name": "Bent Press",
+          "zh_name": "俯身推举"
+        },
+        {
+          "source": "community",
+          "id": "Bent_Press",
+          "name": "Bent Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bicycling",
+      "canonical_id": 110,
+      "name": "Bicycling",
+      "zh_name": "骑自行车",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 191,
+          "name": "Bicycling",
+          "zh_name": "骑自行车"
+        },
+        {
+          "source": "community",
+          "id": "Bicycling",
+          "name": "Bicycling"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bodyweightflyes",
+      "canonical_id": 115,
+      "name": "Bodyweight Flyes",
+      "zh_name": "自重飞鸟",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 192,
+          "name": "Bodyweight Flyes",
+          "zh_name": "自重飞鸟"
+        },
+        {
+          "source": "community",
+          "id": "Bodyweight_Flyes",
+          "name": "Bodyweight Flyes"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:bradfordrockypresses",
+      "canonical_id": 128,
+      "name": "Bradford/Rocky Presses",
+      "zh_name": "布拉德福德/洛基推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 193,
+          "name": "Bradford/Rocky Presses",
+          "zh_name": "布拉德福德/洛基推举"
+        },
+        {
+          "source": "community",
+          "id": "Bradford_Rocky_Presses",
+          "name": "Bradford/Rocky Presses"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:butterfly",
+      "canonical_id": 130,
+      "name": "Butterfly",
+      "zh_name": "蝴蝶机夹胸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 194,
+          "name": "Butterfly",
+          "zh_name": "蝴蝶机夹胸"
+        },
+        {
+          "source": "community",
+          "id": "Butterfly",
+          "name": "Butterfly"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cablecrossover",
+      "canonical_id": 135,
+      "name": "Cable Crossover",
+      "zh_name": "绳索交叉夹胸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 195,
+          "name": "Cable Crossover",
+          "zh_name": "绳索交叉夹胸"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Crossover",
+          "name": "Cable Crossover"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cableinclinepushdown",
+      "canonical_id": 140,
+      "name": "Cable Incline Pushdown",
+      "zh_name": "高位滑轮斜躺下压",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 196,
+          "name": "Cable Incline Pushdown",
+          "zh_name": "高位滑轮斜躺下压"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Incline_Pushdown",
+          "name": "Cable Incline Pushdown"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cableinclinetricepsextension",
+      "canonical_id": 141,
+      "name": "Cable Incline Triceps Extension",
+      "zh_name": "高位滑轮斜躺三头肌伸展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 198,
+          "name": "Cable Incline Triceps Extension",
+          "zh_name": "高位滑轮斜躺三头肌伸展"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Incline_Triceps_Extension",
+          "name": "Cable Incline Triceps Extension"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cableinternalrotation",
+      "canonical_id": 142,
+      "name": "Cable Internal Rotation",
+      "zh_name": "绳索内旋",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 197,
+          "name": "Cable Internal Rotation",
+          "zh_name": "绳索内旋"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Internal_Rotation",
+          "name": "Cable Internal Rotation"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cableironcross",
+      "canonical_id": 143,
+      "name": "Cable Iron Cross",
+      "zh_name": "绳索十字交叉夹胸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 199,
+          "name": "Cable Iron Cross",
+          "zh_name": "绳索十字交叉夹胸"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Iron_Cross",
+          "name": "Cable Iron Cross"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cablejudoflip",
+      "canonical_id": 144,
+      "name": "Cable Judo Flip",
+      "zh_name": "缆绳柔道翻转",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 200,
+          "name": "Cable Judo Flip",
+          "zh_name": "缆绳柔道翻转"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Judo_Flip",
+          "name": "Cable Judo Flip"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cablereardeltfly",
+      "canonical_id": 148,
+      "name": "Cable Rear Delt Fly",
+      "zh_name": "绳索后束飞鸟",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 201,
+          "name": "Cable Rear Delt Fly",
+          "zh_name": "绳索后束飞鸟"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Rear_Delt_Fly",
+          "name": "Cable Rear Delt Fly"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cableropeoverheadtricepsextension",
+      "canonical_id": 150,
+      "name": "Cable Rope Overhead Triceps Extension",
+      "zh_name": "绳索高位三头肌伸展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 202,
+          "name": "Cable Rope Overhead Triceps Extension",
+          "zh_name": "绳索高位三头肌伸展"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Rope_Overhead_Triceps_Extension",
+          "name": "Cable Rope Overhead Triceps Extension"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cableropereardeltrows",
+      "canonical_id": 151,
+      "name": "Cable Rope Rear-Delt Rows",
+      "zh_name": "绳索后束划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 203,
+          "name": "Cable Rope Rear-Delt Rows",
+          "zh_name": "绳索后束划船"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Rope_Rear-Delt_Rows",
+          "name": "Cable Rope Rear-Delt Rows"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cableseatedcrunch",
+      "canonical_id": 153,
+      "name": "Cable Seated Crunch",
+      "zh_name": "坐姿绳索卷腹",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 204,
+          "name": "Cable Seated Crunch",
+          "zh_name": "坐姿绳索卷腹"
+        },
+        {
+          "source": "community",
+          "id": "Cable_Seated_Crunch",
+          "name": "Cable Seated Crunch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cardrivers",
+      "canonical_id": 168,
+      "name": "Car Drivers",
+      "zh_name": "方向盘模拟旋转",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 205,
+          "name": "Car Drivers",
+          "zh_name": "方向盘模拟旋转"
+        },
+        {
+          "source": "community",
+          "id": "Car_Drivers",
+          "name": "Car Drivers"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cariocaquickstep",
+      "canonical_id": 169,
+      "name": "Carioca Quick Step",
+      "zh_name": "卡波耶拉快速侧步",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 208,
+          "name": "Carioca Quick Step",
+          "zh_name": "卡波耶拉快速侧步"
+        },
+        {
+          "source": "community",
+          "id": "Carioca_Quick_Step",
+          "name": "Carioca Quick Step"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:chairlegextendedstretch",
+      "canonical_id": 176,
+      "name": "Chair Leg Extended Stretch",
+      "zh_name": "椅子上腿部伸展拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 207,
+          "name": "Chair Leg Extended Stretch",
+          "zh_name": "椅子上腿部伸展拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Chair_Leg_Extended_Stretch",
+          "name": "Chair Leg Extended Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:chairupperbodystretch",
+      "canonical_id": 178,
+      "name": "Chair Upper Body Stretch",
+      "zh_name": "椅子上半身拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 210,
+          "name": "Chair Upper Body Stretch",
+          "zh_name": "椅子上半身拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Chair_Upper_Body_Stretch",
+          "name": "Chair Upper Body Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:chestandfrontofshoulderstretch",
+      "canonical_id": 179,
+      "name": "Chest And Front Of Shoulder Stretch",
+      "zh_name": "胸部和肩部前侧拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 211,
+          "name": "Chest And Front Of Shoulder Stretch",
+          "zh_name": "胸部和肩部前侧拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Chest_And_Front_Of_Shoulder_Stretch",
+          "name": "Chest And Front Of Shoulder Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:closegripdumbbellpress",
+      "canonical_id": 199,
+      "name": "Close-Grip Dumbbell Press",
+      "zh_name": "窄距哑铃卧推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 212,
+          "name": "Close-Grip Dumbbell Press",
+          "zh_name": "窄距哑铃卧推"
+        },
+        {
+          "source": "community",
+          "id": "Close-Grip_Dumbbell_Press",
+          "name": "Close-Grip Dumbbell Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cocoons",
+      "canonical_id": 206,
+      "name": "Cocoons",
+      "zh_name": "茧式动作",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 213,
+          "name": "Cocoons",
+          "zh_name": "茧式动作"
+        },
+        {
+          "source": "community",
+          "id": "Cocoons",
+          "name": "Cocoons"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:conanswheel",
+      "canonical_id": 207,
+      "name": "Conan's Wheel",
+      "zh_name": "柯南之轮",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 214,
+          "name": "Conan's Wheel",
+          "zh_name": "柯南之轮"
+        },
+        {
+          "source": "community",
+          "id": "Conans_Wheel",
+          "name": "Conan's Wheel"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:crossoverreverselunge",
+      "canonical_id": 213,
+      "name": "Crossover Reverse Lunge",
+      "zh_name": "交叉后弓步",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 215,
+          "name": "Crossover Reverse Lunge",
+          "zh_name": "交叉后弓步"
+        },
+        {
+          "source": "community",
+          "id": "Crossover_Reverse_Lunge",
+          "name": "Crossover Reverse Lunge"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:crucifix",
+      "canonical_id": 215,
+      "name": "Crucifix",
+      "zh_name": "十字架静态支撑",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 216,
+          "name": "Crucifix",
+          "zh_name": "十字架静态支撑"
+        },
+        {
+          "source": "community",
+          "id": "Crucifix",
+          "name": "Crucifix"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:crunches",
+      "canonical_id": 216,
+      "name": "Crunches",
+      "zh_name": "卷腹",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 20,
+          "name": "Crunches",
+          "zh_name": "卷腹"
+        },
+        {
+          "source": "community",
+          "id": "Crunches",
+          "name": "Crunches"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:cubanpress",
+      "canonical_id": 219,
+      "name": "Cuban Press",
+      "zh_name": "古巴推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 217,
+          "name": "Cuban Press",
+          "zh_name": "古巴推举"
+        },
+        {
+          "source": "community",
+          "id": "Cuban_Press",
+          "name": "Cuban Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:dancersstretch",
+      "canonical_id": 220,
+      "name": "Dancer's Stretch",
+      "zh_name": "舞者式拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 218,
+          "name": "Dancer's Stretch",
+          "zh_name": "舞者式拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Dancers_Stretch",
+          "name": "Dancer's Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:deadbug",
+      "canonical_id": 221,
+      "name": "Dead Bug",
+      "zh_name": "死虫式",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 219,
+          "name": "Dead Bug",
+          "zh_name": "死虫式"
+        },
+        {
+          "source": "community",
+          "id": "Dead_Bug",
+          "name": "Dead Bug"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:declinedumbbellbenchpress",
+      "canonical_id": 228,
+      "name": "Decline Dumbbell Bench Press",
+      "zh_name": "下斜哑铃卧推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 128,
+          "name": "Decline Dumbbell Bench Press",
+          "zh_name": "下斜哑铃卧推"
+        },
+        {
+          "source": "community",
+          "id": "Decline_Dumbbell_Bench_Press",
+          "name": "Decline Dumbbell Bench Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:dumbbellbenchpress",
+      "canonical_id": 253,
+      "name": "Dumbbell Bench Press",
+      "zh_name": "哑铃卧推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 64,
+          "name": "Dumbbell Bench Press",
+          "zh_name": "哑铃卧推"
+        },
+        {
+          "source": "community",
+          "id": "Dumbbell_Bench_Press",
+          "name": "Dumbbell Bench Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:dumbbellflyes",
+      "canonical_id": 259,
+      "name": "Dumbbell Flyes",
+      "zh_name": "哑铃飞鸟",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 66,
+          "name": "Dumbbell Flyes",
+          "zh_name": "哑铃飞鸟"
+        },
+        {
+          "source": "community",
+          "id": "Dumbbell_Flyes",
+          "name": "Dumbbell Flyes"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:dumbbellinclinerow",
+      "canonical_id": 261,
+      "name": "Dumbbell Incline Row",
+      "zh_name": "上斜哑铃划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 220,
+          "name": "Dumbbell Incline Row",
+          "zh_name": "上斜哑铃划船"
+        },
+        {
+          "source": "community",
+          "id": "Dumbbell_Incline_Row",
+          "name": "Dumbbell Incline Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:dumbbelllyingonearmrearlateralraise",
+      "canonical_id": 264,
+      "name": "Dumbbell Lying One-Arm Rear Lateral Raise",
+      "zh_name": "哑铃仰卧单臂后外侧平举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 221,
+          "name": "Dumbbell Lying One-Arm Rear Lateral Raise",
+          "zh_name": "哑铃仰卧单臂后外侧平举"
+        },
+        {
+          "source": "community",
+          "id": "Dumbbell_Lying_One-Arm_Rear_Lateral_Raise",
+          "name": "Dumbbell Lying One-Arm Rear Lateral Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:dumbbelllyingpronation",
+      "canonical_id": 265,
+      "name": "Dumbbell Lying Pronation",
+      "zh_name": "哑铃俯卧外旋",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 222,
+          "name": "Dumbbell Lying Pronation",
+          "zh_name": "哑铃俯卧外旋"
+        },
+        {
+          "source": "community",
+          "id": "Dumbbell_Lying_Pronation",
+          "name": "Dumbbell Lying Pronation"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:elbowcircles",
+      "canonical_id": 285,
+      "name": "Elbow Circles",
+      "zh_name": "肘部绕环",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 223,
+          "name": "Elbow Circles",
+          "zh_name": "肘部绕环"
+        },
+        {
+          "source": "community",
+          "id": "Elbow_Circles",
+          "name": "Elbow Circles"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:elevatedbacklunge",
+      "canonical_id": 288,
+      "name": "Elevated Back Lunge",
+      "zh_name": "抬高式后弓步",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 224,
+          "name": "Elevated Back Lunge",
+          "zh_name": "抬高式后弓步"
+        },
+        {
+          "source": "community",
+          "id": "Elevated_Back_Lunge",
+          "name": "Elevated Back Lunge"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:ellipticaltrainer",
+      "canonical_id": 290,
+      "name": "Elliptical Trainer",
+      "zh_name": "椭圆机训练",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 225,
+          "name": "Elliptical Trainer",
+          "zh_name": "椭圆机训练"
+        },
+        {
+          "source": "community",
+          "id": "Elliptical_Trainer",
+          "name": "Elliptical Trainer"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:externalrotationwithband",
+      "canonical_id": 295,
+      "name": "External Rotation with Band",
+      "zh_name": "弹力带肩外旋",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 226,
+          "name": "External Rotation with Band",
+          "zh_name": "弹力带肩外旋"
+        },
+        {
+          "source": "community",
+          "id": "External_Rotation_with_Band",
+          "name": "External Rotation with Band"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:facepull",
+      "canonical_id": 297,
+      "name": "Face Pull",
+      "zh_name": "面拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 227,
+          "name": "Face Pull",
+          "zh_name": "面拉"
+        },
+        {
+          "source": "community",
+          "id": "Face_Pull",
+          "name": "Face Pull"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:floorglutehamraise",
+      "canonical_id": 304,
+      "name": "Floor Glute-Ham Raise",
+      "zh_name": "地板臀腿弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 228,
+          "name": "Floor Glute-Ham Raise",
+          "zh_name": "地板臀腿弯举"
+        },
+        {
+          "source": "community",
+          "id": "Floor_Glute-Ham_Raise",
+          "name": "Floor Glute-Ham Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:flutterkicks",
+      "canonical_id": 306,
+      "name": "Flutter Kicks",
+      "zh_name": "快速踢腿",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 229,
+          "name": "Flutter Kicks",
+          "zh_name": "快速踢腿"
+        },
+        {
+          "source": "community",
+          "id": "Flutter_Kicks",
+          "name": "Flutter Kicks"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:fullrangeofmotionlatpulldown",
+      "canonical_id": 329,
+      "name": "Full Range-Of-Motion Lat Pulldown",
+      "zh_name": "全幅度高位下拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 230,
+          "name": "Full Range-Of-Motion Lat Pulldown",
+          "zh_name": "全幅度高位下拉"
+        },
+        {
+          "source": "community",
+          "id": "Full_Range-Of-Motion_Lat_Pulldown",
+          "name": "Full Range-Of-Motion Lat Pulldown"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:gobletsquat",
+      "canonical_id": 334,
+      "name": "Goblet Squat",
+      "zh_name": "高脚杯深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 26,
+          "name": "Goblet Squat",
+          "zh_name": "高脚杯深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Goblet_Squat",
+          "name": "Goblet Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:hacksquat",
+      "canonical_id": 341,
+      "name": "Hack Squat",
+      "zh_name": "哈克深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 125,
+          "name": "Hack Squat",
+          "zh_name": "哈克深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Hack_Squat",
+          "name": "Hack Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:heavybagthrust",
+      "canonical_id": 357,
+      "name": "Heavy Bag Thrust",
+      "zh_name": "重沙袋推击",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 231,
+          "name": "Heavy Bag Thrust",
+          "zh_name": "重沙袋推击"
+        },
+        {
+          "source": "community",
+          "id": "Heavy_Bag_Thrust",
+          "name": "Heavy Bag Thrust"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:hugaball",
+      "canonical_id": 363,
+      "name": "Hug A Ball",
+      "zh_name": "抱球动作",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 232,
+          "name": "Hug A Ball",
+          "zh_name": "抱球动作"
+        },
+        {
+          "source": "community",
+          "id": "Hug_A_Ball",
+          "name": "Hug A Ball"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:inclinebenchpull",
+      "canonical_id": 373,
+      "name": "Incline Bench Pull",
+      "zh_name": "斜凳下拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 233,
+          "name": "Incline Bench Pull",
+          "zh_name": "斜凳下拉"
+        },
+        {
+          "source": "community",
+          "id": "Incline_Bench_Pull",
+          "name": "Incline Bench Pull"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:invertedrow",
+      "canonical_id": 390,
+      "name": "Inverted Row",
+      "zh_name": "反向杠铃划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 234,
+          "name": "Inverted Row",
+          "zh_name": "反向杠铃划船"
+        },
+        {
+          "source": "community",
+          "id": "Inverted_Row",
+          "name": "Inverted Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:isometricchestsqueezes",
+      "canonical_id": 394,
+      "name": "Isometric Chest Squeezes",
+      "zh_name": "静态胸部挤压",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 235,
+          "name": "Isometric Chest Squeezes",
+          "zh_name": "静态胸部挤压"
+        },
+        {
+          "source": "community",
+          "id": "Isometric_Chest_Squeezes",
+          "name": "Isometric Chest Squeezes"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:jackknifesitup",
+      "canonical_id": 399,
+      "name": "Jackknife Sit-Up",
+      "zh_name": "折刀式仰卧起坐",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 236,
+          "name": "Jackknife Sit-Up",
+          "zh_name": "折刀式仰卧起坐"
+        },
+        {
+          "source": "community",
+          "id": "Jackknife_Sit-Up",
+          "name": "Jackknife Sit-Up"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:jandasitup",
+      "canonical_id": 400,
+      "name": "Janda Sit-Up",
+      "zh_name": "简达仰卧起坐",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 237,
+          "name": "Janda Sit-Up",
+          "zh_name": "简达仰卧起坐"
+        },
+        {
+          "source": "community",
+          "id": "Janda_Sit-Up",
+          "name": "Janda Sit-Up"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:jerkbalance",
+      "canonical_id": 402,
+      "name": "Jerk Balance",
+      "zh_name": "挺举平衡",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 238,
+          "name": "Jerk Balance",
+          "zh_name": "挺举平衡"
+        },
+        {
+          "source": "community",
+          "id": "Jerk_Balance",
+          "name": "Jerk Balance"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:jerkdipsquat",
+      "canonical_id": 403,
+      "name": "Jerk Dip Squat",
+      "zh_name": "挺举下蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 239,
+          "name": "Jerk Dip Squat",
+          "zh_name": "挺举下蹲"
+        },
+        {
+          "source": "community",
+          "id": "Jerk_Dip_Squat",
+          "name": "Jerk Dip Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kegload",
+      "canonical_id": 406,
+      "name": "Keg Load",
+      "zh_name": "酒桶搬运",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 241,
+          "name": "Keg Load",
+          "zh_name": "酒桶搬运"
+        },
+        {
+          "source": "community",
+          "id": "Keg_Load",
+          "name": "Keg Load"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kettlebellfigure8",
+      "canonical_id": 410,
+      "name": "Kettlebell Figure 8",
+      "zh_name": "壶铃8字绕环",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 242,
+          "name": "Kettlebell Figure 8",
+          "zh_name": "壶铃8字绕环"
+        },
+        {
+          "source": "community",
+          "id": "Kettlebell_Figure_8",
+          "name": "Kettlebell Figure 8"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kettlebellpirateships",
+      "canonical_id": 417,
+      "name": "Kettlebell Pirate Ships",
+      "zh_name": "壶铃海盗船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 243,
+          "name": "Kettlebell Pirate Ships",
+          "zh_name": "壶铃海盗船"
+        },
+        {
+          "source": "community",
+          "id": "Kettlebell_Pirate_Ships",
+          "name": "Kettlebell Pirate Ships"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kettlebellpistolsquat",
+      "canonical_id": 418,
+      "name": "Kettlebell Pistol Squat",
+      "zh_name": "壶铃单腿深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 244,
+          "name": "Kettlebell Pistol Squat",
+          "zh_name": "壶铃单腿深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Kettlebell_Pistol_Squat",
+          "name": "Kettlebell Pistol Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kettlebellseatedpress",
+      "canonical_id": 419,
+      "name": "Kettlebell Seated Press",
+      "zh_name": "坐姿壶铃推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 245,
+          "name": "Kettlebell Seated Press",
+          "zh_name": "坐姿壶铃推举"
+        },
+        {
+          "source": "community",
+          "id": "Kettlebell_Seated_Press",
+          "name": "Kettlebell Seated Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kettlebellseesawpress",
+      "canonical_id": 420,
+      "name": "Kettlebell Seesaw Press",
+      "zh_name": "壶铃跷跷板推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 246,
+          "name": "Kettlebell Seesaw Press",
+          "zh_name": "壶铃跷跷板推举"
+        },
+        {
+          "source": "community",
+          "id": "Kettlebell_Seesaw_Press",
+          "name": "Kettlebell Seesaw Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kettlebellsumohighpull",
+      "canonical_id": 421,
+      "name": "Kettlebell Sumo High Pull",
+      "zh_name": "壶铃相扑高拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 247,
+          "name": "Kettlebell Sumo High Pull",
+          "zh_name": "壶铃相扑高拉"
+        },
+        {
+          "source": "community",
+          "id": "Kettlebell_Sumo_High_Pull",
+          "name": "Kettlebell Sumo High Pull"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kettlebellthruster",
+      "canonical_id": 423,
+      "name": "Kettlebell Thruster",
+      "zh_name": "壶铃挺蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 248,
+          "name": "Kettlebell Thruster",
+          "zh_name": "壶铃挺蹲"
+        },
+        {
+          "source": "community",
+          "id": "Kettlebell_Thruster",
+          "name": "Kettlebell Thruster"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kippingmuscleup",
+      "canonical_id": 427,
+      "name": "Kipping Muscle Up",
+      "zh_name": "借力引体上拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 249,
+          "name": "Kipping Muscle Up",
+          "zh_name": "借力引体上拉"
+        },
+        {
+          "source": "community",
+          "id": "Kipping_Muscle_Up",
+          "name": "Kipping Muscle Up"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneeacrossthebody",
+      "canonical_id": 428,
+      "name": "Knee Across The Body",
+      "zh_name": "抱膝转体拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 250,
+          "name": "Knee Across The Body",
+          "zh_name": "抱膝转体拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Knee_Across_The_Body",
+          "name": "Knee Across The Body"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneecircles",
+      "canonical_id": 429,
+      "name": "Knee Circles",
+      "zh_name": "膝盖绕圈",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 251,
+          "name": "Knee Circles",
+          "zh_name": "膝盖绕圈"
+        },
+        {
+          "source": "community",
+          "id": "Knee_Circles",
+          "name": "Knee Circles"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneehipraiseonparallelbars",
+      "canonical_id": 431,
+      "name": "Knee/Hip Raise On Parallel Bars",
+      "zh_name": "双杠屈膝",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 252,
+          "name": "Knee/Hip Raise On Parallel Bars",
+          "zh_name": "双杠屈膝"
+        },
+        {
+          "source": "community",
+          "id": "Knee_Hip_Raise_On_Parallel_Bars",
+          "name": "Knee/Hip Raise On Parallel Bars"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneelingarmdrill",
+      "canonical_id": 433,
+      "name": "Kneeling Arm Drill",
+      "zh_name": "跪姿摆臂训练",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 254,
+          "name": "Kneeling Arm Drill",
+          "zh_name": "跪姿摆臂训练"
+        },
+        {
+          "source": "community",
+          "id": "Kneeling_Arm_Drill",
+          "name": "Kneeling Arm Drill"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneelingcabletricepsextension",
+      "canonical_id": 435,
+      "name": "Kneeling Cable Triceps Extension",
+      "zh_name": "跪姿绳索三头肌伸展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 255,
+          "name": "Kneeling Cable Triceps Extension",
+          "zh_name": "跪姿绳索三头肌伸展"
+        },
+        {
+          "source": "community",
+          "id": "Kneeling_Cable_Triceps_Extension",
+          "name": "Kneeling Cable Triceps Extension"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneelingforearmstretch",
+      "canonical_id": 436,
+      "name": "Kneeling Forearm Stretch",
+      "zh_name": "跪姿前臂拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 256,
+          "name": "Kneeling Forearm Stretch",
+          "zh_name": "跪姿前臂拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Kneeling_Forearm_Stretch",
+          "name": "Kneeling Forearm Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneelinghighpulleyrow",
+      "canonical_id": 437,
+      "name": "Kneeling High Pulley Row",
+      "zh_name": "跪姿高位滑轮划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 257,
+          "name": "Kneeling High Pulley Row",
+          "zh_name": "跪姿高位滑轮划船"
+        },
+        {
+          "source": "community",
+          "id": "Kneeling_High_Pulley_Row",
+          "name": "Kneeling High Pulley Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneelinghipflexor",
+      "canonical_id": 438,
+      "name": "Kneeling Hip Flexor",
+      "zh_name": "跪姿髋屈肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 258,
+          "name": "Kneeling Hip Flexor",
+          "zh_name": "跪姿髋屈肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Kneeling_Hip_Flexor",
+          "name": "Kneeling Hip Flexor"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneelingjumpsquat",
+      "canonical_id": 439,
+      "name": "Kneeling Jump Squat",
+      "zh_name": "跪姿跳蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 259,
+          "name": "Kneeling Jump Squat",
+          "zh_name": "跪姿跳蹲"
+        },
+        {
+          "source": "community",
+          "id": "Kneeling_Jump_Squat",
+          "name": "Kneeling Jump Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneelingsinglearmhighpulleyrow",
+      "canonical_id": 440,
+      "name": "Kneeling Single-Arm High Pulley Row",
+      "zh_name": "跪姿单臂高位滑轮下拉划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 260,
+          "name": "Kneeling Single-Arm High Pulley Row",
+          "zh_name": "跪姿单臂高位滑轮下拉划船"
+        },
+        {
+          "source": "community",
+          "id": "Kneeling_Single-Arm_High_Pulley_Row",
+          "name": "Kneeling Single-Arm High Pulley Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:kneetuckjump",
+      "canonical_id": 442,
+      "name": "Knee Tuck Jump",
+      "zh_name": "收腹跳",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 253,
+          "name": "Knee Tuck Jump",
+          "zh_name": "收腹跳"
+        },
+        {
+          "source": "community",
+          "id": "Knee_Tuck_Jump",
+          "name": "Knee Tuck Jump"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:landmine180s",
+      "canonical_id": 443,
+      "name": "Landmine 180's",
+      "zh_name": "地雷架180度转体",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 261,
+          "name": "Landmine 180's",
+          "zh_name": "地雷架180度转体"
+        },
+        {
+          "source": "community",
+          "id": "Landmine_180s",
+          "name": "Landmine 180's"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:landminelinearjammer",
+      "canonical_id": 444,
+      "name": "Landmine Linear Jammer",
+      "zh_name": "地雷架直线推击",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 262,
+          "name": "Landmine Linear Jammer",
+          "zh_name": "地雷架直线推击"
+        },
+        {
+          "source": "community",
+          "id": "Landmine_Linear_Jammer",
+          "name": "Landmine Linear Jammer"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lateralbound",
+      "canonical_id": 445,
+      "name": "Lateral Bound",
+      "zh_name": "侧向跳跃",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 263,
+          "name": "Lateral Bound",
+          "zh_name": "侧向跳跃"
+        },
+        {
+          "source": "community",
+          "id": "Lateral_Bound",
+          "name": "Lateral Bound"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lateralboxjump",
+      "canonical_id": 446,
+      "name": "Lateral Box Jump",
+      "zh_name": "侧向跳箱",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 264,
+          "name": "Lateral Box Jump",
+          "zh_name": "侧向跳箱"
+        },
+        {
+          "source": "community",
+          "id": "Lateral_Box_Jump",
+          "name": "Lateral Box Jump"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:latissimusdorsismr",
+      "canonical_id": 449,
+      "name": "Latissimus Dorsi - SMR",
+      "zh_name": "背阔肌自我肌筋膜放松",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 265,
+          "name": "Latissimus Dorsi - SMR",
+          "zh_name": "背阔肌自我肌筋膜放松"
+        },
+        {
+          "source": "community",
+          "id": "Latissimus_Dorsi-SMR",
+          "name": "Latissimus Dorsi-SMR"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:leglift",
+      "canonical_id": 451,
+      "name": "Leg Lift",
+      "zh_name": "后抬腿",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 267,
+          "name": "Leg Lift",
+          "zh_name": "后抬腿"
+        },
+        {
+          "source": "community",
+          "id": "Leg_Lift",
+          "name": "Leg Lift"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:leguphamstringstretch",
+      "canonical_id": 455,
+      "name": "Leg-Up Hamstring Stretch",
+      "zh_name": "抬腿腘绳肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 266,
+          "name": "Leg-Up Hamstring Stretch",
+          "zh_name": "抬腿腘绳肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Leg-Up_Hamstring_Stretch",
+          "name": "Leg-Up Hamstring Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:leveragedeadlift",
+      "canonical_id": 457,
+      "name": "Leverage Deadlift",
+      "zh_name": "器械硬拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 270,
+          "name": "Leverage Deadlift",
+          "zh_name": "器械硬拉"
+        },
+        {
+          "source": "community",
+          "id": "Leverage_Deadlift",
+          "name": "Leverage Deadlift"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:leveragedeclinechestpress",
+      "canonical_id": 458,
+      "name": "Leverage Decline Chest Press",
+      "zh_name": "器械下斜胸推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 269,
+          "name": "Leverage Decline Chest Press",
+          "zh_name": "器械下斜胸推"
+        },
+        {
+          "source": "community",
+          "id": "Leverage_Decline_Chest_Press",
+          "name": "Leverage Decline Chest Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:leveragehighrow",
+      "canonical_id": 459,
+      "name": "Leverage High Row",
+      "zh_name": "器械高位下拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 268,
+          "name": "Leverage High Row",
+          "zh_name": "器械高位下拉"
+        },
+        {
+          "source": "community",
+          "id": "Leverage_High_Row",
+          "name": "Leverage High Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:leverageinclinechestpress",
+      "canonical_id": 460,
+      "name": "Leverage Incline Chest Press",
+      "zh_name": "器械上斜胸推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 271,
+          "name": "Leverage Incline Chest Press",
+          "zh_name": "器械上斜胸推"
+        },
+        {
+          "source": "community",
+          "id": "Leverage_Incline_Chest_Press",
+          "name": "Leverage Incline Chest Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:leverageisorow",
+      "canonical_id": 461,
+      "name": "Leverage Iso Row",
+      "zh_name": "器械划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 272,
+          "name": "Leverage Iso Row",
+          "zh_name": "器械划船"
+        },
+        {
+          "source": "community",
+          "id": "Leverage_Iso_Row",
+          "name": "Leverage Iso Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:leverageshoulderpress",
+      "canonical_id": 462,
+      "name": "Leverage Shoulder Press",
+      "zh_name": "器械肩推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 273,
+          "name": "Leverage Shoulder Press",
+          "zh_name": "器械肩推"
+        },
+        {
+          "source": "community",
+          "id": "Leverage_Shoulder_Press",
+          "name": "Leverage Shoulder Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:leverageshrug",
+      "canonical_id": 463,
+      "name": "Leverage Shrug",
+      "zh_name": "器械耸肩",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 274,
+          "name": "Leverage Shrug",
+          "zh_name": "器械耸肩"
+        },
+        {
+          "source": "community",
+          "id": "Leverage_Shrug",
+          "name": "Leverage Shrug"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:linearaccelerationwalldrill",
+      "canonical_id": 465,
+      "name": "Linear Acceleration Wall Drill",
+      "zh_name": "直线加速靠墙练习",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 275,
+          "name": "Linear Acceleration Wall Drill",
+          "zh_name": "直线加速靠墙练习"
+        },
+        {
+          "source": "community",
+          "id": "Linear_Acceleration_Wall_Drill",
+          "name": "Linear Acceleration Wall Drill"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:loglift",
+      "canonical_id": 468,
+      "name": "Log Lift",
+      "zh_name": "原木推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 276,
+          "name": "Log Lift",
+          "zh_name": "原木推举"
+        },
+        {
+          "source": "community",
+          "id": "Log_Lift",
+          "name": "Log Lift"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:londonbridges",
+      "canonical_id": 469,
+      "name": "London Bridges",
+      "zh_name": "伦敦桥",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 277,
+          "name": "London Bridges",
+          "zh_name": "伦敦桥"
+        },
+        {
+          "source": "community",
+          "id": "London_Bridges",
+          "name": "London Bridges"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lookingatceiling",
+      "canonical_id": 470,
+      "name": "Looking At Ceiling",
+      "zh_name": "仰望天花板",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 278,
+          "name": "Looking At Ceiling",
+          "zh_name": "仰望天花板"
+        },
+        {
+          "source": "community",
+          "id": "Looking_At_Ceiling",
+          "name": "Looking At Ceiling"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lowcablecrossover",
+      "canonical_id": 472,
+      "name": "Low Cable Crossover",
+      "zh_name": "低位绳索夹胸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 279,
+          "name": "Low Cable Crossover",
+          "zh_name": "低位绳索夹胸"
+        },
+        {
+          "source": "community",
+          "id": "Low_Cable_Crossover",
+          "name": "Low Cable Crossover"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lowerbacksmr",
+      "canonical_id": 478,
+      "name": "Lower Back-SMR",
+      "zh_name": "下背部自我肌筋膜放松",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 281,
+          "name": "Lower Back-SMR",
+          "zh_name": "下背部自我肌筋膜放松"
+        },
+        {
+          "source": "community",
+          "id": "Lower_Back-SMR",
+          "name": "Lower Back-SMR"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lowpulleyrowtoneck",
+      "canonical_id": 480,
+      "name": "Low Pulley Row To Neck",
+      "zh_name": "低位滑轮颈前下拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 280,
+          "name": "Low Pulley Row To Neck",
+          "zh_name": "低位滑轮颈前下拉"
+        },
+        {
+          "source": "community",
+          "id": "Low_Pulley_Row_To_Neck",
+          "name": "Low Pulley Row To Neck"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lungepassthrough",
+      "canonical_id": 481,
+      "name": "Lunge Pass Through",
+      "zh_name": "弓步壶铃传递",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 282,
+          "name": "Lunge Pass Through",
+          "zh_name": "弓步壶铃传递"
+        },
+        {
+          "source": "community",
+          "id": "Lunge_Pass_Through",
+          "name": "Lunge Pass Through"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingbentleggroin",
+      "canonical_id": 483,
+      "name": "Lying Bent Leg Groin",
+      "zh_name": "仰卧屈膝腹股沟练习",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 283,
+          "name": "Lying Bent Leg Groin",
+          "zh_name": "仰卧屈膝腹股沟练习"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Bent_Leg_Groin",
+          "name": "Lying Bent Leg Groin"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingcablecurl",
+      "canonical_id": 484,
+      "name": "Lying Cable Curl",
+      "zh_name": "仰卧绳索弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 284,
+          "name": "Lying Cable Curl",
+          "zh_name": "仰卧绳索弯举"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Cable_Curl",
+          "name": "Lying Cable Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingcamberedbarbellrow",
+      "canonical_id": 485,
+      "name": "Lying Cambered Barbell Row",
+      "zh_name": "俯身弯杠杠铃划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 285,
+          "name": "Lying Cambered Barbell Row",
+          "zh_name": "俯身弯杠杠铃划船"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Cambered_Barbell_Row",
+          "name": "Lying Cambered Barbell Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingcrossover",
+      "canonical_id": 489,
+      "name": "Lying Crossover",
+      "zh_name": "仰卧交叉腿",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 286,
+          "name": "Lying Crossover",
+          "zh_name": "仰卧交叉腿"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Crossover",
+          "name": "Lying Crossover"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingfacedownplateneckresistance",
+      "canonical_id": 491,
+      "name": "Lying Face Down Plate Neck Resistance",
+      "zh_name": "俯卧持板颈部抗阻训练",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 287,
+          "name": "Lying Face Down Plate Neck Resistance",
+          "zh_name": "俯卧持板颈部抗阻训练"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Face_Down_Plate_Neck_Resistance",
+          "name": "Lying Face Down Plate Neck Resistance"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingglute",
+      "canonical_id": 493,
+      "name": "Lying Glute",
+      "zh_name": "仰卧臀肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 288,
+          "name": "Lying Glute",
+          "zh_name": "仰卧臀肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Glute",
+          "name": "Lying Glute"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyinghamstring",
+      "canonical_id": 494,
+      "name": "Lying Hamstring",
+      "zh_name": "仰卧腘绳肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 289,
+          "name": "Lying Hamstring",
+          "zh_name": "仰卧腘绳肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Hamstring",
+          "name": "Lying Hamstring"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingonearmlateralraise",
+      "canonical_id": 497,
+      "name": "Lying One-Arm Lateral Raise",
+      "zh_name": "俯卧单臂侧平举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 291,
+          "name": "Lying One-Arm Lateral Raise",
+          "zh_name": "俯卧单臂侧平举"
+        },
+        {
+          "source": "community",
+          "id": "Lying_One-Arm_Lateral_Raise",
+          "name": "Lying One-Arm Lateral Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingpronequadriceps",
+      "canonical_id": 498,
+      "name": "Lying Prone Quadriceps",
+      "zh_name": "俯卧位股四头肌训练",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 292,
+          "name": "Lying Prone Quadriceps",
+          "zh_name": "俯卧位股四头肌训练"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Prone_Quadriceps",
+          "name": "Lying Prone Quadriceps"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingreardeltraise",
+      "canonical_id": 499,
+      "name": "Lying Rear Delt Raise",
+      "zh_name": "俯身哑铃后束侧平举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 293,
+          "name": "Lying Rear Delt Raise",
+          "zh_name": "俯身哑铃后束侧平举"
+        },
+        {
+          "source": "community",
+          "id": "Lying_Rear_Delt_Raise",
+          "name": "Lying Rear Delt Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:lyingtbarrow",
+      "canonical_id": 501,
+      "name": "Lying T-Bar Row",
+      "zh_name": "俯卧T杠划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 294,
+          "name": "Lying T-Bar Row",
+          "zh_name": "俯卧T杠划船"
+        },
+        {
+          "source": "community",
+          "id": "Lying_T-Bar_Row",
+          "name": "Lying T-Bar Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:medicineballchestpass",
+      "canonical_id": 509,
+      "name": "Medicine Ball Chest Pass",
+      "zh_name": "药球胸前传球",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 295,
+          "name": "Medicine Ball Chest Pass",
+          "zh_name": "药球胸前传球"
+        },
+        {
+          "source": "community",
+          "id": "Medicine_Ball_Chest_Pass",
+          "name": "Medicine Ball Chest Pass"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:medicineballfulltwist",
+      "canonical_id": 510,
+      "name": "Medicine Ball Full Twist",
+      "zh_name": "药球全旋扭转",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 297,
+          "name": "Medicine Ball Full Twist",
+          "zh_name": "药球全旋扭转"
+        },
+        {
+          "source": "community",
+          "id": "Medicine_Ball_Full_Twist",
+          "name": "Medicine Ball Full Twist"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:medicineballscoopthrow",
+      "canonical_id": 511,
+      "name": "Medicine Ball Scoop Throw",
+      "zh_name": "药球舀抛",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 296,
+          "name": "Medicine Ball Scoop Throw",
+          "zh_name": "药球舀抛"
+        },
+        {
+          "source": "community",
+          "id": "Medicine_Ball_Scoop_Throw",
+          "name": "Medicine Ball Scoop Throw"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:middlebackstretch",
+      "canonical_id": 513,
+      "name": "Middle Back Stretch",
+      "zh_name": "中背部拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 298,
+          "name": "Middle Back Stretch",
+          "zh_name": "中背部拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Middle_Back_Stretch",
+          "name": "Middle Back Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:monsterwalk",
+      "canonical_id": 515,
+      "name": "Monster Walk",
+      "zh_name": "怪兽行走",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 299,
+          "name": "Monster Walk",
+          "zh_name": "怪兽行走"
+        },
+        {
+          "source": "community",
+          "id": "Monster_Walk",
+          "name": "Monster Walk"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:narrowstancesquats",
+      "canonical_id": 521,
+      "name": "Narrow Stance Squats",
+      "zh_name": "窄距深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 300,
+          "name": "Narrow Stance Squats",
+          "zh_name": "窄距深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Narrow_Stance_Squats",
+          "name": "Narrow Stance Squats"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:naturalglutehamraise",
+      "canonical_id": 522,
+      "name": "Natural Glute Ham Raise",
+      "zh_name": "自然臀腿弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 301,
+          "name": "Natural Glute Ham Raise",
+          "zh_name": "自然臀腿弯举"
+        },
+        {
+          "source": "community",
+          "id": "Natural_Glute_Ham_Raise",
+          "name": "Natural Glute Ham Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:necksmr",
+      "canonical_id": 524,
+      "name": "Neck-SMR",
+      "zh_name": "颈部自我肌筋膜放松",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 302,
+          "name": "Neck-SMR",
+          "zh_name": "颈部自我肌筋膜放松"
+        },
+        {
+          "source": "community",
+          "id": "Neck-SMR",
+          "name": "Neck-SMR"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:obliquecrunchesonthefloor",
+      "canonical_id": 527,
+      "name": "Oblique Crunches - On The Floor",
+      "zh_name": "仰卧侧卷腹",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 303,
+          "name": "Oblique Crunches - On The Floor",
+          "zh_name": "仰卧侧卷腹"
+        },
+        {
+          "source": "community",
+          "id": "Oblique_Crunches_-_On_The_Floor",
+          "name": "Oblique Crunches - On The Floor"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:onearmagainstwall",
+      "canonical_id": 529,
+      "name": "One Arm Against Wall",
+      "zh_name": "单臂靠墙拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 309,
+          "name": "One Arm Against Wall",
+          "zh_name": "单臂靠墙拉伸"
+        },
+        {
+          "source": "community",
+          "id": "One_Arm_Against_Wall",
+          "name": "One Arm Against Wall"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:onearmchinup",
+      "canonical_id": 530,
+      "name": "One Arm Chin-Up",
+      "zh_name": "单臂引体向上",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 310,
+          "name": "One Arm Chin-Up",
+          "zh_name": "单臂引体向上"
+        },
+        {
+          "source": "community",
+          "id": "One_Arm_Chin-Up",
+          "name": "One Arm Chin-Up"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:onearminclinelateralraise",
+      "canonical_id": 535,
+      "name": "One-Arm Incline Lateral Raise",
+      "zh_name": "单臂斜板侧平举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 306,
+          "name": "One-Arm Incline Lateral Raise",
+          "zh_name": "单臂斜板侧平举"
+        },
+        {
+          "source": "community",
+          "id": "One-Arm_Incline_Lateral_Raise",
+          "name": "One-Arm Incline Lateral Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:onekneetochest",
+      "canonical_id": 558,
+      "name": "One Knee To Chest",
+      "zh_name": "单膝抱胸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 311,
+          "name": "One Knee To Chest",
+          "zh_name": "单膝抱胸"
+        },
+        {
+          "source": "community",
+          "id": "One_Knee_To_Chest",
+          "name": "One Knee To Chest"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:onyourbackquadstretch",
+      "canonical_id": 560,
+      "name": "On-Your-Back Quad Stretch",
+      "zh_name": "仰卧股四头肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 304,
+          "name": "On-Your-Back Quad Stretch",
+          "zh_name": "仰卧股四头肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "On-Your-Back_Quad_Stretch",
+          "name": "On-Your-Back Quad Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:onyoursidequadstretch",
+      "canonical_id": 561,
+      "name": "On Your Side Quad Stretch",
+      "zh_name": "侧卧股四头肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 305,
+          "name": "On Your Side Quad Stretch",
+          "zh_name": "侧卧股四头肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "On_Your_Side_Quad_Stretch",
+          "name": "On Your Side Quad Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:openpalmkettlebellclean",
+      "canonical_id": 562,
+      "name": "Open Palm Kettlebell Clean",
+      "zh_name": "开掌壶铃翻举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 312,
+          "name": "Open Palm Kettlebell Clean",
+          "zh_name": "开掌壶铃翻举"
+        },
+        {
+          "source": "community",
+          "id": "Open_Palm_Kettlebell_Clean",
+          "name": "Open Palm Kettlebell Clean"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:otisup",
+      "canonical_id": 563,
+      "name": "Otis-Up",
+      "zh_name": "奥蒂斯起身",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 313,
+          "name": "Otis-Up",
+          "zh_name": "奥蒂斯起身"
+        },
+        {
+          "source": "community",
+          "id": "Otis-Up",
+          "name": "Otis-Up"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:overheadlat",
+      "canonical_id": 564,
+      "name": "Overhead Lat",
+      "zh_name": "过头式背阔肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 315,
+          "name": "Overhead Lat",
+          "zh_name": "过头式背阔肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Overhead_Lat",
+          "name": "Overhead Lat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:overheadslam",
+      "canonical_id": 565,
+      "name": "Overhead Slam",
+      "zh_name": "过头猛砸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 316,
+          "name": "Overhead Slam",
+          "zh_name": "过头猛砸"
+        },
+        {
+          "source": "community",
+          "id": "Overhead_Slam",
+          "name": "Overhead Slam"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:overheadstretch",
+      "canonical_id": 567,
+      "name": "Overhead Stretch",
+      "zh_name": "过头伸展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 317,
+          "name": "Overhead Stretch",
+          "zh_name": "过头伸展"
+        },
+        {
+          "source": "community",
+          "id": "Overhead_Stretch",
+          "name": "Overhead Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:overheadtriceps",
+      "canonical_id": 568,
+      "name": "Overhead Triceps",
+      "zh_name": "过头三头肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 318,
+          "name": "Overhead Triceps",
+          "zh_name": "过头三头肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Overhead_Triceps",
+          "name": "Overhead Triceps"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:pallofpress",
+      "canonical_id": 569,
+      "name": "Pallof Press",
+      "zh_name": "帕洛夫推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 319,
+          "name": "Pallof Press",
+          "zh_name": "帕洛夫推"
+        },
+        {
+          "source": "community",
+          "id": "Pallof_Press",
+          "name": "Pallof Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:pallofpresswithrotation",
+      "canonical_id": 570,
+      "name": "Pallof Press With Rotation",
+      "zh_name": "带旋转的帕洛夫推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 320,
+          "name": "Pallof Press With Rotation",
+          "zh_name": "带旋转的帕洛夫推"
+        },
+        {
+          "source": "community",
+          "id": "Pallof_Press_With_Rotation",
+          "name": "Pallof Press With Rotation"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:peronealssmr",
+      "canonical_id": 580,
+      "name": "Peroneals-SMR",
+      "zh_name": "腓骨肌自我肌筋膜放松",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 321,
+          "name": "Peroneals-SMR",
+          "zh_name": "腓骨肌自我肌筋膜放松"
+        },
+        {
+          "source": "community",
+          "id": "Peroneals-SMR",
+          "name": "Peroneals-SMR"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:peronealsstretch",
+      "canonical_id": 581,
+      "name": "Peroneals Stretch",
+      "zh_name": "腓骨肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 322,
+          "name": "Peroneals Stretch",
+          "zh_name": "腓骨肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Peroneals_Stretch",
+          "name": "Peroneals Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:piriformissmr",
+      "canonical_id": 584,
+      "name": "Piriformis-SMR",
+      "zh_name": "梨状肌自我肌筋膜放松",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 323,
+          "name": "Piriformis-SMR",
+          "zh_name": "梨状肌自我肌筋膜放松"
+        },
+        {
+          "source": "community",
+          "id": "Piriformis-SMR",
+          "name": "Piriformis-SMR"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:platetwist",
+      "canonical_id": 587,
+      "name": "Plate Twist",
+      "zh_name": "杠铃片转体",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 324,
+          "name": "Plate Twist",
+          "zh_name": "杠铃片转体"
+        },
+        {
+          "source": "community",
+          "id": "Plate_Twist",
+          "name": "Plate Twist"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:platformhamstringslides",
+      "canonical_id": 588,
+      "name": "Platform Hamstring Slides",
+      "zh_name": "平台腘绳肌滑动",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 326,
+          "name": "Platform Hamstring Slides",
+          "zh_name": "平台腘绳肌滑动"
+        },
+        {
+          "source": "community",
+          "id": "Platform_Hamstring_Slides",
+          "name": "Platform Hamstring Slides"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:posteriortibialisstretch",
+      "canonical_id": 593,
+      "name": "Posterior Tibialis Stretch",
+      "zh_name": "胫骨后肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 325,
+          "name": "Posterior Tibialis Stretch",
+          "zh_name": "胫骨后肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Posterior_Tibialis_Stretch",
+          "name": "Posterior Tibialis Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:prowlersprint",
+      "canonical_id": 606,
+      "name": "Prowler Sprint",
+      "zh_name": "推雪橇冲刺",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 327,
+          "name": "Prowler Sprint",
+          "zh_name": "推雪橇冲刺"
+        },
+        {
+          "source": "community",
+          "id": "Prowler_Sprint",
+          "name": "Prowler Sprint"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:quadstretch",
+      "canonical_id": 620,
+      "name": "Quad Stretch",
+      "zh_name": "股四头肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 328,
+          "name": "Quad Stretch",
+          "zh_name": "股四头肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Quad_Stretch",
+          "name": "Quad Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:rearlegraises",
+      "canonical_id": 625,
+      "name": "Rear Leg Raises",
+      "zh_name": "跪姿后抬腿",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 330,
+          "name": "Rear Leg Raises",
+          "zh_name": "跪姿后抬腿"
+        },
+        {
+          "source": "community",
+          "id": "Rear_Leg_Raises",
+          "name": "Rear Leg Raises"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:reversebarbellcurl",
+      "canonical_id": 633,
+      "name": "Reverse Barbell Curl",
+      "zh_name": "反握杠铃弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 331,
+          "name": "Reverse Barbell Curl",
+          "zh_name": "反握杠铃弯举"
+        },
+        {
+          "source": "community",
+          "id": "Reverse_Barbell_Curl",
+          "name": "Reverse Barbell Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:reversemachineflyes",
+      "canonical_id": 643,
+      "name": "Reverse Machine Flyes",
+      "zh_name": "反向器械飞鸟",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 332,
+          "name": "Reverse Machine Flyes",
+          "zh_name": "反向器械飞鸟"
+        },
+        {
+          "source": "community",
+          "id": "Reverse_Machine_Flyes",
+          "name": "Reverse Machine Flyes"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:romaniandeadlift",
+      "canonical_id": 654,
+      "name": "Romanian Deadlift",
+      "zh_name": "罗马尼亚硬拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 420,
+          "name": "Romanian Deadlift",
+          "zh_name": "罗马尼亚硬拉"
+        },
+        {
+          "source": "community",
+          "id": "Romanian_Deadlift",
+          "name": "Romanian Deadlift"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:ropeclimb",
+      "canonical_id": 657,
+      "name": "Rope Climb",
+      "zh_name": "爬绳",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 333,
+          "name": "Rope Climb",
+          "zh_name": "爬绳"
+        },
+        {
+          "source": "community",
+          "id": "Rope_Climb",
+          "name": "Rope Climb"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:ropestraightarmpulldown",
+      "canonical_id": 660,
+      "name": "Rope Straight-Arm Pulldown",
+      "zh_name": "绳索直臂下拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 334,
+          "name": "Rope Straight-Arm Pulldown",
+          "zh_name": "绳索直臂下拉"
+        },
+        {
+          "source": "community",
+          "id": "Rope_Straight-Arm_Pulldown",
+          "name": "Rope Straight-Arm Pulldown"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:roundtheworldshoulderstretch",
+      "canonical_id": 661,
+      "name": "Round The World Shoulder Stretch",
+      "zh_name": "环球式肩部拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 335,
+          "name": "Round The World Shoulder Stretch",
+          "zh_name": "环球式肩部拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Round_The_World_Shoulder_Stretch",
+          "name": "Round The World Shoulder Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:rowingstationary",
+      "canonical_id": 662,
+      "name": "Rowing, Stationary",
+      "zh_name": "固定划船机训练",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 336,
+          "name": "Rowing, Stationary",
+          "zh_name": "固定划船机训练"
+        },
+        {
+          "source": "community",
+          "id": "Rowing_Stationary",
+          "name": "Rowing, Stationary"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:scapularpullup",
+      "canonical_id": 667,
+      "name": "Scapular Pull-Up",
+      "zh_name": "肩胛骨引体向上",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 338,
+          "name": "Scapular Pull-Up",
+          "zh_name": "肩胛骨引体向上"
+        },
+        {
+          "source": "community",
+          "id": "Scapular_Pull-Up",
+          "name": "Scapular Pull-Up"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:scissorkick",
+      "canonical_id": 669,
+      "name": "Scissor Kick",
+      "zh_name": "剪式踢腿",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 339,
+          "name": "Scissor Kick",
+          "zh_name": "剪式踢腿"
+        },
+        {
+          "source": "community",
+          "id": "Scissor_Kick",
+          "name": "Scissor Kick"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedbandhamstringcurl",
+      "canonical_id": 671,
+      "name": "Seated Band Hamstring Curl",
+      "zh_name": "坐姿弹力带腿弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 340,
+          "name": "Seated Band Hamstring Curl",
+          "zh_name": "坐姿弹力带腿弯举"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Band_Hamstring_Curl",
+          "name": "Seated Band Hamstring Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedbarbellmilitarypress",
+      "canonical_id": 672,
+      "name": "Seated Barbell Military Press",
+      "zh_name": "坐姿杠铃肩推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 341,
+          "name": "Seated Barbell Military Press",
+          "zh_name": "坐姿杠铃肩推"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Barbell_Military_Press",
+          "name": "Seated Barbell Military Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedbentoveronearmdumbbelltricepsextension",
+      "canonical_id": 674,
+      "name": "Seated Bent-Over One-Arm Dumbbell Triceps Extension",
+      "zh_name": "坐姿俯身单臂哑铃三头肌伸展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 342,
+          "name": "Seated Bent-Over One-Arm Dumbbell Triceps Extension",
+          "zh_name": "坐姿俯身单臂哑铃三头肌伸展"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Bent-Over_One-Arm_Dumbbell_Triceps_Extension",
+          "name": "Seated Bent-Over One-Arm Dumbbell Triceps Extension"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedbentoverreardeltraise",
+      "canonical_id": 675,
+      "name": "Seated Bent-Over Rear Delt Raise",
+      "zh_name": "坐姿俯身后侧三角肌上举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 343,
+          "name": "Seated Bent-Over Rear Delt Raise",
+          "zh_name": "坐姿俯身后侧三角肌上举"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Bent-Over_Rear_Delt_Raise",
+          "name": "Seated Bent-Over Rear Delt Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedbentovertwoarmdumbbelltricepsextension",
+      "canonical_id": 676,
+      "name": "Seated Bent-Over Two-Arm Dumbbell Triceps Extension",
+      "zh_name": "坐姿俯身双臂哑铃三头肌伸展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 344,
+          "name": "Seated Bent-Over Two-Arm Dumbbell Triceps Extension",
+          "zh_name": "坐姿俯身双臂哑铃三头肌伸展"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Bent-Over_Two-Arm_Dumbbell_Triceps_Extension",
+          "name": "Seated Bent-Over Two-Arm Dumbbell Triceps Extension"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedbiceps",
+      "canonical_id": 677,
+      "name": "Seated Biceps",
+      "zh_name": "坐姿肱二头肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 345,
+          "name": "Seated Biceps",
+          "zh_name": "坐姿肱二头肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Biceps",
+          "name": "Seated Biceps"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedcalfstretch",
+      "canonical_id": 681,
+      "name": "Seated Calf Stretch",
+      "zh_name": "坐姿小腿拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 346,
+          "name": "Seated Calf Stretch",
+          "zh_name": "坐姿小腿拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Calf_Stretch",
+          "name": "Seated Calf Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedflatbenchlegpullin",
+      "canonical_id": 688,
+      "name": "Seated Flat Bench Leg Pull-In",
+      "zh_name": "坐姿平板凳屈膝收腹",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 347,
+          "name": "Seated Flat Bench Leg Pull-In",
+          "zh_name": "坐姿平板凳屈膝收腹"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Flat_Bench_Leg_Pull-In",
+          "name": "Seated Flat Bench Leg Pull-In"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedfloorhamstringstretch",
+      "canonical_id": 689,
+      "name": "Seated Floor Hamstring Stretch",
+      "zh_name": "坐姿地面腘绳肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 348,
+          "name": "Seated Floor Hamstring Stretch",
+          "zh_name": "坐姿地面腘绳肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Floor_Hamstring_Stretch",
+          "name": "Seated Floor Hamstring Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedfrontdeltoid",
+      "canonical_id": 690,
+      "name": "Seated Front Deltoid",
+      "zh_name": "坐姿前三角肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 349,
+          "name": "Seated Front Deltoid",
+          "zh_name": "坐姿前三角肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Front_Deltoid",
+          "name": "Seated Front Deltoid"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedglute",
+      "canonical_id": 691,
+      "name": "Seated Glute",
+      "zh_name": "坐姿臀肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 350,
+          "name": "Seated Glute",
+          "zh_name": "坐姿臀肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Glute",
+          "name": "Seated Glute"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedhamstring",
+      "canonical_id": 693,
+      "name": "Seated Hamstring",
+      "zh_name": "坐姿腘绳肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 351,
+          "name": "Seated Hamstring",
+          "zh_name": "坐姿腘绳肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Hamstring",
+          "name": "Seated Hamstring"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedhamstringandcalfstretch",
+      "canonical_id": 694,
+      "name": "Seated Hamstring and Calf Stretch",
+      "zh_name": "坐姿腘绳肌和小腿拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 352,
+          "name": "Seated Hamstring and Calf Stretch",
+          "zh_name": "坐姿腘绳肌和小腿拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Hamstring_and_Calf_Stretch",
+          "name": "Seated Hamstring and Calf Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedlegcurl",
+      "canonical_id": 698,
+      "name": "Seated Leg Curl",
+      "zh_name": "坐姿腿弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 91,
+          "name": "Seated Leg Curl",
+          "zh_name": "坐姿腿弯举"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Leg_Curl",
+          "name": "Seated Leg Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedoverheadstretch",
+      "canonical_id": 704,
+      "name": "Seated Overhead Stretch",
+      "zh_name": "坐姿过头拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 353,
+          "name": "Seated Overhead Stretch",
+          "zh_name": "坐姿过头拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Overhead_Stretch",
+          "name": "Seated Overhead Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:seatedtricepspress",
+      "canonical_id": 710,
+      "name": "Seated Triceps Press",
+      "zh_name": "坐姿三头肌推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 354,
+          "name": "Seated Triceps Press",
+          "zh_name": "坐姿三头肌推举"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Triceps_Press",
+          "name": "Seated Triceps Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:shotgunrow",
+      "canonical_id": 713,
+      "name": "Shotgun Row",
+      "zh_name": "单臂低位绳索划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 355,
+          "name": "Shotgun Row",
+          "zh_name": "单臂低位绳索划船"
+        },
+        {
+          "source": "community",
+          "id": "Shotgun_Row",
+          "name": "Shotgun Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:shoulderstretch",
+      "canonical_id": 717,
+      "name": "Shoulder Stretch",
+      "zh_name": "肩部拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 356,
+          "name": "Shoulder Stretch",
+          "zh_name": "肩部拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Shoulder_Stretch",
+          "name": "Shoulder Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:sidelegraises",
+      "canonical_id": 722,
+      "name": "Side Leg Raises",
+      "zh_name": "侧抬腿",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 358,
+          "name": "Side Leg Raises",
+          "zh_name": "侧抬腿"
+        },
+        {
+          "source": "community",
+          "id": "Side_Leg_Raises",
+          "name": "Side Leg Raises"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:sidelyingfloorstretch",
+      "canonical_id": 723,
+      "name": "Side-Lying Floor Stretch",
+      "zh_name": "侧躺地面拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 357,
+          "name": "Side-Lying Floor Stretch",
+          "zh_name": "侧躺地面拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Side-Lying_Floor_Stretch",
+          "name": "Side-Lying Floor Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:sidelyinggroinstretch",
+      "canonical_id": 724,
+      "name": "Side Lying Groin Stretch",
+      "zh_name": "侧躺腹股沟拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 359,
+          "name": "Side Lying Groin Stretch",
+          "zh_name": "侧躺腹股沟拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Side_Lying_Groin_Stretch",
+          "name": "Side Lying Groin Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:sideneckstretch",
+      "canonical_id": 725,
+      "name": "Side Neck Stretch",
+      "zh_name": "侧颈拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 360,
+          "name": "Side Neck Stretch",
+          "zh_name": "侧颈拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Side_Neck_Stretch",
+          "name": "Side Neck Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:sledgehammerswings",
+      "canonical_id": 751,
+      "name": "Sledgehammer Swings",
+      "zh_name": "大锤摆动",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 361,
+          "name": "Sledgehammer Swings",
+          "zh_name": "大锤摆动"
+        },
+        {
+          "source": "community",
+          "id": "Sledgehammer_Swings",
+          "name": "Sledgehammer Swings"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinebehindthebackshrug",
+      "canonical_id": 758,
+      "name": "Smith Machine Behind the Back Shrug",
+      "zh_name": "史密斯背后耸肩",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 366,
+          "name": "Smith Machine Behind the Back Shrug",
+          "zh_name": "史密斯背后耸肩"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Behind_the_Back_Shrug",
+          "name": "Smith Machine Behind the Back Shrug"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinebenchpress",
+      "canonical_id": 759,
+      "name": "Smith Machine Bench Press",
+      "zh_name": "史密斯平板卧推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 45,
+          "name": "Smith Machine Bench Press",
+          "zh_name": "史密斯平板卧推"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Bench_Press",
+          "name": "Smith Machine Bench Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinebentoverrow",
+      "canonical_id": 760,
+      "name": "Smith Machine Bent Over Row",
+      "zh_name": "史密斯机俯身划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 365,
+          "name": "Smith Machine Bent Over Row",
+          "zh_name": "史密斯机俯身划船"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Bent_Over_Row",
+          "name": "Smith Machine Bent Over Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinecalfraise",
+      "canonical_id": 761,
+      "name": "Smith Machine Calf Raise",
+      "zh_name": "史密斯提踵",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 367,
+          "name": "Smith Machine Calf Raise",
+          "zh_name": "史密斯提踵"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Calf_Raise",
+          "name": "Smith Machine Calf Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachineclosegripbenchpress",
+      "canonical_id": 762,
+      "name": "Smith Machine Close-Grip Bench Press",
+      "zh_name": "史密斯机窄距卧推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 368,
+          "name": "Smith Machine Close-Grip Bench Press",
+          "zh_name": "史密斯机窄距卧推"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Close-Grip_Bench_Press",
+          "name": "Smith Machine Close-Grip Bench Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinedeclinepress",
+      "canonical_id": 763,
+      "name": "Smith Machine Decline Press",
+      "zh_name": "史密斯下斜卧推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 369,
+          "name": "Smith Machine Decline Press",
+          "zh_name": "史密斯下斜卧推"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Decline_Press",
+          "name": "Smith Machine Decline Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinehangpowerclean",
+      "canonical_id": 764,
+      "name": "Smith Machine Hang Power Clean",
+      "zh_name": "史密斯悬垂强力抓举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 370,
+          "name": "Smith Machine Hang Power Clean",
+          "zh_name": "史密斯悬垂强力抓举"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Hang_Power_Clean",
+          "name": "Smith Machine Hang Power Clean"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachineinclinebenchpress",
+      "canonical_id": 766,
+      "name": "Smith Machine Incline Bench Press",
+      "zh_name": "史密斯上斜卧推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 371,
+          "name": "Smith Machine Incline Bench Press",
+          "zh_name": "史密斯上斜卧推"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Incline_Bench_Press",
+          "name": "Smith Machine Incline Bench Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinelegpress",
+      "canonical_id": 767,
+      "name": "Smith Machine Leg Press",
+      "zh_name": "史密斯机腿推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 362,
+          "name": "Smith Machine Leg Press",
+          "zh_name": "史密斯机腿推"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Leg_Press",
+          "name": "Smith Machine Leg Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachineonearmuprightrow",
+      "canonical_id": 768,
+      "name": "Smith Machine One-Arm Upright Row",
+      "zh_name": "史密斯机单臂直立划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 372,
+          "name": "Smith Machine One-Arm Upright Row",
+          "zh_name": "史密斯机单臂直立划船"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_One-Arm_Upright_Row",
+          "name": "Smith Machine One-Arm Upright Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachineoverheadshoulderpress",
+      "canonical_id": 769,
+      "name": "Smith Machine Overhead Shoulder Press",
+      "zh_name": "史密斯机肩上推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 364,
+          "name": "Smith Machine Overhead Shoulder Press",
+          "zh_name": "史密斯机肩上推举"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Overhead_Shoulder_Press",
+          "name": "Smith Machine Overhead Shoulder Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinepistolsquat",
+      "canonical_id": 770,
+      "name": "Smith Machine Pistol Squat",
+      "zh_name": "史密斯机单腿深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 373,
+          "name": "Smith Machine Pistol Squat",
+          "zh_name": "史密斯机单腿深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Pistol_Squat",
+          "name": "Smith Machine Pistol Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinesquat",
+      "canonical_id": 772,
+      "name": "Smith Machine Squat",
+      "zh_name": "史密斯深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 46,
+          "name": "Smith Machine Squat",
+          "zh_name": "史密斯深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Squat",
+          "name": "Smith Machine Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachinestiffleggeddeadlift",
+      "canonical_id": 773,
+      "name": "Smith Machine Stiff-Legged Deadlift",
+      "zh_name": "史密斯机直腿硬拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 363,
+          "name": "Smith Machine Stiff-Legged Deadlift",
+          "zh_name": "史密斯机直腿硬拉"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Stiff-Legged_Deadlift",
+          "name": "Smith Machine Stiff-Legged Deadlift"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithmachineuprightrow",
+      "canonical_id": 774,
+      "name": "Smith Machine Upright Row",
+      "zh_name": "史密斯直立划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 374,
+          "name": "Smith Machine Upright Row",
+          "zh_name": "史密斯直立划船"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Machine_Upright_Row",
+          "name": "Smith Machine Upright Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:smithsinglelegsplitsquat",
+      "canonical_id": 776,
+      "name": "Smith Single-Leg Split Squat",
+      "zh_name": "史密斯分腿蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 375,
+          "name": "Smith Single-Leg Split Squat",
+          "zh_name": "史密斯分腿蹲"
+        },
+        {
+          "source": "community",
+          "id": "Smith_Single-Leg_Split_Squat",
+          "name": "Smith Single-Leg Split Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:spidercrawl",
+      "canonical_id": 787,
+      "name": "Spider Crawl",
+      "zh_name": "蜘蛛侠式爬行",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 62,
+          "name": "Spider Crawl",
+          "zh_name": "蜘蛛侠式爬行"
+        },
+        {
+          "source": "community",
+          "id": "Spider_Crawl",
+          "name": "Spider Crawl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:spinalstretch",
+      "canonical_id": 789,
+      "name": "Spinal Stretch",
+      "zh_name": "脊柱拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 376,
+          "name": "Spinal Stretch",
+          "zh_name": "脊柱拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Spinal_Stretch",
+          "name": "Spinal Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:stairmaster",
+      "canonical_id": 801,
+      "name": "Stairmaster",
+      "zh_name": "楼梯机",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 377,
+          "name": "Stairmaster",
+          "zh_name": "楼梯机"
+        },
+        {
+          "source": "community",
+          "id": "Stairmaster",
+          "name": "Stairmaster"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standingbicepsstretch",
+      "canonical_id": 808,
+      "name": "Standing Biceps Stretch",
+      "zh_name": "站立式肱二头肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 378,
+          "name": "Standing Biceps Stretch",
+          "zh_name": "站立式肱二头肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Biceps_Stretch",
+          "name": "Standing Biceps Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standingcablechestpress",
+      "canonical_id": 810,
+      "name": "Standing Cable Chest Press",
+      "zh_name": "站立绳索胸推",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 379,
+          "name": "Standing Cable Chest Press",
+          "zh_name": "站立绳索胸推"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Cable_Chest_Press",
+          "name": "Standing Cable Chest Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standingelevatedquadstretch",
+      "canonical_id": 821,
+      "name": "Standing Elevated Quad Stretch",
+      "zh_name": "站立高位股四头肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 380,
+          "name": "Standing Elevated Quad Stretch",
+          "zh_name": "站立高位股四头肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Elevated_Quad_Stretch",
+          "name": "Standing Elevated Quad Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standinggastrocnemiuscalfstretch",
+      "canonical_id": 823,
+      "name": "Standing Gastrocnemius Calf Stretch",
+      "zh_name": "站立式腓肠肌小腿拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 381,
+          "name": "Standing Gastrocnemius Calf Stretch",
+          "zh_name": "站立式腓肠肌小腿拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Gastrocnemius_Calf_Stretch",
+          "name": "Standing Gastrocnemius Calf Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standinghamstringandcalfstretch",
+      "canonical_id": 824,
+      "name": "Standing Hamstring and Calf Stretch",
+      "zh_name": "站立式腘绳肌和小腿拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 382,
+          "name": "Standing Hamstring and Calf Stretch",
+          "zh_name": "站立式腘绳肌和小腿拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Hamstring_and_Calf_Stretch",
+          "name": "Standing Hamstring and Calf Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standinghipflexors",
+      "canonical_id": 827,
+      "name": "Standing Hip Flexors",
+      "zh_name": "站立式髋屈肌拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 383,
+          "name": "Standing Hip Flexors",
+          "zh_name": "站立式髋屈肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Hip_Flexors",
+          "name": "Standing Hip Flexors"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standinginnerbicepscurl",
+      "canonical_id": 828,
+      "name": "Standing Inner-Biceps Curl",
+      "zh_name": "站姿哑铃内弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 384,
+          "name": "Standing Inner-Biceps Curl",
+          "zh_name": "站姿哑铃内弯举"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Inner-Biceps_Curl",
+          "name": "Standing Inner-Biceps Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standinglateralstretch",
+      "canonical_id": 829,
+      "name": "Standing Lateral Stretch",
+      "zh_name": "站立侧伸展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 385,
+          "name": "Standing Lateral Stretch",
+          "zh_name": "站立侧伸展"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Lateral_Stretch",
+          "name": "Standing Lateral Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standinglegcurl",
+      "canonical_id": 830,
+      "name": "Standing Leg Curl",
+      "zh_name": "站姿屈腿",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 126,
+          "name": "Standing Leg Curl",
+          "zh_name": "站姿屈腿"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Leg_Curl",
+          "name": "Standing Leg Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standinglowpulleyonearmtricepsextension",
+      "canonical_id": 833,
+      "name": "Standing Low-Pulley One-Arm Triceps Extension",
+      "zh_name": "站立低位滑轮单臂三头肌伸展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 386,
+          "name": "Standing Low-Pulley One-Arm Triceps Extension",
+          "zh_name": "站立低位滑轮单臂三头肌伸展"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Low-Pulley_One-Arm_Triceps_Extension",
+          "name": "Standing Low-Pulley One-Arm Triceps Extension"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standingropecrunch",
+      "canonical_id": 844,
+      "name": "Standing Rope Crunch",
+      "zh_name": "站立绳索卷腹",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 387,
+          "name": "Standing Rope Crunch",
+          "zh_name": "站立绳索卷腹"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Rope_Crunch",
+          "name": "Standing Rope Crunch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:standingsoleusandachillesstretch",
+      "canonical_id": 845,
+      "name": "Standing Soleus And Achilles Stretch",
+      "zh_name": "站立式比目鱼肌和跟腱拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 388,
+          "name": "Standing Soleus And Achilles Stretch",
+          "zh_name": "站立式比目鱼肌和跟腱拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Standing_Soleus_And_Achilles_Stretch",
+          "name": "Standing Soleus And Achilles Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:stepmill",
+      "canonical_id": 850,
+      "name": "Step Mill",
+      "zh_name": "台阶机",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 390,
+          "name": "Step Mill",
+          "zh_name": "台阶机"
+        },
+        {
+          "source": "community",
+          "id": "Step_Mill",
+          "name": "Step Mill"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:stepupwithkneeraise",
+      "canonical_id": 852,
+      "name": "Step-up with Knee Raise",
+      "zh_name": "提膝上箱",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 389,
+          "name": "Step-up with Knee Raise",
+          "zh_name": "提膝上箱"
+        },
+        {
+          "source": "community",
+          "id": "Step-up_with_Knee_Raise",
+          "name": "Step-up with Knee Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:stomachvacuum",
+      "canonical_id": 857,
+      "name": "Stomach Vacuum",
+      "zh_name": "腹式真空收缩",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 391,
+          "name": "Stomach Vacuum",
+          "zh_name": "腹式真空收缩"
+        },
+        {
+          "source": "community",
+          "id": "Stomach_Vacuum",
+          "name": "Stomach Vacuum"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:straightarmpulldown",
+      "canonical_id": 859,
+      "name": "Straight Arm Pulldown",
+      "zh_name": "直臂下压",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 69,
+          "name": "Straight Arm Pulldown",
+          "zh_name": "直臂下压"
+        },
+        {
+          "source": "community",
+          "id": "Straight-Arm_Pulldown",
+          "name": "Straight-Arm Pulldown"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:straightbarbenchmidrows",
+      "canonical_id": 860,
+      "name": "Straight Bar Bench Mid Rows",
+      "zh_name": "板凳杠铃划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 392,
+          "name": "Straight Bar Bench Mid Rows",
+          "zh_name": "板凳杠铃划船"
+        },
+        {
+          "source": "community",
+          "id": "Straight_Bar_Bench_Mid_Rows",
+          "name": "Straight Bar Bench Mid Rows"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:straightraisesoninclinebench",
+      "canonical_id": 863,
+      "name": "Straight Raises on Incline Bench",
+      "zh_name": "斜凳直臂上举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 393,
+          "name": "Straight Raises on Incline Bench",
+          "zh_name": "斜凳直臂上举"
+        },
+        {
+          "source": "community",
+          "id": "Straight_Raises_on_Incline_Bench",
+          "name": "Straight Raises on Incline Bench"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:sumodeadlift",
+      "canonical_id": 865,
+      "name": "Sumo Deadlift",
+      "zh_name": "相扑硬拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 49,
+          "name": "Sumo Deadlift",
+          "zh_name": "相扑硬拉"
+        },
+        {
+          "source": "community",
+          "id": "Sumo_Deadlift",
+          "name": "Sumo Deadlift"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:supinechestthrow",
+      "canonical_id": 870,
+      "name": "Supine Chest Throw",
+      "zh_name": "仰卧胸前抛球",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 394,
+          "name": "Supine Chest Throw",
+          "zh_name": "仰卧胸前抛球"
+        },
+        {
+          "source": "community",
+          "id": "Supine_Chest_Throw",
+          "name": "Supine Chest Throw"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:suspendedfallout",
+      "canonical_id": 873,
+      "name": "Suspended Fallout",
+      "zh_name": "悬吊下落",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 395,
+          "name": "Suspended Fallout",
+          "zh_name": "悬吊下落"
+        },
+        {
+          "source": "community",
+          "id": "Suspended_Fallout",
+          "name": "Suspended Fallout"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:svendpress",
+      "canonical_id": 878,
+      "name": "Svend Press",
+      "zh_name": "斯文德推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 396,
+          "name": "Svend Press",
+          "zh_name": "斯文德推举"
+        },
+        {
+          "source": "community",
+          "id": "Svend_Press",
+          "name": "Svend Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:tatepress",
+      "canonical_id": 880,
+      "name": "Tate Press",
+      "zh_name": "泰特推举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 397,
+          "name": "Tate Press",
+          "zh_name": "泰特推举"
+        },
+        {
+          "source": "community",
+          "id": "Tate_Press",
+          "name": "Tate Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:thestraddle",
+      "canonical_id": 883,
+      "name": "The Straddle",
+      "zh_name": "坐姿分腿前屈",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 398,
+          "name": "The Straddle",
+          "zh_name": "坐姿分腿前屈"
+        },
+        {
+          "source": "community",
+          "id": "The_Straddle",
+          "name": "The Straddle"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:thighadductor",
+      "canonical_id": 885,
+      "name": "Thigh Adductor",
+      "zh_name": "大腿内收肌训练",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 399,
+          "name": "Thigh Adductor",
+          "zh_name": "大腿内收肌训练"
+        },
+        {
+          "source": "community",
+          "id": "Thigh_Adductor",
+          "name": "Thigh Adductor"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:tireflip",
+      "canonical_id": 886,
+      "name": "Tire Flip",
+      "zh_name": "轮胎翻转",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 400,
+          "name": "Tire Flip",
+          "zh_name": "轮胎翻转"
+        },
+        {
+          "source": "community",
+          "id": "Tire_Flip",
+          "name": "Tire Flip"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:toetouchers",
+      "canonical_id": 887,
+      "name": "Toe Touchers",
+      "zh_name": "触趾运动",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 401,
+          "name": "Toe Touchers",
+          "zh_name": "触趾运动"
+        },
+        {
+          "source": "community",
+          "id": "Toe_Touchers",
+          "name": "Toe Touchers"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:trailrunningwalking",
+      "canonical_id": 889,
+      "name": "Trail Running/Walking",
+      "zh_name": "越野跑/徒步",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 402,
+          "name": "Trail Running/Walking",
+          "zh_name": "越野跑/徒步"
+        },
+        {
+          "source": "community",
+          "id": "Trail_Running_Walking",
+          "name": "Trail Running/Walking"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:trapbardeadlift",
+      "canonical_id": 890,
+      "name": "Trap Bar Deadlift",
+      "zh_name": "六角杠铃硬拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 403,
+          "name": "Trap Bar Deadlift",
+          "zh_name": "六角杠铃硬拉"
+        },
+        {
+          "source": "community",
+          "id": "Trap_Bar_Deadlift",
+          "name": "Trap Bar Deadlift"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:tricepsidestretch",
+      "canonical_id": 893,
+      "name": "Tricep Side Stretch",
+      "zh_name": "三头肌侧拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 404,
+          "name": "Tricep Side Stretch",
+          "zh_name": "三头肌侧拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Tricep_Side_Stretch",
+          "name": "Tricep Side Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:tricepspushdown",
+      "canonical_id": 895,
+      "name": "Triceps Pushdown",
+      "zh_name": "肱三头肌下压",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 74,
+          "name": "Triceps Pushdown",
+          "zh_name": "肱三头肌下压"
+        },
+        {
+          "source": "community",
+          "id": "Triceps_Pushdown",
+          "name": "Triceps Pushdown"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:upperbackleggrab",
+      "canonical_id": 908,
+      "name": "Upper Back-Leg Grab",
+      "zh_name": "上背部抱腿拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 406,
+          "name": "Upper Back-Leg Grab",
+          "zh_name": "上背部抱腿拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Upper_Back-Leg_Grab",
+          "name": "Upper Back-Leg Grab"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:uprightcablerow",
+      "canonical_id": 909,
+      "name": "Upright Cable Row",
+      "zh_name": "直立缆索划船",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 409,
+          "name": "Upright Cable Row",
+          "zh_name": "直立缆索划船"
+        },
+        {
+          "source": "community",
+          "id": "Upright_Cable_Row",
+          "name": "Upright Cable Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:upwardstretch",
+      "canonical_id": 911,
+      "name": "Upward Stretch",
+      "zh_name": "向上伸展",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 410,
+          "name": "Upward Stretch",
+          "zh_name": "向上伸展"
+        },
+        {
+          "source": "community",
+          "id": "Upward_Stretch",
+          "name": "Upward Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:vbarpulldown",
+      "canonical_id": 912,
+      "name": "V-Bar Pulldown",
+      "zh_name": "V型杆高位下拉",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 411,
+          "name": "V-Bar Pulldown",
+          "zh_name": "V型杆高位下拉"
+        },
+        {
+          "source": "community",
+          "id": "V-Bar_Pulldown",
+          "name": "V-Bar Pulldown"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:walkingtreadmill",
+      "canonical_id": 917,
+      "name": "Walking, Treadmill",
+      "zh_name": "跑步机步行",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 412,
+          "name": "Walking, Treadmill",
+          "zh_name": "跑步机步行"
+        },
+        {
+          "source": "community",
+          "id": "Walking_Treadmill",
+          "name": "Walking, Treadmill"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:weightedsissysquat",
+      "canonical_id": 925,
+      "name": "Weighted Sissy Squat",
+      "zh_name": "自重辅助深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 413,
+          "name": "Weighted Sissy Squat",
+          "zh_name": "自重辅助深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Weighted_Sissy_Squat",
+          "name": "Weighted Sissy Squat"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:windmills",
+      "canonical_id": 937,
+      "name": "Windmills",
+      "zh_name": "风车式动作",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 415,
+          "name": "Windmills",
+          "zh_name": "风车式动作"
+        },
+        {
+          "source": "community",
+          "id": "Windmills",
+          "name": "Windmills"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:windsprints",
+      "canonical_id": 938,
+      "name": "Wind Sprints",
+      "zh_name": "风驰冲刺",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 414,
+          "name": "Wind Sprints",
+          "zh_name": "风驰冲刺"
+        },
+        {
+          "source": "community",
+          "id": "Wind_Sprints",
+          "name": "Wind Sprints"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:worldsgreateststretch",
+      "canonical_id": 939,
+      "name": "World's Greatest Stretch",
+      "zh_name": "世界最佳拉伸",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 416,
+          "name": "World's Greatest Stretch",
+          "zh_name": "世界最佳拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Worlds_Greatest_Stretch",
+          "name": "World's Greatest Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:yokewalk",
+      "canonical_id": 944,
+      "name": "Yoke Walk",
+      "zh_name": "轭架行走",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 417,
+          "name": "Yoke Walk",
+          "zh_name": "轭架行走"
+        },
+        {
+          "source": "community",
+          "id": "Yoke_Walk",
+          "name": "Yoke Walk"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:zerchersquats",
+      "canonical_id": 945,
+      "name": "Zercher Squats",
+      "zh_name": "泽奇深蹲",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 418,
+          "name": "Zercher Squats",
+          "zh_name": "泽奇深蹲"
+        },
+        {
+          "source": "community",
+          "id": "Zercher_Squats",
+          "name": "Zercher Squats"
+        }
+      ]
+    },
+    {
+      "canonical_key": "movement:zottmancurl",
+      "canonical_id": 946,
+      "name": "Zottman Curl",
+      "zh_name": "佐特曼弯举",
+      "reason": "同名或纯拼写格式差异，保留动作限定词",
+      "members": [
+        {
+          "source": "project",
+          "id": 419,
+          "name": "Zottman Curl",
+          "zh_name": "佐特曼弯举"
+        },
+        {
+          "source": "community",
+          "id": "Zottman_Curl",
+          "name": "Zottman Curl"
+        }
+      ]
+    },
+    {
+      "canonical_key": "overhead-triceps-stretch",
+      "canonical_id": 948,
+      "name": "Triceps Stretch",
+      "zh_name": "肱三头肌拉伸",
+      "reason": "单手辅助的过头三头肌静态拉伸；PNF 同伴辅助和侧拉伸保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 55,
+          "name": "Triceps Stretch",
+          "zh_name": "肱三头肌拉伸"
+        },
+        {
+          "source": "project",
+          "id": 405,
+          "name": "Triceps Stretch",
+          "zh_name": "三头肌拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Triceps_Stretch",
+          "name": "Triceps Stretch"
+        }
+      ]
+    },
+    {
+      "canonical_key": "pull-up",
+      "canonical_id": 949,
+      "name": "Pull Up",
+      "zh_name": "引体向上",
+      "reason": "正握引体向上；反握、辅助、负重、单臂、肩胛骨变式分别保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 2,
+          "name": "Pull Up",
+          "zh_name": "引体向上"
+        },
+        {
+          "source": "project",
+          "id": 34,
+          "name": "Pull - ups",
+          "zh_name": "引体向上"
+        },
+        {
+          "source": "community",
+          "id": "Pullups",
+          "name": "Pullups"
+        }
+      ]
+    },
+    {
+      "canonical_key": "quad-foam-roll",
+      "canonical_id": 950,
+      "name": "Quadriceps Foam Roller Massage",
+      "zh_name": "股四头肌泡沫轴按摩",
+      "reason": "股四头肌泡沫轴自我放松",
+      "members": [
+        {
+          "source": "project",
+          "id": 101,
+          "name": "Quadriceps Foam Roller Massage",
+          "zh_name": "股四头肌泡沫轴按摩"
+        },
+        {
+          "source": "project",
+          "id": 329,
+          "name": "Quadriceps-SMR",
+          "zh_name": "股四头肌自我肌筋膜放松"
+        },
+        {
+          "source": "community",
+          "id": "Quadriceps-SMR",
+          "name": "Quadriceps-SMR"
+        }
+      ]
+    },
+    {
+      "canonical_key": "seated-dumbbell-shoulder-press",
+      "canonical_id": 951,
+      "name": "Dumbbell Shoulder Press",
+      "zh_name": "哑铃肩推",
+      "reason": "已核对起始姿势为坐姿；Standing Dumbbell Press 不合并",
+      "members": [
+        {
+          "source": "project",
+          "id": 5,
+          "name": "Dumbbell Shoulder Press",
+          "zh_name": "哑铃肩推"
+        },
+        {
+          "source": "project",
+          "id": 38,
+          "name": "Seated Dumbbell Shoulder Press",
+          "zh_name": "坐姿哑铃推肩"
+        },
+        {
+          "source": "community",
+          "id": "Dumbbell_Shoulder_Press",
+          "name": "Dumbbell Shoulder Press"
+        },
+        {
+          "source": "community",
+          "id": "Seated_Dumbbell_Press",
+          "name": "Seated Dumbbell Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "seated-machine-leg-extension",
+      "canonical_id": 952,
+      "name": "Seated Leg Extension",
+      "zh_name": "坐姿腿屈伸",
+      "reason": "坐姿双腿器械伸膝；单腿版本保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 124,
+          "name": "Seated Leg Extension",
+          "zh_name": "坐姿腿屈伸"
+        },
+        {
+          "source": "community",
+          "id": "Leg_Extensions",
+          "name": "Leg Extensions"
+        }
+      ]
+    },
+    {
+      "canonical_key": "single-arm-dumbbell-bench-press",
+      "canonical_id": 953,
+      "name": "Single Arm Bench Press",
+      "zh_name": "单臂卧推",
+      "reason": "普通单臂哑铃平板卧推",
+      "members": [
+        {
+          "source": "project",
+          "id": 65,
+          "name": "Single Arm Bench Press",
+          "zh_name": "单臂卧推"
+        },
+        {
+          "source": "community",
+          "id": "One_Arm_Dumbbell_Bench_Press",
+          "name": "One Arm Dumbbell Bench Press"
+        }
+      ]
+    },
+    {
+      "canonical_key": "single-arm-dumbbell-row",
+      "canonical_id": 954,
+      "name": "Dumbbell Row",
+      "zh_name": "哑铃划船",
+      "reason": "现有 Dumbbell Row 描述为单臂凳上支撑；双臂、反握、胸托和壶铃划船保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 7,
+          "name": "Dumbbell Row",
+          "zh_name": "哑铃划船"
+        },
+        {
+          "source": "project",
+          "id": 31,
+          "name": "One-arm Dumbbell Row",
+          "zh_name": "单臂划船"
+        },
+        {
+          "source": "community",
+          "id": "One-Arm_Dumbbell_Row",
+          "name": "One-Arm Dumbbell Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "single-arm-landmine-row",
+      "canonical_id": 955,
+      "name": "Bent Over One-Arm Long Bar Row",
+      "zh_name": "单臂长杆划船",
+      "reason": "同一地雷架单臂划船",
+      "members": [
+        {
+          "source": "project",
+          "id": 188,
+          "name": "Bent Over One-Arm Long Bar Row",
+          "zh_name": "俯身单臂长杆划船"
+        },
+        {
+          "source": "project",
+          "id": 307,
+          "name": "One-Arm Long Bar Row",
+          "zh_name": "单臂长杆划船"
+        },
+        {
+          "source": "community",
+          "id": "Bent_Over_One-Arm_Long_Bar_Row",
+          "name": "Bent Over One-Arm Long Bar Row"
+        },
+        {
+          "source": "community",
+          "id": "One-Arm_Long_Bar_Row",
+          "name": "One-Arm Long Bar Row"
+        }
+      ]
+    },
+    {
+      "canonical_key": "standard-push-up",
+      "canonical_id": 956,
+      "name": "Push Up",
+      "zh_name": "俯卧撑",
+      "reason": "标准俯卧撑；钻石、宽窄距、抬脚、单臂、跪姿单独保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 8,
+          "name": "Push Up",
+          "zh_name": "俯卧撑"
+        },
+        {
+          "source": "project",
+          "id": 35,
+          "name": "Push - ups",
+          "zh_name": "俯卧撑"
+        },
+        {
+          "source": "community",
+          "id": "Pushups",
+          "name": "Pushups"
+        }
+      ]
+    },
+    {
+      "canonical_key": "standing-cable-glute-kickback",
+      "canonical_id": 957,
+      "name": "Low Cable Back Kick",
+      "zh_name": "低位绳索后踢",
+      "reason": "绑带低位绳索站姿后踢",
+      "members": [
+        {
+          "source": "project",
+          "id": 86,
+          "name": "Low Cable Back Kick",
+          "zh_name": "低位绳索后踢"
+        },
+        {
+          "source": "project",
+          "id": 308,
+          "name": "One-Legged Cable Kickback",
+          "zh_name": "单腿绳索后踢"
+        },
+        {
+          "source": "community",
+          "id": "One-Legged_Cable_Kickback",
+          "name": "One-Legged Cable Kickback"
+        }
+      ]
+    },
+    {
+      "canonical_key": "standing-dumbbell-lateral-raise",
+      "canonical_id": 958,
+      "name": "Dumbbell Lateral Raise",
+      "zh_name": "站姿哑铃侧平举",
+      "reason": "站姿双臂哑铃侧平举；坐姿、单臂、绳索和器械保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 23,
+          "name": "Dumbbell Lateral Raise",
+          "zh_name": "站姿哑铃侧平举"
+        },
+        {
+          "source": "community",
+          "id": "Side_Lateral_Raise",
+          "name": "Side Lateral Raise"
+        }
+      ]
+    },
+    {
+      "canonical_key": "straight-legged-bench-dip",
+      "canonical_id": 959,
+      "name": "Triceps Dip on Bench",
+      "zh_name": "凳上肱三头肌臂屈伸",
+      "reason": "双腿伸直凳上臂屈伸；现有 Bench Dip 为屈膝版，分别保留",
+      "members": [
+        {
+          "source": "project",
+          "id": 137,
+          "name": "Triceps Dip on Bench",
+          "zh_name": "凳上肱三头肌臂屈伸"
+        },
+        {
+          "source": "community",
+          "id": "Bench_Dips",
+          "name": "Bench Dips"
+        }
+      ]
+    },
+    {
+      "canonical_key": "upper-back-interlaced-hands-stretch",
+      "canonical_id": 962,
+      "name": "Upper Back Stretch",
+      "zh_name": "上背部拉伸",
+      "reason": "双手手指相扣向前推；与上背环抱手臂拉伸不同",
+      "members": [
+        {
+          "source": "project",
+          "id": 407,
+          "name": "Upper Back Stretch",
+          "zh_name": "上背部拉伸"
+        },
+        {
+          "source": "community",
+          "id": "Upper_Back_Stretch",
+          "name": "Upper Back Stretch"
+        }
+      ]
+    }
+  ],
+  "preserved_examples": [
+    "上斜/下斜/窄握/宽握卧推",
+    "站姿/坐姿哑铃肩推",
+    "直杠/曲杠弯举",
+    "相扑/传统/罗马尼亚/直腿硬拉",
+    "屈膝/直腿凳上臂屈伸",
+    "上背环抱手臂/手指相扣拉伸"
+  ]
+}
